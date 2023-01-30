@@ -90,22 +90,19 @@ def process_file(xray, reviews):
         return reviews
 
 def read_files(xray_file, reviews_file = None):
+    check, reviews = False, None
     xray = pd.read_csv(xray_file).fillna(0)
+    if all(['Product Details' in xray.columns,'ASIN' in xray.columns,'Brand' in xray.columns]):
+        check = True
+        brand = xray['Brand'].values[0]
+        st.session_state.brand_area.text_area('Brand in file:',brand)
+    else:
+        return xray, reviews, check
     if reviews_file != None:
         reviews = pd.read_csv(reviews_file).fillna(0)
-    else:
-        reviews = None
-    return xray, reviews
-
-
-        # elif event == 'Generate price bins':
-        #     try:
-        #         import maintenance.sales_by_price_range_competition
-        #         maintenance.sales_by_price_range_competition.main_func()
-        #     except:
-        #         pass
-        
-    # return None
+        if all(['Review Count' in reviews.columns,'Review Share' in reviews.columns]):
+            check = True
+    return xray, reviews, check
 
 def get_asins(links):
     import re
@@ -114,53 +111,42 @@ def get_asins(links):
         asin = re.search('([A-Z0-9]{10})',l).group()
         if asin not in asins:
             asins.append(asin)
-        # asins = list(set(asins))
     return asins
 
 def main_estimator():
-    
     # st.header("This tool is designed to assess variation sales based on H10's Xray and review downloads")
     col1, col2 = st.columns(2)
-    links_area = col2.text_area('Input links with ASINs to extract ASINs only')
+    st.session_state.brand_area = col1.empty()
+    col2_area = col2.empty()
+    links_area = col2_area.text_area('Input links with ASINs to extract ASINs only')
     links = links_area.split('\n')
     if col2.button('Extract ASINs') and len(links) > 0:
         asins = get_asins(links)
-        links_area.write('\n'.join(asins))
+        col2_area.text_area('Extracted ASINs:','\n'.join(asins))
 
     with st.expander('First, upload necessary files'):
-        xray_file = st.file_uploader('Xray file from H10 (mandatory)')
+        xray_file = st.file_uploader('Xray file from H10 (mandatory)', type = '.csv')
         if st.checkbox('Add review file'):
-            reviews_file = st.file_uploader('Review file from H10 (optional)')
+            reviews_file = st.file_uploader('Review file from H10 (optional)', type = '.csv')
         else:
             reviews_file = None
+
     if st.button('Process file(s)'):
-        xray, reviews = read_files(xray_file, reviews_file)
-        final = process_file(xray,reviews)
-        st.session_state['result'] = final
-        st.write(len(final))
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            final.to_excel(writer, sheet_name = 'Sales', index = False)
-            ff.format_header(final, writer, 'Sales')
-        st.download_button('Download results',output.getvalue(), file_name = 'variation_sales.xlsx')
-    
+        xray, reviews, check = read_files(xray_file, reviews_file)
+        if check:
+            final = process_file(xray,reviews)
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                final.to_excel(writer, sheet_name = 'Sales', index = False)
+                ff.format_header(final, writer, 'Sales')
+            st.download_button('Download results',output.getvalue(), file_name = 'variation_sales.xlsx')
+        else:
+            st.warning('Wrong files selected')
 
+    with st.expander('If needed, upload the completed research for further analysis (feature coming)'):
+        research_file = st.file_uploader('Cleaned and refined research file')
+        pass
 
-    
-    #     else:
-    #         reviews_file = None
-    #         st.session_state.reviews_file = reviews_file
-    # if all(['xray_file' in st.session_state, 'reviews_file' in st.session_state]):
-    #     xray, reviews = read_files(xray_file, reviews_file)
-    #     st.write(len(xray))
-
-    #     elif event == 'Extract ASINs':
-    #         links = sg.PopupGetText('Input links',size = (50,100)).split()
-    #         asins = get_asins(links)
-    #         pyperclip.copy('\n'.join(asins))
-    #         sg.Popup('Asins copied to clipboard')
-    
-    # window.close()
     return None
 
 
