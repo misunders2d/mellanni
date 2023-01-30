@@ -8,6 +8,7 @@ import streamlit as st
 import os
 import pandas as pd
 from io import BytesIO
+from PIL import Image
 from modules import formatting as ff
 
 
@@ -125,8 +126,12 @@ def main_estimator():
         col2_area.text_area('Extracted ASINs:','\n'.join(asins))
 
     with st.expander('First, upload necessary files'):
+        if st.checkbox('Show example'):
+            st.image('media/xray_guide.png')
         xray_file = st.file_uploader('Xray file from H10 (mandatory)', type = '.csv')
         if st.checkbox('Add review file'):
+            if st.checkbox('Show example', key = 'review_example'):
+                st.image('media/review_guide.png')            
             reviews_file = st.file_uploader('Review file from H10 (optional)', type = '.csv')
         else:
             reviews_file = None
