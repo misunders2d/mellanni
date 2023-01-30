@@ -241,6 +241,7 @@ with st.expander('Upload files'):
             try:
                 asin = re.search(asin_str,cerebro_file.name).group()
                 asins = [asin] + [x[0] for x in asins if x != []]
+                cerebro = cerebro.rename(columns = {'Position (Rank)':asin})
             except:
                 asins = ['Position (Rank)'] + [x[0] for x in asins if x != []]
             asins_area.text_area('ASINs in Cerebro file:','\n'.join(asins), height = 250)
