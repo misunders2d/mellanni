@@ -95,8 +95,8 @@ def read_files(xray_file, reviews_file = None):
     xray = pd.read_csv(xray_file).fillna(0)
     if all(['Product Details' in xray.columns,'ASIN' in xray.columns,'Brand' in xray.columns]):
         check = True
-        brand = xray['Brand'].values[0]
-        st.session_state.brand_area.text_area('Brand in file:',brand)
+        brand = xray['Brand'].unique().tolist()
+        st.session_state.brand_area.text_area('Brand in file:','\n'.join(brand))
     else:
         return xray, reviews, check
     if reviews_file != None:
