@@ -87,7 +87,7 @@ def clusterize(file,vectors,cols,num_clusters):
         file['cluster'] = model.labels_
     return file
 
-@st.cache(suppress_st_warning=True)
+# @st.cache(suppress_st_warning=True)
 def process_file(asins,cerebro,ba,magnet,n_clusters,bins, file_ba_matched = file_ba_matched, file_ba_missed = file_ba_missed):
     bin_labels = [str(int(x*100))+'%' for x in bins]
 
