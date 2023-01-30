@@ -213,7 +213,8 @@ def process_file(asins,cerebro,ba,magnet,n_clusters,bins, file_ba_matched = file
     return file, sums_db, file_ba_matched,file_ba_missed, word_freq, asins
 
 st.title('Keyword processing tool')
-asins_area, magnet_words, alpha_asin = st.columns(3)
+asins_area, magnet_col, alpha_asin = st.columns(3)
+magnet_words = magnet_col.empty()
 
 link = '[Goto Cerebro](https://members.helium10.com/cerebro?accountId=268)'
 st.markdown(link, unsafe_allow_html=True)

@@ -6,20 +6,13 @@ Created on Fri May  6 15:15:51 2022
 """
 
 import pandas as pd
-import PySimpleGUI as sg
-import os
 import seaborn as sns
 import matplotlib.pyplot as plt
-import mellanni_modules as mm
-import warnings
-warnings.filterwarnings('ignore')
 sns.set(rc={'figure.figsize':(60,30)})
 stop = False
 txt = (20,1)
 txt2 = (7,1)
 btn = (25,1)
-
-prefix = mm.get_db_path('US')[3]
 
 def plot_temp(plot_cols,df):
     from matplotlib import pyplot as plt
@@ -75,8 +68,6 @@ def relplot_cols(x,y,hue, size, style, col):
     return list([x,y,hue, size, style, col])
 
 def read_file():
-    # source = None
-    # while source == None:
     file = sg.PopupGetFile('Select the research file')
     try:
         source = pd.ExcelFile(file)

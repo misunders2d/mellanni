@@ -130,7 +130,12 @@ def main_estimator():
         col2_area.text_area('Extracted ASINs:','\n'.join(asins))
 
     with st.expander('How to use:'):
-        st.text('Usage instructions')
+        st.markdown('''On the product detail page of a specific product (not search results)
+        run the H10 "Xray" extension and download results to your drive.
+        Similarly, run the "Review Insights" and download these results to your drive, too.
+        Then, select both files in the below uploader and process to recalculate
+        each variation's sales based on the number of reviews.
+        The tool also cleans the Size/Color/Variation columns for ease of further refining.''')
 
     with st.expander('First, upload necessary files'):
         if st.checkbox('Show example'):
