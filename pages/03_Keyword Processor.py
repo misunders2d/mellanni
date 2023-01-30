@@ -184,7 +184,7 @@ def process_file(asins,cerebro,ba,magnet,n_clusters,bins, file_ba_matched = file
     top_kws = file['Keyword Phrase'].head(10).tolist()
     cerebro_kws = file['Keyword Phrase'].unique()
     
-    magnet_words.text_area('Magnet keyword research', value = "\n".join(top_kws), height = 250)
+    # st.session_state['magnet_words'] = magnet_words
     if isinstance(magnet,pd.core.frame.DataFrame):
         magnet = magnet[~magnet['Keyword Phrase'].isin(cerebro_kws)]
             
@@ -210,7 +210,7 @@ def process_file(asins,cerebro,ba,magnet,n_clusters,bins, file_ba_matched = file
     lemm, word_freq, vectors = lemmatize(file, 'Keyword Phrase')
     file = pd.merge(file, lemm, how = 'left', on = 'Keyword Phrase')
     file = clusterize(file,vectors,cols = None,num_clusters=8)
-    return file, sums_db, file_ba_matched,file_ba_missed, word_freq, asins
+    return file, sums_db, file_ba_matched,file_ba_missed, word_freq, asins,top_kws
 
 st.title('Keyword processing tool')
 asins_area, magnet_col, alpha_asin = st.columns(3)
@@ -274,8 +274,9 @@ with st.expander('Upload files'):
         magnet = ''
 
 if st.button('Process keywords') and cerebro_file:
-    file, sums_db, file_ba_matched,file_ba_missed, word_freq,asins = process_file(asins,cerebro,ba,magnet,n_clusters,bins)
+    file, sums_db, file_ba_matched,file_ba_missed, word_freq,asins,top_kws = process_file(asins,cerebro,ba,magnet,n_clusters,bins)
     alpha_asin.bar_chart(sums_db.T['% share by sales'])
+    magnet_words.text_area('Magnet keyword research', value = "\n".join(top_kws), height = 250)
     display_file = file.drop(columns = asins)
     st.session_state['df'] = display_file
     df_slot.write(display_file)
