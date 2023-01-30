@@ -121,11 +121,16 @@ def main_estimator():
     col1, col2 = st.columns(2)
     st.session_state.brand_area = col1.empty()
     col2_area = col2.empty()
-    links_area = col2_area.text_area('Input links with ASINs to extract ASINs only')
+    links_area = col2_area.text_area('Input links with ASINs to extract ASINs only',help = '''
+    Useful tool to extract ASINs from full links.
+    Handy when collecting multiple links and then inserting ASINs into Cerebro''')
     links = links_area.split('\n')
     if col2.button('Extract ASINs') and len(links) > 0:
         asins = get_asins(links)
         col2_area.text_area('Extracted ASINs:','\n'.join(asins))
+
+    with st.expander('How to use:'):
+        st.text('Usage instructions')
 
     with st.expander('First, upload necessary files'):
         if st.checkbox('Show example'):

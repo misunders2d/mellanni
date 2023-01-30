@@ -238,7 +238,11 @@ with st.expander('Upload files'):
             cerebro = pd.read_excel(cerebro_file).fillna(0)
         if all([x in cerebro.columns for x in cerebro_columns]):
             asins = [re.findall(asin_str, x) for x in cerebro.columns]
-            asins = ['Position (Rank)'] + [x[0] for x in asins if x != []]
+            try:
+                asin = re.search(asin_str,cerebro_file.name).group()
+                asins = [asin] + [x[0] for x in asins if x != []]
+            except:
+                asins = ['Position (Rank)'] + [x[0] for x in asins if x != []]
             asins_area.text_area('ASINs in Cerebro file:','\n'.join(asins), height = 250)
             st.write(f'Uploaded successfully, file contains {len(cerebro)} rows')
         else:
