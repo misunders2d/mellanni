@@ -103,6 +103,8 @@ def read_files(xray_file, reviews_file = None):
         reviews = pd.read_csv(reviews_file).fillna(0)
         if all(['Review Count' in reviews.columns,'Review Share' in reviews.columns]):
             check = True
+        else:
+            check = False
     return xray, reviews, check
 
 def get_asins(links):
@@ -138,7 +140,7 @@ def main_estimator():
 
     if st.button('Process file(s)'):
         xray, reviews, check = read_files(xray_file, reviews_file)
-        if check:
+        if check == True:
             final = process_file(xray,reviews)
             output = BytesIO()
             with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
