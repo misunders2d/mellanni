@@ -83,6 +83,7 @@ def process_file(xray, reviews):
         for c in columns_to_drop:
             del xray[c]
         reviews = pd.merge(reviews, xray, how = 'outer', on = 'ASIN').fillna(0)
+        reviews[price_col] = reviews[price_col].str.replace(',','.')
         try:
             reviews['Avg. Price'] = round(sum(reviews[price_col]*reviews['Sales'])/sum(reviews['Sales']),2)
         except:
