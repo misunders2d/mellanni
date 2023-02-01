@@ -11,7 +11,7 @@ from io import BytesIO
 from PIL import Image
 from modules import formatting as ff
 
-
+st.subheader('_Estimate variation sales based on their reviews_')
 def process_file(xray, reviews):
     price_col = [x for x in xray.columns.tolist() if 'price' in x.lower()][0]
     fee_col = [x for x in xray.columns.tolist() if 'fees' in x.lower()][0]
