@@ -221,13 +221,17 @@ st.markdown(link, unsafe_allow_html=True)
 
 df_slot = st.empty()
 
+def clear_filters():
+    st.session_state['include'] = ''
+    st.session_state['exclude'] = ''
+
 with st.sidebar:
     st.header('Apply filters')
-    include = st.text_input('Words to include?',key = 'include')
-    exclude = st.text_input('Words to exclude?', key = 'exclude')
-    if st.button('Clear filters') and 'filtered_df' in st.session_state:
-        del st.session_state['filtered_df']
-        df_slot.write(st.session_state['df'])
+    include_area,exclude_area = st.container(), st.container()
+    include = include_area.text_input('Words to include?',key = 'include')
+    include_all = include_area.radio('Include mode:',['All','Any'],horizontal = True)
+    exclude = exclude_area.text_input('Words to exclude?', key = 'exclude')
+    st.button('Clear filters', on_click= clear_filters)
 
 
 with st.expander('Upload files'):
@@ -327,14 +331,24 @@ if st.button('Process keywords') and cerebro_file:
     
     st.download_button('Download results',output.getvalue(), file_name = 'test.xlsx')
 
-if include != '':
-    if 'filtered_df' in st.session_state:
-        filtered_file = st.session_state['filtered_df']
-    else:
-        filtered_file = st.session_state['df']
-    filtered_file = filtered_file[filtered_file['Keyword Phrase'].str.lower().str.contains(include)]
+def filter_plus(file,filters, combination = 'Any'):
+    words = [w.lower().strip() for w in filters.split(',')]
+    if combination == 'Any':
+        return file[file['Keyword Phrase'].str.contains('|'.join(words),case = False)]
+    elif combination == 'All':
+        return file[file['Keyword Phrase'].str.contains('&'.join(words),case = False)]
+
+
+if include != '' and 'df' in st.session_state:
+    # if 'filtered_df' in st.session_state:
+    #     filtered_file = st.session_state['filtered_df']
+    # else:
+    #     filtered_file = st.session_state['df']
+    filtered_file = st.session_state['df']
+    filtered_file = filter_plus(filtered_file,include, include_all)
     st.session_state['filtered_df'] = filtered_file
     df_slot.write(filtered_file)
+
 
 if exclude != '':
     if 'filtered_df' in st.session_state:
