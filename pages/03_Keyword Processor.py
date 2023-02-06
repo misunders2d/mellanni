@@ -20,7 +20,7 @@ file, cerebro_file, ba_file, magnet_file,file_ba_matched,file_ba_missed = None, 
 example_asins = ['B08CZVWR21','B07N7KFHVH','B08N2RDBHT','B00HHLNRVE','B07M74PH8P']
 asin_str = '(B[A-Z0-9]{9})'
 cerebro_columns = ['Keyword Phrase', 'ABA Total Click Share', 'ABA Total Conv. Share',
-       'ABA SFR', 'Keyword Sales', 'Cerebro IQ Score', 'Search Volume',
+       'Keyword Sales', 'Cerebro IQ Score', 'Search Volume',
        'Search Volume Trend', 'H10 PPC Sugg. Bid', 'H10 PPC Sugg. Min Bid',
        'H10 PPC Sugg. Max Bid', 'Sponsored ASINs', 'Competing Products', 'CPR',
        'Title Density', 'Amazon Recommended', 'Sponsored', 'Organic',
