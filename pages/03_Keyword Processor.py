@@ -23,11 +23,11 @@ cerebro_columns = ['Keyword Phrase', 'ABA Total Click Share', 'ABA Total Conv. S
        'Keyword Sales', 'Cerebro IQ Score', 'Search Volume',
        'Search Volume Trend', 'H10 PPC Sugg. Bid', 'H10 PPC Sugg. Min Bid',
        'H10 PPC Sugg. Max Bid', 'Sponsored ASINs', 'Competing Products', 'CPR',
-       'Title Density', 'Amazon Recommended', 'Sponsored', 'Organic',
-       'Sponsored Rank (avg)', 'Sponsored Rank (count)',
-       'Amazon Recommended Rank (avg)', 'Amazon Recommended Rank (count)',
-       'Position (Rank)', 'Relative Rank', 'Competitor Rank (avg)',
-       'Ranking Competitors (count)', 'Competitor Performance Score']
+       'Title Density', 'Amazon Recommended', 'Sponsored', 'Organic']#,
+    #    'Sponsored Rank (avg)', 'Sponsored Rank (count)',
+    #    'Amazon Recommended Rank (avg)', 'Amazon Recommended Rank (count)',
+    #    'Position (Rank)', 'Relative Rank', 'Competitor Rank (avg)',
+    #    'Ranking Competitors (count)', 'Competitor Performance Score']
 
 
 def lemmatize(file, column):
@@ -93,7 +93,7 @@ def process_file(asins,cerebro,ba,magnet,n_clusters,bins, file_ba_matched = file
 
     file = cerebro.copy()
    
-    stat_columns = ['Keyword Phrase','ABA Total Click Share','H10 PPC Sugg. Bid','Keyword Sales','Search Volume','CPR','Ranking Competitors (count)']
+    stat_columns = ['Keyword Phrase','ABA Total Click Share','H10 PPC Sugg. Bid','Keyword Sales','Search Volume','CPR']#,'Ranking Competitors (count)']
     asin_columns = asins.copy()
     r = len(stat_columns)
     all_columns = stat_columns+asin_columns
@@ -246,7 +246,7 @@ with st.expander('Upload files'):
             try:
                 asin = re.search(asin_str,cerebro_file.name).group()
                 asins = [asin] + [x[0] for x in asins if x != []]
-                cerebro = cerebro.rename(columns = {'Position (Rank)':asin})
+                cerebro = cerebro.rename(columns = {'Organic Rank':asin})
             except:
                 asins = ['Position (Rank)'] + [x[0] for x in asins if x != []]
             asins_area.text_area('ASINs in Cerebro file:','\n'.join(asins), height = 250)
