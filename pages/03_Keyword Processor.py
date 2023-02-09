@@ -248,7 +248,7 @@ with st.expander('Upload files'):
                 asins = [asin] + [x[0] for x in asins if x != []]
                 cerebro = cerebro.rename(columns = {'Organic Rank':asin})
             except:
-                asins = ['Position (Rank)'] + [x[0] for x in asins if x != []]
+                asins = ['Organic Rank'] + [x[0] for x in asins if x != []]
             asins_area.text_area('ASINs in Cerebro file:','\n'.join(asins), height = 250)
             st.write(f'Uploaded successfully, file contains {len(cerebro)} rows')
         else:
