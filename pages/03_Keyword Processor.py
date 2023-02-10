@@ -126,7 +126,7 @@ def process_file(asins,cerebro,ba,magnet,n_clusters,bins, file_ba_matched = file
     sums = []
     percs = []
     for a in asin_columns:
-        n = file.loc[(file[a] < 30)]['Keyword Sales'].sum()
+        n = file.loc[(file[a].between(1,30))]['Keyword Sales'].sum()
         sums.append(n)
 
     for a in sums:
@@ -244,9 +244,9 @@ with st.expander('Upload files'):
     cerebro_file = st.file_uploader('Select Cerebro file')
     if cerebro_file:
         if '.csv' in cerebro_file.name:
-            cerebro = pd.read_csv(cerebro_file).fillna(0)
+            cerebro = pd.read_csv(cerebro_file).fillna(-1)
         elif '.xlsx' in cerebro_file.name:
-            cerebro = pd.read_excel(cerebro_file).fillna(0)
+            cerebro = pd.read_excel(cerebro_file).fillna(-1)
         if all([x in cerebro.columns for x in cerebro_columns]):
             asins = [re.findall(asin_str, x) for x in cerebro.columns]
             try:
