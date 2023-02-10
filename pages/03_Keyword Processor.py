@@ -222,8 +222,10 @@ st.markdown(link, unsafe_allow_html=True)
 df_slot = st.empty()
 
 def clear_filters():
+    file = st.session_state['file']
     st.session_state['include'] = ''
     st.session_state['exclude'] = ''
+    df_slot.write(file)
 
 with st.sidebar:
     st.header('Apply filters')
@@ -231,6 +233,7 @@ with st.sidebar:
     include = include_area.text_input('Words to include?',key = 'include')
     include_all = include_area.radio('Include mode:',['All','Any'],horizontal = True)
     exclude = exclude_area.text_input('Words to exclude?', key = 'exclude')
+    exclude_all = exclude_area.radio('Exclude mode:',['All','Any'],horizontal = True)
     st.button('Clear filters', on_click= clear_filters)
 
 
@@ -279,6 +282,7 @@ with st.expander('Upload files'):
 
 if st.button('Process keywords') and cerebro_file:
     file, sums_db, file_ba_matched,file_ba_missed, word_freq,asins,top_kws = process_file(asins,cerebro,ba,magnet,n_clusters,bins)
+    st.session_state['file'] = file
     alpha_asin.bar_chart(sums_db.T['% share by sales'])
     magnet_words.text_area('Magnet keyword research', value = "\n".join(top_kws), height = 250)
     display_file = file.drop(columns = asins)
@@ -331,31 +335,36 @@ if st.button('Process keywords') and cerebro_file:
     
     st.download_button('Download results',output.getvalue(), file_name = 'test.xlsx')
 
-def filter_plus(file,filters, combination = 'Any'):
+def filter_plus(file,filters, combination):
     words = [w.lower().strip() for w in filters.split(',')]
     if combination == 'Any':
         return file[file['Keyword Phrase'].str.contains('|'.join(words),case = False)]
     elif combination == 'All':
-        return file[file['Keyword Phrase'].str.contains('&'.join(words),case = False)]
+        return file[file['Keyword Phrase'].str.split(' ').apply(set(words).issubset)]
+    
+def filter_minus(file,filters, combination):
+    words = [w.lower().strip() for w in filters.split(',')]
+    if combination == 'Any':
+        return file[~file['Keyword Phrase'].str.contains('|'.join(words),case = False)]
+    elif combination == 'All':
+        return file[~file['Keyword Phrase'].str.split(' ').apply(set(words).issubset)]
 
 
 if include != '' and 'df' in st.session_state:
-    # if 'filtered_df' in st.session_state:
-    #     filtered_file = st.session_state['filtered_df']
-    # else:
-    #     filtered_file = st.session_state['df']
-    filtered_file = st.session_state['df']
-    filtered_file = filter_plus(filtered_file,include, include_all)
-    st.session_state['filtered_df'] = filtered_file
-    df_slot.write(filtered_file)
-
-
-if exclude != '':
     if 'filtered_df' in st.session_state:
         filtered_file = st.session_state['filtered_df']
     else:
         filtered_file = st.session_state['df']
-    filtered_file = filtered_file[~filtered_file['Keyword Phrase'].str.lower().str.contains(exclude)]
+    filtered_file = filter_plus(filtered_file,include, include_all)
+    st.session_state['filtered_df'] = filtered_file
+    df_slot.write(filtered_file)
+
+if exclude != '' and 'df' in st.session_state:
+    if 'filtered_df' in st.session_state:
+        filtered_file = st.session_state['filtered_df']
+    else:
+        filtered_file = st.session_state['df']
+    filtered_file = filter_minus(filtered_file,exclude, exclude_all)
     st.session_state['filtered_df'] = filtered_file
     df_slot.write(filtered_file)
 
