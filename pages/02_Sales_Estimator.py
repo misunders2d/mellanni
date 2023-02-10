@@ -113,6 +113,7 @@ def read_files(xray_file, reviews_file = None):
 def get_asins(links):
     import re
     asins = []
+    links = [l for l in links if l != '']
     for l in links:
         asin = re.search('([A-Z0-9]{10})',l).group()
         if asin not in asins:

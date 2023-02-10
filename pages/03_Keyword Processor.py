@@ -92,8 +92,11 @@ def process_file(asins,cerebro,ba,magnet,n_clusters,bins, file_ba_matched = file
     bin_labels = [str(int(x*100))+'%' for x in bins]
 
     file = cerebro.copy()
-   
-    stat_columns = ['Keyword Phrase','ABA Total Click Share','H10 PPC Sugg. Bid','Keyword Sales','Search Volume','CPR']#,'Ranking Competitors (count)']
+
+    if len(asins) == 1:
+        stat_columns = ['Keyword Phrase','ABA Total Click Share','H10 PPC Sugg. Bid','Keyword Sales','Search Volume','CPR']#,'Ranking Competitors (count)']
+    elif len(asins)>1:
+        stat_columns = ['Keyword Phrase','ABA Total Click Share','H10 PPC Sugg. Bid','Keyword Sales','Search Volume','CPR','Ranking Competitors (count)']
     asin_columns = asins.copy()
     r = len(stat_columns)
     all_columns = stat_columns+asin_columns
@@ -249,9 +252,13 @@ with st.expander('Upload files'):
             try:
                 asin = re.search(asin_str,cerebro_file.name).group()
                 asins = [asin] + [x[0] for x in asins if x != []]
-                cerebro = cerebro.rename(columns = {'Organic Rank':asin})
+                if len(asins) == 1:
+                    asin_col = 'Organic Rank'
+                else:
+                    asin_col = 'Position (Rank)'
+                cerebro = cerebro.rename(columns = {asin_col:asin})
             except:
-                asins = ['Organic Rank'] + [x[0] for x in asins if x != []]
+                asins = [asin_col] + [x[0] for x in asins if x != []]
             asins_area.text_area('ASINs in Cerebro file:','\n'.join(asins), height = 250)
             st.write(f'Uploaded successfully, file contains {len(cerebro)} rows')
         else:
