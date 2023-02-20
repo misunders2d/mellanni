@@ -3,7 +3,7 @@ import streamlit_authenticator as stauth
 from deta import Deta
 
 def login():
-    preauthorized_emails = ['sergey@mellanni.com','sergey@poluco.co']
+    preauthorized_emails = ['sergey@mellanni.com','sergey@poluco.co','oleksandr@mellanni.com']
 
     if 'base' not in st.session_state:
         db_token = st.secrets['DB_USERS']
