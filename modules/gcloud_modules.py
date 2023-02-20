@@ -6,19 +6,14 @@ Created on Fri Dec 16 12:46:22 2022
 """
 
 import os
-try:
-    from google.cloud import bigquery
-except:
-    os.system('pip install --upgrade google-cloud-bigquery')
-    os.system('pip install db_dtypes')
-finally:
-    from google.cloud import bigquery
-import mellanni_modules as mm
+import streamlit as st
+from google.cloud import bigquery
 
 
 def gcloud_connect(account = 'US'):
-    paths = mm.get_db_path(account)
-    key_path = os.path.join(paths[9],'mellanni_2\google-cloud\my_key.json')
+    # paths = mm.get_db_path(account)
+    # key_path = os.path.join(paths[9],'mellanni_2\google-cloud\my_key.json')
+    key_path = st.secrets['[gcp_service_account]']
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = key_path
     
     client = bigquery.Client()
