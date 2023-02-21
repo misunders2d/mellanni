@@ -25,11 +25,11 @@ if st.session_state['login']:
     example_asins = ['B08CZVWR21','B07N7KFHVH','B08N2RDBHT','B00HHLNRVE','B07M74PH8P']
     asin_str = '(B[A-Z0-9]{9})'
     cerebro_columns = ['Keyword Phrase', 'ABA Total Click Share', 'ABA Total Conv. Share',
-        'Keyword Sales', 'Cerebro IQ Score', 'Search Volume',
-        'Search Volume Trend', 'H10 PPC Sugg. Bid', 'H10 PPC Sugg. Min Bid',
-        'H10 PPC Sugg. Max Bid', 'Sponsored ASINs', 'Competing Products', 'CPR',
-        'Title Density', 'Amazon Recommended', 'Sponsored', 'Organic']#,
-        #    'Sponsored Rank (avg)', 'Sponsored Rank (count)',
+        'Cerebro IQ Score', 'Search Volume','Search Volume Trend','Sponsored ASINs',
+        'Competing Products','CPR','Title Density', 'Amazon Recommended',
+        'Sponsored', 'Organic']#,
+        #    'H10 PPC Sugg. Min Bid','H10 PPC Sugg. Max Bid', 'Keyword Sales',
+        #    'Sponsored Rank (avg)', 'Sponsored Rank (count)','H10 PPC Sugg. Bid',
         #    'Amazon Recommended Rank (avg)', 'Amazon Recommended Rank (count)',
         #    'Position (Rank)', 'Relative Rank', 'Competitor Rank (avg)',
         #    'Ranking Competitors (count)', 'Competitor Performance Score']
@@ -97,11 +97,13 @@ if st.session_state['login']:
         bin_labels = [str(int(x*100))+'%' for x in bins]
 
         file = cerebro.copy()
+        if 'Keyword Sales' not in file.columns:
+            file['Keyword Sales'] = 0
 
         if len(asins) == 1:
-            stat_columns = ['Keyword Phrase','ABA Total Click Share','H10 PPC Sugg. Bid','Keyword Sales','Search Volume','CPR']#,'Ranking Competitors (count)']
+            stat_columns = ['Keyword Phrase','ABA Total Click Share','Keyword Sales','Search Volume','CPR']#,'Ranking Competitors (count)']
         elif len(asins)>1:
-            stat_columns = ['Keyword Phrase','ABA Total Click Share','H10 PPC Sugg. Bid','Keyword Sales','Search Volume','CPR','Ranking Competitors (count)']
+            stat_columns = ['Keyword Phrase','ABA Total Click Share','Keyword Sales','Search Volume','CPR','Ranking Competitors (count)']
         asin_columns = asins.copy()
         r = len(stat_columns)
         all_columns = stat_columns+asin_columns
@@ -157,22 +159,34 @@ if st.session_state['login']:
             
         #apply boolean conditions to sales,conversion and relevance
         #alternative way using pandas cut
-        file['sales'] = pd.cut(file['Sales normalized'],
-            bins = [-1,
-                file['Sales normalized'].describe(percentiles = bins)[bin_labels[0]],
-                file['Sales normalized'].describe(percentiles = bins)[bin_labels[1]],
-                1],
-            labels = ['low','med','high']
-            )
-        file['conversion'] = pd.cut(file['Conversion normalized'],
-            bins = [-1,
-                file['Conversion normalized'].describe(percentiles = bins)[bin_labels[0]],
-                file['Conversion normalized'].describe(percentiles = bins)[bin_labels[1]],
-                1],
-            labels = ['low','med','high']
-            )
+        try:
+            file['sales'] = pd.cut(
+                file['Sales normalized'],
+                bins = [-1,
+                    file['Sales normalized'].describe(percentiles = bins)[bin_labels[0]],
+                    file['Sales normalized'].describe(percentiles = bins)[bin_labels[1]],
+                    1],
+                labels = ['low','med','high'],
+                duplicates = 'drop'
+                )
+        except:
+            file['sales'] = 'none'
+        try:
+            file['conversion'] = pd.cut(
+                file['Conversion normalized'],
+                bins = [-1,
+                    file['Conversion normalized'].describe(percentiles = bins)[bin_labels[0]],
+                    file['Conversion normalized'].describe(percentiles = bins)[bin_labels[1]],
+                    1],
+                labels = ['low','med','high'],
+                duplicates= 'drop'
+                )
+        except:
+            file['conversion'] = 'none'
 
-        file['competition'] = pd.cut(file['Top30'],bins = 3,labels = labels)
+        file['competition'] = pd.cut(
+            file['Top30'],bins = 3,labels = labels, duplicates = 'drop'
+            )
 
         sales_cols = pd.get_dummies(file['sales'],prefix = 'sales')
         conversion_cols = pd.get_dummies(file['conversion'],prefix = 'conversion')
