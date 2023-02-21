@@ -50,6 +50,11 @@ if st.session_state['login']:
             return result
 
         def edit_links():
+            client = gc.gcloud_connect()
+            sql = '''SELECT ASIN,SKU FROM `auxillary_development.dictionary`'''
+            query_job = client.query(sql)  # Make an API request.
+            dictionary = query_job.result().to_dataframe()
+            client.close()
             for a in asin_list:
                 dict_asin = dictionary[dictionary['ASIN'] == a]
                 sku = dict_asin['SKU'].tolist()[0]
