@@ -5,14 +5,14 @@ st.session_state['login'] = login.login()
 
 if st.session_state['login']:
     st.write("logged in")
-    d_from = st.date_input('Starting date', key = 'db_datefrom')
-    d_to = st.date_input('End date', key = 'db_dateto')
-    if st.button('Read db'):
-        client = gcloud_connect()
-        # reports = [x.dataset_id for x in client.list_datasets()]
-        data = read_db_cloud(start = d_from, end = d_to)
-        client.close()
-        st.write(data)
+    # d_from = st.date_input('Starting date', key = 'db_datefrom')
+    # d_to = st.date_input('End date', key = 'db_dateto')
+    # if st.button('Read db'):
+    #     client = gcloud_connect()
+    #     # reports = [x.dataset_id for x in client.list_datasets()]
+    #     data = read_db_cloud(start = d_from, end = d_to)
+    #     client.close()
+    #     st.write(data)
 
 
 
