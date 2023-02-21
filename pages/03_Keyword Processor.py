@@ -236,7 +236,7 @@ if st.session_state['login']:
         lemm, word_freq, vectors = lemmatize(file, 'Keyword Phrase')
         file = pd.merge(file, lemm, how = 'left', on = 'Keyword Phrase')
         file = clusterize(file,vectors,cols = None,num_clusters=8)
-        return file, sums_db, file_ba_matched,file_ba_missed, word_freq, asins,top_kws
+        return file, sums_db, file_ba_matched,file_ba_missed, word_freq, asins,top_kws,metrics
 
     st.title('Keyword processing tool')
     asins_area, magnet_col, alpha_asin = st.columns(3)
@@ -311,7 +311,7 @@ if st.session_state['login']:
             magnet = ''
 
     if st.button('Process keywords') and cerebro_file:
-        file, sums_db, file_ba_matched,file_ba_missed, word_freq,asins,top_kws = process_file(asins,cerebro,ba,magnet,n_clusters,bins)
+        file, sums_db, file_ba_matched,file_ba_missed, word_freq,asins,top_kws,metrics = process_file(asins,cerebro,ba,magnet,n_clusters,bins)
         st.session_state['file'] = file
         alpha_asin.bar_chart(sums_db.T[metrics[1]])
         magnet_words.text_area('Magnet keyword research', value = "\n".join(top_kws), height = 250)
