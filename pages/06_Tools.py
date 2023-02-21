@@ -1,6 +1,7 @@
 import streamlit as st
 import re
 import login
+from modules import gcloud_modules as gc
 st.session_state['login'] = login.login()
 
 if st.session_state['login']:
@@ -38,7 +39,7 @@ if st.session_state['login']:
             return result
 
         def check_prices():
-            client = gcloud_connect()
+            client = gc.gcloud_connect()
             sql = '''SELECT asin, price FROM `auxillary_development.inventory_report`'''
             query_job = client.query(sql)  # Make an API request.
             inventory = query_job.result().to_dataframe()
