@@ -132,16 +132,20 @@ if st.session_state['login']:
     # define alpha-asins
         sums = []
         percs = []
+        if sum(file['Keyword Sales']) == 0:
+            metrics = ['Search Volume','% share by search volume']
+        else:
+            metrics = ['Keyword Sales', '% share by sales']
         for a in asin_columns:
-            n = file.loc[(file[a].between(1,30))]['Keyword Sales'].sum()
+            n = file.loc[(file[a].between(1,30))][metrics[0]].sum()
             sums.append(n)
 
         for a in sums:
             p = a/sum(sums)
             percs.append(p)
 
-        sums_db = pd.DataFrame([sums,percs], columns = asin_columns, index = ['Keyword Sales','% share by sales'])
-        sums_db.loc['% share by sales'] = round(sums_db.loc['% share by sales'].astype(float)*100,1)
+        sums_db = pd.DataFrame([sums,percs], columns = asin_columns, index = [metrics[0],metrics[1]])
+        sums_db.loc[metrics[1]] = round(sums_db.loc[metrics[1]].astype(float)*100,1)
         
         # get Brand Analytics file results
         if isinstance(ba,pd.core.frame.DataFrame):
@@ -309,7 +313,7 @@ if st.session_state['login']:
     if st.button('Process keywords') and cerebro_file:
         file, sums_db, file_ba_matched,file_ba_missed, word_freq,asins,top_kws = process_file(asins,cerebro,ba,magnet,n_clusters,bins)
         st.session_state['file'] = file
-        alpha_asin.bar_chart(sums_db.T['% share by sales'])
+        alpha_asin.bar_chart(sums_db.T[metrics[1]])
         magnet_words.text_area('Magnet keyword research', value = "\n".join(top_kws), height = 250)
         display_file = file.drop(columns = asins)
         st.session_state['df'] = display_file
