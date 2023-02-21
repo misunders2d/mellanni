@@ -38,7 +38,7 @@ if st.session_state['login']:
     def lemmatize(file, column):
         import nltk
         # if nltk.download('all') == False:
-        nltk.download('all')
+            # nltk.download('all')
         from nltk.corpus import stopwords
         from nltk.stem import WordNetLemmatizer
         from sklearn.feature_extraction.text import CountVectorizer
