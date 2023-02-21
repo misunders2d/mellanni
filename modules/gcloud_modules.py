@@ -8,12 +8,13 @@ Created on Fri Dec 16 12:46:22 2022
 import os
 import streamlit as st
 from google.cloud import bigquery
+from google.oauth2 import service_account
 
 
 def gcloud_connect(account = 'US'):
     # paths = mm.get_db_path(account)
     # key_path = os.path.join(paths[9],'mellanni_2\google-cloud\my_key.json')
-    key_path = st.secrets['[gcp_service_account]']
+    key_path = service_account.Credentials.from_service_account_info(st.secrets['gcp_service_account'])
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = key_path
     
     client = bigquery.Client()
