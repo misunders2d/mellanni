@@ -11,13 +11,9 @@ from google.cloud import bigquery
 from google.oauth2 import service_account
 
 
-def gcloud_connect(account = 'US'):
-    # paths = mm.get_db_path(account)
-    # key_path = os.path.join(paths[9],'mellanni_2\google-cloud\my_key.json')
+def gcloud_connect():
     key_path = service_account.Credentials.from_service_account_info(st.secrets['gcp_service_account'])
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = key_path
-    
-    client = bigquery.Client()
+    client = bigquery.Client(credentials = key_path)
     return client
 
 def push_dictionary():
