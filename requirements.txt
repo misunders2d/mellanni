@@ -65,3 +65,4 @@ watchdog==2.2.1
 XlsxWriter==3.0.8
 zipp==3.14.0
 google-cloud-bigquery
+db-types
