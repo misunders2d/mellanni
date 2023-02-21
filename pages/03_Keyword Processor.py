@@ -284,9 +284,9 @@ if st.session_state['login']:
         if st.checkbox('Add Magnet file (optional), .csv or .xlsx supported'):
             magnet_file = st.file_uploader('Select Magnet file')
         if magnet_file:
-            if '.csv' in ba_file.name:
+            if '.csv' in magnet_file.name:
                 magnet = pd.read_csv(magnet_file)
-            elif '.xlsx' in ba_file.name:
+            elif '.xlsx' in magnet_file.name:
                 magnet = pd.read_excel(magnet_file)
             st.write(f'Uploaded successfully, file contains {len(magnet)} rows')
         else:
