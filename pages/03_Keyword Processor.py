@@ -216,10 +216,11 @@ if st.session_state['login']:
                 
             magnet = magnet[magnet['Search Volume'] != '-']
             magnet['Search Volume'] = magnet['Search Volume'].str.replace(',','').astype(int)
-            magnet['Keyword Sales'] = magnet['Keyword Sales'].replace('-',0).replace(',','')
-            magnet['Keyword Sales'] = magnet['Keyword Sales'].astype(int)
-            magnet['KW conversion'] = round(magnet['Keyword Sales'] / magnet['Search Volume'] * 100,2)
-            magnet = magnet.sort_values('KW conversion', ascending = False)
+            if 'keyword sales' in magnet.columns.lower():
+                magnet['Keyword Sales'] = magnet['Keyword Sales'].replace('-',0).replace(',','')
+                magnet['Keyword Sales'] = magnet['Keyword Sales'].astype(int)
+                magnet['KW conversion'] = round(magnet['Keyword Sales'] / magnet['Search Volume'] * 100,2)
+                magnet = magnet.sort_values('KW conversion', ascending = False)
             magnet_cols = magnet.columns.tolist()
             file_cols = file.columns.tolist()
             drop_cols = list(set(magnet_cols) - set(file_cols))
