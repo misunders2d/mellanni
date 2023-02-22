@@ -58,4 +58,4 @@ def login():
     elif st.session_state['authentication_status'] == None:
         st.warning('Please enter your username and password')
 
-    return st.session_state['authentication_status']
+    return st.session_state['authentication_status'], st.session_state['name']

@@ -7,7 +7,7 @@ from modules import formatting as ff
 st.subheader('Text classifier')
 
 import login
-st.session_state['login'] = login.login()
+st.session_state['login'], st.session_state['name'] = login.login()
 
 if st.session_state['login']:
 

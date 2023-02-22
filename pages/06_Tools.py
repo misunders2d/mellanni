@@ -2,10 +2,11 @@ import streamlit as st
 import re
 import login
 from modules import gcloud_modules as gc
-st.session_state['login'] = login.login()
+st.session_state['login'], st.session_state['name'] = login.login()
+name_area = st.empty()
 
 if st.session_state['login']:
-    st.write("logged in")
+    name_area.write(f"Welcome {st.session_state['name']}")
     # d_from = st.date_input('Starting date', key = 'db_datefrom')
     # d_to = st.date_input('End date', key = 'db_dateto')
     # if st.button('Read db'):
@@ -109,3 +110,23 @@ if st.session_state['login']:
             full_list = '  \n  \n'.join(link_list)
         if st.button('Generate'):
             st.text_area('Generated links',full_list)
+
+    with st.expander('Pricelist checker'):
+        import pandas as pd
+        import numpy as np
+        
+        def linspace(df,steps):
+            result = np.linspace(df['Standard Price'],df['MSRP'],steps)
+            return result
+
+        def add_steps(file_path, steps):
+            file = pd.read_excel(file_path, usecols = ['Collection','SKU', 'ASIN', 'Size', 'Color', 'Standard Price', 'MSRP'])
+            file['steps'] = file.apply(linspace, steps = steps+1, axis = 1)
+            
+            for i in range(0,steps+1):
+                file[f'step {i}'] = file['steps'].apply(lambda x: round(x[i],2))
+            for i in range(0,steps):
+                file[f'% {i+1}'] = file[f'step {i+1}'] / file[f'step {i}'] - 1
+            del file['steps']
+            del file['step 0']
+            return file

@@ -14,7 +14,7 @@ from modules import formatting as ff
 st.set_page_config(page_title = 'Mellanni Keyword processing', page_icon = 'logo.ico',layout="wide")
 
 import login
-st.session_state['login'] = login.login()
+st.session_state['login'], st.session_state['name'] = login.login()
 
 if st.session_state['login']:
 
