@@ -216,7 +216,7 @@ if st.session_state['login']:
                 
             magnet = magnet[magnet['Search Volume'] != '-']
             magnet['Search Volume'] = magnet['Search Volume'].str.replace(',','').astype(int)
-            if 'keyword sales' in magnet.columns.lower():
+            if 'keyword sales' in [x for x in magnet.columns.lower()]:
                 magnet['Keyword Sales'] = magnet['Keyword Sales'].replace('-',0).replace(',','')
                 magnet['Keyword Sales'] = magnet['Keyword Sales'].astype(int)
                 magnet['KW conversion'] = round(magnet['Keyword Sales'] / magnet['Search Volume'] * 100,2)
