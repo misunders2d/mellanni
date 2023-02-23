@@ -92,6 +92,7 @@ if st.session_state['login']:
         if text_column:
             file = st.session_state['file'].rename(columns = {text_column:'original_text'})
             if st.button('Run classifier'):
+                lr,cv = restore_from_file()
                 predicting(lr,cv,source = 'file')
     # if choice == 'Returns':
     # elif choice == 'Reviews':
