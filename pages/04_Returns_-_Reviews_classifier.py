@@ -91,7 +91,8 @@ if st.session_state['login']:
         st.dataframe((st.session_state['file']).head())
         if text_column:
             file = st.session_state['file'].rename(columns = {text_column:'original_text'})
-            predicting(lr,cv,source = 'file')
+            if st.button('Run classifier'):
+                predicting(lr,cv,source = 'file')
     # if choice == 'Returns':
     # elif choice == 'Reviews':
     #     block2.write('reviews')
