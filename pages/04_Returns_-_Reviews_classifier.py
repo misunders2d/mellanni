@@ -1,6 +1,13 @@
 import streamlit as st
 from io import BytesIO
 import pandas as pd
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+from sklearn.feature_extraction.text import CountVectorizer
+# from sklearn.model_selection import train_test_split
+# from sklearn.linear_model import LogisticRegression
+
+
 from modules import formatting as ff
 
 # st.title('Page under maintenance')
@@ -33,6 +40,11 @@ if st.session_state['login']:
         file['clean_column'] = corpus
         return file
 
+    def vectorize_text(train, test):
+        cv = CountVectorizer()
+        X_train_cv = cv.fit_transform(train)
+        X_test_cv = cv.transform(test)
+        return X_train_cv, X_test_cv, cv
 
     @st.cache
     def restore_from_file():
