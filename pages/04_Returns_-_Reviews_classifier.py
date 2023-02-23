@@ -4,6 +4,7 @@ import pandas as pd
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from sklearn.feature_extraction.text import CountVectorizer
+import re
 # from sklearn.model_selection import train_test_split
 # from sklearn.linear_model import LogisticRegression
 
