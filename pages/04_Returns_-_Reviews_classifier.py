@@ -93,7 +93,7 @@ if st.session_state['login']:
     block1, block2 = col1.container(),col2.container()
     file_obj = block1.file_uploader('Upload the returns file', type = ['.csv','.xlsx'])
     phrase = block2.text_area('Input the comment to classify')
-    if block2.button('Check'):
+    if block2.button('Check') and phrase != '':
         lr, cv = restore_from_file()
         answer = predicting(lr, cv, source = 'other', text = [phrase])
         block2.write(f'Possible category:  \n\n{answer}')
