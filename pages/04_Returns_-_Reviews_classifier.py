@@ -74,7 +74,7 @@ if st.session_state['login']:
             with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
                 p_file.to_excel(writer, sheet_name = 'predict', index = False)
                 ff.format_header(p_file, writer, 'predict')
-            st.download_button('Download results',output.getvalue(), file_name = 'test.xlsx')
+            st.download_button('Download results',output.getvalue(), file_name = 'Classifier.xlsx')
                 
             return None
         
