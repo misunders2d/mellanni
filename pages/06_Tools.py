@@ -27,7 +27,7 @@ if st.session_state['login']:
 
         def pdp_links():
             for a in asin_list:
-                link = 'https://:www.amazon.com/dp/'+a
+                link = 'https://www.amazon.com/dp/'+a
                 result.append(link)
             return result
 
