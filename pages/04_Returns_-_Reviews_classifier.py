@@ -94,6 +94,7 @@ if st.session_state['login']:
     file_obj = block1.file_uploader('Upload the returns file', type = ['.csv','.xlsx'])
     phrase = block2.text_area('Input the comment to classify')
     if block2.button('Check'):
+        lr, cv = restore_from_file()
         answer = predicting(lr, cv, source = 'other', text = phrase)
         st.write(answer)
 
