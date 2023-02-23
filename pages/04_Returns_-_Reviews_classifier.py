@@ -72,7 +72,7 @@ if st.session_state['login']:
     if file_obj and isinstance(file, pd.core.frame.DataFrame):
         st.session_state['file'] = file
     if 'file' in st.session_state:
-        columns = st.session_state.file.columns.tolist()
+        columns = (st.session_state['file']).columns.tolist()
         text_column = block1.selectbox('Select a column with comments', columns)
         st.dataframe(file.head())
         if text_column:
