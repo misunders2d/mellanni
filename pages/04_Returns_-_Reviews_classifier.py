@@ -47,7 +47,7 @@ if st.session_state['login']:
         X_test_cv = cv.transform(test)
         return X_train_cv, X_test_cv, cv
 
-    @st.cache
+    @st.cache_data
     def restore_from_file():
         import pickle
         try:
