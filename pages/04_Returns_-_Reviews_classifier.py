@@ -94,8 +94,8 @@ if st.session_state['login']:
     file_obj = block1.file_uploader('Upload the returns file', type = ['.csv','.xlsx'])
     phrase = block2.text_area('Input the comment to classify')
     if block2.button('Check'):
-        text = phrase
-        block2.write(text)
+        answer = predicting(lr, cv, source = 'other', text = phrase)
+        st.write(answer)
 
     if file_obj and '.xlsx' in file_obj.name:
         sheets = pd.ExcelFile(file_obj).sheet_names
