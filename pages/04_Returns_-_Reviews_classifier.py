@@ -64,6 +64,7 @@ if st.session_state['login']:
             lr, cv = restore_from_file()
         if source == 'file':
             p_file = st.session_state['file'].copy()
+            p_file = p_file.dropna(subset = 'original_text')
             p_file = clean_text(p_file, 'original_text')
             new_voc = cv.transform(p_file['clean_column'])
             predictions = lr.predict(new_voc)
@@ -113,7 +114,7 @@ if st.session_state['login']:
         text_column = block1.selectbox('Select a column with comments', columns)
         if st.button('Run classifier'):
             st.session_state['file'] = st.session_state['file'].rename(columns = {text_column:'original_text'})
-            st.session_state['file'] = st.session_state['file'].dropna(subset = 'original_text', axis = 1)
+            # st.session_state['file'] = st.session_state['file'].dropna(subset = 'original_text', axis = 1)
             st.dataframe((st.session_state['file']).head())
             lr,cv = restore_from_file()
             predicting(lr,cv,source = 'file')
