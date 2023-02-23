@@ -96,7 +96,7 @@ if st.session_state['login']:
     if block2.button('Check'):
         lr, cv = restore_from_file()
         answer = predicting(lr, cv, source = 'other', text = [phrase])
-        block2.write(f'Possible category:  \n{answer})
+        block2.write(f'Possible category:  \n{answer}')
 
     if file_obj and '.xlsx' in file_obj.name:
         sheets = pd.ExcelFile(file_obj).sheet_names
