@@ -95,7 +95,7 @@ if st.session_state['login']:
     phrase = block2.text_area('Input the comment to classify')
     if block2.button('Check'):
         lr, cv = restore_from_file()
-        answer = predicting(lr, cv, source = 'other', text = phrase)
+        answer = predicting(lr, cv, source = 'other', text = [phrase])
         st.write(answer)
 
     if file_obj and '.xlsx' in file_obj.name:
