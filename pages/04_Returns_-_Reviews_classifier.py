@@ -75,6 +75,11 @@ if st.session_state['login']:
                 p_file.to_excel(writer, sheet_name = 'predict', index = False)
                 ff.format_header(p_file, writer, 'predict')
             st.download_button('Download results',output.getvalue(), file_name = 'Classifier.xlsx')
+        elif source == 'other':
+            new_voc = cv.transform(text)
+            predictions = lr.predict(new_voc)
+            return predictions[0]
+            
                 
             return None
         
@@ -88,6 +93,10 @@ if st.session_state['login']:
     block1, block2 = col1.container(),col2.container()
     file_obj = block1.file_uploader('Upload the returns file', type = ['.csv','.xlsx'])
     phrase = block2.text_area('Input the comment to classify')
+    if block2.button('Check'):
+        text = phrase
+        block2.write(text)
+
     if file_obj and '.xlsx' in file_obj.name:
         sheets = pd.ExcelFile(file_obj).sheet_names
         sheet = block1.selectbox('Select a sheet with data', sheets)
