@@ -7,14 +7,6 @@ name_area = st.empty()
 
 if st.session_state['login']:
     name_area.write(f"Welcome {st.session_state['name']}")
-    # d_from = st.date_input('Starting date', key = 'db_datefrom')
-    # d_to = st.date_input('End date', key = 'db_dateto')
-    # if st.button('Read db'):
-    #     client = gcloud_connect()
-    #     # reports = [x.dataset_id for x in client.list_datasets()]
-    #     data = read_db_cloud(start = d_from, end = d_to)
-    #     client.close()
-    #     st.write(data)
 
 
 
@@ -35,7 +27,7 @@ if st.session_state['login']:
 
         def pdp_links():
             for a in asin_list:
-                link = 'https:www.amazon.com/dp/'+a
+                link = 'https://:www.amazon.com/dp/'+a
                 result.append(link)
             return result
 
