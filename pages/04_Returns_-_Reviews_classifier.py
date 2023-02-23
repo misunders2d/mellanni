@@ -50,7 +50,7 @@ if st.session_state['login']:
         if not lr:
             lr, cv = restore_from_file()
         if source == 'file':
-            p_file = read_file(training = False)
+            p_file = st.session_state['file'].copy()
             p_file = clean_text(p_file, 'original_text')
             new_voc = cv.transform(p_file['clean_column'])
             predictions = lr.predict(new_voc)
