@@ -20,6 +20,19 @@ if st.session_state['login']:
         elif type == 'csv':
             return pd.read_csv(file_obj, encoding = 'cp1251')
 
+    def clean_text(file, column):
+        text = file[column].tolist()
+        lemmatizer = WordNetLemmatizer()
+        corpus = []
+        for i in range(len(text)):
+            r = re.sub('[^a-zA-Z]', ' ', text[i]).lower().split()
+            r = [word for word in r if word not in stopwords.words('english')]
+            r = [lemmatizer.lemmatize(word) for word in r]
+            r = ' '.join(r)
+            corpus.append(r)
+        file['clean_column'] = corpus
+        return file
+
 
     @st.cache
     def restore_from_file():
@@ -48,9 +61,10 @@ if st.session_state['login']:
             with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
                 p_file.to_excel(writer, sheet_name = 'predict', index = False)
                 ff.format_header(p_file, writer, 'predict')
-            print(f'File saved to {save_path}')
-            os.startfile(save_path)
+            st.download_button('Download results',output.getvalue(), file_name = 'test.xlsx')):
+                
             return None
+        
         elif source == 'other':
             new_voc = cv.transform(text)
             predictions = lr.predict(new_voc)
@@ -77,6 +91,7 @@ if st.session_state['login']:
         st.dataframe((st.session_state['file']).head())
         if text_column:
             file = st.session_state['file'].rename(columns = {text_column:'original_text'})
+            predicting(lr,cv,source = 'file')
     # if choice == 'Returns':
     # elif choice == 'Reviews':
     #     block2.write('reviews')
