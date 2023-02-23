@@ -76,7 +76,7 @@ if st.session_state['login']:
         text_column = block1.selectbox('Select a column with comments', columns)
         st.dataframe((st.session_state['file']).head())
         if text_column:
-            file = file.rename(columns = {text_column:'original_text'})
+            file = st.session_state['file'].rename(columns = {text_column:'original_text'})
     # if choice == 'Returns':
     # elif choice == 'Reviews':
     #     block2.write('reviews')
