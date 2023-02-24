@@ -115,6 +115,5 @@ if st.session_state['login']:
         st.dataframe((st.session_state['file']).head())
         if st.button('Run classifier'):
             st.session_state['file'] = st.session_state['file'].rename(columns = {text_column:'original_text'})
-            # st.session_state['file'] = st.session_state['file'].dropna(subset = 'original_text', axis = 1)
             lr,cv = restore_from_file()
             predicting(lr,cv,source = 'file')

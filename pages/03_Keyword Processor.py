@@ -26,8 +26,8 @@ if st.session_state['login']:
     asin_str = '(B[A-Z0-9]{9})'
     cerebro_columns = ['Keyword Phrase', 'ABA Total Click Share', 'ABA Total Conv. Share',
         'Cerebro IQ Score', 'Search Volume','Search Volume Trend','Sponsored ASINs',
-        'Competing Products','CPR','Title Density', 'Amazon Recommended',
-        'Sponsored', 'Organic']#,
+        'Competing Products','CPR','Title Density', 'Amazon Recommended']#,
+        # 'Sponsored', 'Organic',
         #    'H10 PPC Sugg. Min Bid','H10 PPC Sugg. Max Bid', 'Keyword Sales',
         #    'Sponsored Rank (avg)', 'Sponsored Rank (count)','H10 PPC Sugg. Bid',
         #    'Amazon Recommended Rank (avg)', 'Amazon Recommended Rank (count)',
