@@ -130,3 +130,7 @@ dmypy.json
 
 # python cache files
 .pyc
+
+# secrets file
+.streamlit
+.toml
