@@ -44,7 +44,14 @@ ld_promos = [
 negative_filter = bad_chars+ld_promos
 
 @st.cache_data
-def read_db_cloud(report = 'auxillary_development', table = 'Promotions', column = 'description',code_list = None, start = None, end = None, negative = True):
+def read_db_cloud(
+    report = 'auxillary_development',
+    table = 'Promotions',
+    column = 'description',
+    code_list = None,
+    start = None, end = None,
+    negative = True
+    ):
     prefix_sql = f'SELECT shipment_date, description, amazon_order_id FROM `{report}.{table}`'
     negative_str = f'WHERE {column} NOT LIKE "'+ f'" AND {column} NOT LIKE "'.join(negative_filter)+'"'
 
@@ -56,8 +63,8 @@ def read_db_cloud(report = 'auxillary_development', table = 'Promotions', column
             code_str = f' AND ({column} LIKE "%'+f'%" OR {column} LIKE "%'.join(code_list)+'%")'
         query += code_str
     if all([start is not None, end is not None]):
+        start, end = pd.to_datetime(start).date(), pd.to_datetime(end).date()
         date_str = f' AND (shipment_date >= "{start}" AND shipment_date <= "{end}")'
-        start, end = pd.to_datetime(start), pd.to_datetime(end)
         query += date_str
 
     client = gc.gcloud_connect()
@@ -85,12 +92,12 @@ if col2.button('Run'):
     codes = [x for x in codes if x != '']
     with st.spinner('Please wait, pulling information...'):
         if codes == []:
-            st.session_state.data = read_db_cloud(code_list = None,start = d_from, end = d_to)
+            st.session_state.processed_data = read_db_cloud(code_list = None,start = d_from, end = d_to)
         else:
             st.session_state.data = read_db_cloud(code_list = codes,start = d_from, end = d_to)
-        code_pattern = '\(([A-Za-z0-9\s]{8,13})\-{0,1}\d{0,1}\)'
-        st.session_state.data['Promo-code'] = st.session_state.data['description'].str.extract(code_pattern).fillna(' ')
-        promocodes = st.session_state.data['Promo-code'].unique().tolist()
-        st.session_state.processed_data = st.session_state.data[st.session_state.data['Promo-code'].isin(codes)]
+            code_pattern = '\(([A-Za-z0-9\s]{8,13})\-{0,1}\d{0,1}\)'
+            st.session_state.data['Promo-code'] = st.session_state.data['description'].str.extract(code_pattern).fillna(' ')
+            promocodes = st.session_state.data['Promo-code'].unique().tolist()
+            st.session_state.processed_data = st.session_state.data[st.session_state.data['Promo-code'].isin(codes)]
         st.write(len(st.session_state.processed_data),st.session_state.processed_data)
 
