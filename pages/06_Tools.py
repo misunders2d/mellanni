@@ -13,7 +13,7 @@ if st.session_state['login']:
     name_area.write(f"Welcome {st.session_state['name']}")
 
     with col2:
-        @st.cache_data
+        @st.cache_data(show_spinner=False)
         def pull_dictionary():
             client = gc.gcloud_connect()
             sql = '''SELECT * FROM `auxillary_development.dictionary`'''
