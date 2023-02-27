@@ -13,21 +13,22 @@ if st.session_state['login']:
     name_area.write(f"Welcome {st.session_state['name']}")
 
     with col2:
+        @st.cache_data
         def pull_dictionary():
             client = gc.gcloud_connect()
             sql = '''SELECT * FROM `auxillary_development.dictionary`'''
             query_job = client.query(sql)  # Make an API request.
             dictionary = query_job.result().to_dataframe()
             client.close()
-            return dictionary
-        if col2.checkbox('Dictionary'):
-            if 'dictionary' not in st.session_state:
-                st.session_state.dictionary = pull_dictionary()
             output = BytesIO()
             with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-                st.session_state.dictionary.to_excel(writer, sheet_name = 'Dictionary', index = False)
-                ff.format_header(st.session_state.dictionary,writer,'Dictionary')
-            st.download_button('Download dictionary',output.getvalue(), file_name = 'Dictionary.xlsx')
+                dictionary.to_excel(writer, sheet_name = 'Dictionary', index = False)
+                ff.format_header(dictionary,writer,'Dictionary')
+            return output.getvalue()
+        
+        if col2.checkbox('Dictionary'):
+            dictionary = pull_dictionary()
+            st.download_button('Download dictionary',dictionary, file_name = 'Dictionary.xlsx')
 
 
     with col1:
