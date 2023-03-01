@@ -183,7 +183,7 @@ if 'processed_data' in st.session_state:
     discount = round(st.session_state['processed_data']['Discount, $'].sum(),2)
     percentage = discount/sales
     metric1, metric2 = col1.columns([2,1])
-    metric1.metric('Total revenue', "${:,}".format(sales), "-${:,}".format(discount))
+    metric1.metric('Total Sales and discount', "${:,}".format(sales), "-${:,}".format(discount))
     metric2.metric('% discount', "{:.1%}".format(percentage))
 
 
