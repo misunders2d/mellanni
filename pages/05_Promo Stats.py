@@ -169,13 +169,12 @@ d_to = col3.date_input('End date', key = 'db_dateto', value = end)
 
 codes = re.split(' |,|\n',col2.text_area('Input codes to search'))
 if col2.button('Run'):
-    if 'processed_data' not in st.session_state:
-        codes = [x for x in codes if x != '']
-        with st.spinner('Please wait, pulling information...'):
-            if codes == []:
-                st.session_state.processed_data = process_data(code_list = None,start = d_from, end = d_to)
-            else:
-                st.session_state.processed_data = process_data(code_list = codes,start = d_from, end = d_to)
+    codes = [x for x in codes if x != '']
+    with st.spinner('Please wait, pulling information...'):
+        if codes == []:
+            st.session_state.processed_data = process_data(code_list = None,start = d_from, end = d_to)
+        else:
+            st.session_state.processed_data = process_data(code_list = codes,start = d_from, end = d_to)
 if 'processed_data' in st.session_state:
     st.write(len(st.session_state.processed_data),st.session_state.processed_data)
     result = prepare_for_export(st.session_state['processed_data'])
