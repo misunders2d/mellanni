@@ -32,7 +32,7 @@ if st.session_state['login']:
 
 
     with col1:
-        with st.expander('Link generator for SC'):
+        with st.expander('Link generator for Seller Central'):
             result = []
 
             def review_links():
