@@ -7,6 +7,9 @@ from google.cloud import bigquery #pip install google-cloud-bigquery
 from google.oauth2 import service_account
 from modules import gcloud_modules as gc
 from modules import formatting as ff
+
+st.set_page_config(page_title = 'M Tools App', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state = 'collapsed')
+
 st.session_state['login'], st.session_state['name'] = login.login()
 
 if st.session_state['login']:
@@ -84,7 +87,7 @@ if st.session_state['login']:
         order_list,
         report = 'auxillary_development',
         table = 'all_order_report',
-        coupons = False
+        skus = False
         ) -> pd.DataFrame:
         '''
         Read rows from all_order report from cloud targeting order from "order_list" - 
@@ -107,7 +110,7 @@ if st.session_state['login']:
         'promotion_ids','is_business_order','buyer_company_name']
         order_str = '","'.join(order_list)
         column_str = ', '.join(column_list)
-        if coupons:
+        if skus:
             chunk_size = 100_000
             chunks = len(order_list)//chunk_size+1
             order_chunks = []
@@ -152,7 +155,7 @@ if st.session_state['login']:
             query_job = client.query(query, job_config=job_config)  # Make an API request.
             orders = query_job.result().to_dataframe()
             client.close()
-        if coupons:
+        if skus:
             df.rename(columns = {'sales':'Sales, $', 'discount':'Discount, $'}, inplace = True)
             return df
         orders_pivot = orders.pivot_table(
@@ -163,7 +166,7 @@ if st.session_state['login']:
         return orders_pivot
 
     @st.cache_data(show_spinner=False)
-    def process_data(code_list = None, start = None, end = None, coupons = False):
+    def process_data(code_list = None, start = None, end = None, coupons = False, skus = False):
         def sort_and_split(x):
             x = [i for i in x if i != ' ']
             x = set(x)
@@ -190,9 +193,9 @@ if st.session_state['login']:
                 )
             order_list = promos_pivot.index.tolist()
         with st.spinner(f'Pulling {len(order_list)} orders'):
-            orders_pivot = read_all_orders(order_list, coupons = coupons)
+            orders_pivot = read_all_orders(order_list, skus = skus)
 
-            if coupons:
+            if skus:
                 orders_pivot['Net proceeds'] = orders_pivot['Sales, $'] - orders_pivot['Discount, $']
                 orders_pivot['Discount, %'] = round(orders_pivot['Discount, $'] / orders_pivot['Sales, $'] * 100, 1)
                 return orders_pivot
@@ -226,6 +229,7 @@ if st.session_state['login']:
 
     d_from = col3.date_input('Starting date', key = 'db_datefrom',value = start )
     d_to = col3.date_input('End date', key = 'db_dateto', value = end)
+    coupons = col3.checkbox('Include coupons\n(will take MUCH longer)?')
 
     codes = re.split(' |,|\n',col2.text_area('Input codes to search'))
     if col2.button('Get promo\ncode stats'):
@@ -236,7 +240,7 @@ if st.session_state['login']:
             else:
                 st.session_state.processed_data = process_data(code_list = codes,start = d_from, end = d_to)
     if col3.button('Get SKU data'):
-        st.session_state.processed_data = process_data(code_list = None,start = d_from, end = d_to, coupons = True)
+        st.session_state.processed_data = process_data(code_list = None,start = d_from, end = d_to, coupons = coupons, skus = True)
 
     if 'processed_data' in st.session_state:
         st.write(len(st.session_state.processed_data),st.session_state.processed_data)
