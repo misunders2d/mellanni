@@ -153,6 +153,9 @@ if st.session_state['login']:
                 values = ['item_price', 'quantity','item_promotion_discount'],
                 index = ['promo_code','description'],
                 aggfunc = 'sum').reset_index()
+            
+            total[['item_price','item_promotion_discount']] = round(total[['item_price','item_promotion_discount']] ,2)
+
             total.rename(columns = {'item_price':'Sales, $', 'item_promotion_discount':'Discount, $'}, inplace = True)
             total['Net proceeds'] = total['Sales, $'] - total['Discount, $']
             total['Discount, %'] = round(total['Discount, $'] / total['Sales, $'] * 100, 1)
@@ -170,7 +173,7 @@ if st.session_state['login']:
     end = pd.to_datetime('today')
     start = end - pd.to_timedelta(180, 'days')
 
-    col1, col2, col3 = st.columns([5,2,2])
+    col1, col2, col3 = st.columns([7,2,2])
 
     d_from = col3.date_input('Starting date', key = 'db_datefrom',value = start )
     d_to = col3.date_input('End date', key = 'db_dateto', value = end)
@@ -190,9 +193,12 @@ if st.session_state['login']:
         st.download_button('Download results',result, file_name = 'Promo_report.xlsx')
         sales = round(st.session_state['processed_data']['Sales, $'].sum(),2)
         discount = round(st.session_state['processed_data']['Discount, $'].sum(),2)
+        units = st.session_state['processed_data']['quantity'].sum()
         percentage = discount/sales
-        metric1, metric2 = col1.columns([2,1])
-        metric1.metric('Total Sales and discount', "${:,}".format(sales), "-${:,}".format(discount))
-        metric2.metric('% discount', "{:.1%}".format(percentage))
+        metric1, metric2= col1.columns([1,1])
+        metric1.metric('Total Sales and Units', "${:,}".format(sales))
+        metric1.metric('Total Sales and Units',"{:,}".format(units), label_visibility='hidden')
+        metric2.metric('Discount, $ and %', "${:,}".format(discount))
+        metric2.metric('Discount, $ and %', "{:.1%}".format(percentage), label_visibility='hidden')
 
 
