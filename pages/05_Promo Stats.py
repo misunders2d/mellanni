@@ -170,7 +170,7 @@ if st.session_state['login']:
     end = pd.to_datetime('today')
     start = end - pd.to_timedelta(180, 'days')
 
-    col1, col2, col3 = st.columns([4,2,1])
+    col1, col2, col3 = st.columns([5,2,2])
 
     d_from = col3.date_input('Starting date', key = 'db_datefrom',value = start )
     d_to = col3.date_input('End date', key = 'db_dateto', value = end)
