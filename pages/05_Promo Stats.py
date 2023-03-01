@@ -107,31 +107,54 @@ if st.session_state['login']:
         'promotion_ids','is_business_order','buyer_company_name']
         order_str = '","'.join(order_list)
         column_str = ', '.join(column_list)
-        query = f'''SELECT {column_str} FROM `{report}.{table}` WHERE amazon_order_id IN UNNEST (@orders)'''
         if coupons:
-            query = f'''SELECT asin,
-                                SUM(quantity) as quantity,
-                                SUM(item_price) as sales,
-                                SUM(item_promotion_discount) as discount
+            chunk_size = 100_000
+            chunks = len(order_list)//chunk_size+1
+            order_chunks = []
+            for c in range(chunks):
+                chunk = order_list[c*chunk_size:(c+1)*chunk_size]
+                order_chunks.append(chunk)
+            df = pd.DataFrame()
+
+            query = f'''SELECT
+                            asin,
+                            SUM(quantity) as quantity,
+                            SUM(item_price) as sales,
+                            SUM(item_promotion_discount) as discount
                         FROM `{report}.{table}`
                         WHERE amazon_order_id IN UNNEST (@orders)
-                        GROUP BY asin
-                        ORDER BY sales
-                        DESC'''
+                        GROUP BY asin'''
+                        # ORDER BY sales
+                        # DESC
+                        # '''
+            client = gc.gcloud_connect()
+            for chunk in order_chunks:
+                job_config = bigquery.QueryJobConfig(
+                    query_parameters=[
+                        bigquery.ArrayQueryParameter("orders", "STRING", chunk),
+                    ]
+                )
 
-        job_config = bigquery.QueryJobConfig(
-            query_parameters=[
-                bigquery.ArrayQueryParameter("orders", "STRING", order_list),
-            ]
-        )
-        
-        client = gc.gcloud_connect()
-        query_job = client.query(query, job_config=job_config)  # Make an API request.
-        orders = query_job.result().to_dataframe()
-        client.close()
+                query_job = client.query(query, job_config=job_config)  # Make an API request.
+                orders = query_job.result().to_dataframe()
+                df = pd.concat([df, orders])
+            client.close()
+            df = df.pivot_table(values = ['quantity', 'sales', 'discount'], index = 'asin',aggfunc = 'sum')
+            
+        else:
+            query = f'''SELECT {column_str} FROM `{report}.{table}` WHERE amazon_order_id IN UNNEST (@orders)'''
+            job_config = bigquery.QueryJobConfig(
+                query_parameters=[
+                    bigquery.ArrayQueryParameter("orders", "STRING", order_list),
+                ]
+            )
+            client = gc.gcloud_connect()
+            query_job = client.query(query, job_config=job_config)  # Make an API request.
+            orders = query_job.result().to_dataframe()
+            client.close()
         if coupons:
-            orders.rename(columns = {'sales':'Sales, $', 'discount':'Discount, $'}, inplace = True)
-            return orders
+            df.rename(columns = {'sales':'Sales, $', 'discount':'Discount, $'}, inplace = True)
+            return df
         orders_pivot = orders.pivot_table(
             values = ['item_price','quantity'],
             index = 'amazon_order_id',
