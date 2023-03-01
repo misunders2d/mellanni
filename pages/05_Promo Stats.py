@@ -57,9 +57,11 @@ if st.session_state['login']:
         column = 'description',
         code_list = None,
         start = None, end = None,
-        negative = True
+        coupons = False
         ):
         prefix_sql = f'SELECT shipment_date, description, amazon_order_id, item_promotion_discount FROM `{report}.{table}`'
+        if coupons:
+            negative_filter.remove('VPC-')
         negative_str = f'''WHERE NOT REGEXP_CONTAINS({column},"{'|'.join(negative_filter)}")'''
 
         query = f'{prefix_sql} {negative_str}'
@@ -81,7 +83,8 @@ if st.session_state['login']:
     def read_all_orders(
         order_list,
         report = 'auxillary_development',
-        table = 'all_order_report'
+        table = 'all_order_report',
+        coupons = False
         ) -> pd.DataFrame:
         '''
         Read rows from all_order report from cloud targeting order from "order_list" - 
@@ -105,6 +108,17 @@ if st.session_state['login']:
         order_str = '","'.join(order_list)
         column_str = ', '.join(column_list)
         query = f'''SELECT {column_str} FROM `{report}.{table}` WHERE amazon_order_id IN UNNEST (@orders)'''
+        if coupons:
+            query = f'''SELECT asin,
+                                SUM(quantity) as quantity,
+                                SUM(item_price) as sales,
+                                SUM(item_promotion_discount) as discount
+                        FROM `{report}.{table}`
+                        WHERE amazon_order_id IN UNNEST (@orders)
+                        GROUP BY asin
+                        ORDER BY sales
+                        DESC'''
+
         job_config = bigquery.QueryJobConfig(
             query_parameters=[
                 bigquery.ArrayQueryParameter("orders", "STRING", order_list),
@@ -115,6 +129,9 @@ if st.session_state['login']:
         query_job = client.query(query, job_config=job_config)  # Make an API request.
         orders = query_job.result().to_dataframe()
         client.close()
+        if coupons:
+            orders.rename(columns = {'sales':'Sales, $', 'discount':'Discount, $'}, inplace = True)
+            return orders
         orders_pivot = orders.pivot_table(
             values = ['item_price','quantity'],
             index = 'amazon_order_id',
@@ -123,15 +140,19 @@ if st.session_state['login']:
         return orders_pivot
 
     @st.cache_data(show_spinner=False)
-    def process_data(code_list = None, start = None, end = None):
+    def process_data(code_list = None, start = None, end = None, coupons = False):
         def sort_and_split(x):
             x = [i for i in x if i != ' ']
             x = set(x)
             x = sorted(x)
             x = ' | '.join(x)
             return x
-        with st.spinner('Pulling promo report'):
-            promos = read_promos(code_list=code_list, start = start, end = end)
+        if all([start is not None, end is not None]):
+            spinner_str = f'Pulling promo report for {(end-start).days} days'
+        else:
+            spinner_str = 'Pulling full promo report'
+        with st.spinner(spinner_str):
+            promos = read_promos(code_list=code_list, start = start, end = end, coupons = coupons)
             code_pattern = '\(([A-Za-z0-9\s]{8,13})\-{0,1}\d{0,1}\)'
             promos['promo_code'] = promos['description'].str.extract(code_pattern).fillna(' ')
             if code_list != None:
@@ -144,10 +165,15 @@ if st.session_state['login']:
                         'description':sort_and_split,
                         'promo_code':sort_and_split}
                 )
-        with st.spinner('Pulling orders'):
             order_list = promos_pivot.index.tolist()
-            orders_pivot = read_all_orders(order_list)
+        with st.spinner(f'Pulling {len(order_list)} orders'):
+            orders_pivot = read_all_orders(order_list, coupons = coupons)
 
+            if coupons:
+                orders_pivot['Net proceeds'] = orders_pivot['Sales, $'] - orders_pivot['Discount, $']
+                orders_pivot['Discount, %'] = round(orders_pivot['Discount, $'] / orders_pivot['Sales, $'] * 100, 1)
+                return orders_pivot
+            
             total = pd.merge(orders_pivot, promos_pivot, left_index = True, right_index = True)
             total = total.pivot_table(
                 values = ['item_price', 'quantity','item_promotion_discount'],
@@ -178,15 +204,17 @@ if st.session_state['login']:
     d_from = col3.date_input('Starting date', key = 'db_datefrom',value = start )
     d_to = col3.date_input('End date', key = 'db_dateto', value = end)
 
-
     codes = re.split(' |,|\n',col2.text_area('Input codes to search'))
-    if col2.button('Run'):
+    if col2.button('Get promo\ncode stats'):
         codes = [x for x in codes if x != '']
         with st.spinner('Please wait, pulling information...'):
             if codes == []:
                 st.session_state.processed_data = process_data(code_list = None,start = d_from, end = d_to)
             else:
                 st.session_state.processed_data = process_data(code_list = codes,start = d_from, end = d_to)
+    if col3.button('Get SKU data'):
+        st.session_state.processed_data = process_data(code_list = None,start = d_from, end = d_to, coupons = True)
+
     if 'processed_data' in st.session_state:
         st.write(len(st.session_state.processed_data),st.session_state.processed_data)
         result = prepare_for_export(st.session_state['processed_data'])
