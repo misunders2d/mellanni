@@ -158,6 +158,8 @@ if st.session_state['login']:
         if skus:
             df.rename(columns = {'sales':'Sales, $', 'discount':'Discount, $'}, inplace = True)
             return df
+        orders['item_price'] = orders['item_price'].astype('float')
+        orders['quantity'] = orders['quantity'].astype('int')
         orders_pivot = orders.pivot_table(
             values = ['item_price','quantity'],
             index = 'amazon_order_id',
