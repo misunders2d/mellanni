@@ -121,9 +121,9 @@ if st.session_state['login']:
 
             query = f'''SELECT
                             asin,
-                            SUM(quantity) as quantity,
-                            SUM(item_price) as sales,
-                            SUM(item_promotion_discount) as discount
+                            SUM(CAST(quantity AS INT)) as quantity,
+                            SUM(CAST(item_price AS FLOAT64)) as sales,
+                            SUM(CAST(item_promotion_discount AS FLOAT64)) as discount
                         FROM `{report}.{table}`
                         WHERE amazon_order_id IN UNNEST (@orders)
                         GROUP BY asin'''
