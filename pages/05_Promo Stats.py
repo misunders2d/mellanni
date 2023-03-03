@@ -56,7 +56,7 @@ if st.session_state['login']:
     @st.cache_data(show_spinner=False)
     def read_promos(
         report = 'auxillary_development',
-        table = 'Promotions',
+        table = 'promotions',
         column = 'description',
         code_list = None,
         start = None, end = None,
