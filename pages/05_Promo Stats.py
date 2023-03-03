@@ -197,26 +197,29 @@ if st.session_state['login']:
                         'promo_code':sort_and_split}
                 )
             order_list = promos_pivot.index.tolist()
-        with st.spinner(f'Pulling {len(order_list)} orders'):
-            orders_pivot = read_all_orders(order_list, skus = skus)
+            if len(order_list) == 0:
+                total = 'Sorry, no data for this time period yet'
+            else:
+                with st.spinner(f'Pulling {len(order_list)} orders'):
+                    orders_pivot = read_all_orders(order_list, skus = skus)
 
-            if skus:
-                orders_pivot['Net proceeds'] = orders_pivot['Sales, $'] - orders_pivot['Discount, $']
-                orders_pivot['Discount, %'] = round(orders_pivot['Discount, $'] / orders_pivot['Sales, $'] * 100, 1)
-                return orders_pivot
-            
-            total = pd.merge(orders_pivot, promos_pivot, left_index = True, right_index = True)
-            total = total.pivot_table(
-                values = ['item_price', 'quantity','item_promotion_discount'],
-                index = ['promo_code','description'],
-                aggfunc = 'sum').reset_index()
-            
-            total[['item_price','item_promotion_discount']] = round(total[['item_price','item_promotion_discount']] ,2)
+                    if skus:
+                        orders_pivot['Net proceeds'] = orders_pivot['Sales, $'] - orders_pivot['Discount, $']
+                        orders_pivot['Discount, %'] = round(orders_pivot['Discount, $'] / orders_pivot['Sales, $'] * 100, 1)
+                        return orders_pivot
+                    
+                    total = pd.merge(orders_pivot, promos_pivot, left_index = True, right_index = True)
+                    total = total.pivot_table(
+                        values = ['item_price', 'quantity','item_promotion_discount'],
+                        index = ['promo_code','description'],
+                        aggfunc = 'sum').reset_index()
+                    
+                    total[['item_price','item_promotion_discount']] = round(total[['item_price','item_promotion_discount']] ,2)
 
-            total.rename(columns = {'item_price':'Sales, $', 'item_promotion_discount':'Discount, $'}, inplace = True)
-            total['Net proceeds'] = total['Sales, $'] - total['Discount, $']
-            total['Discount, %'] = round(total['Discount, $'] / total['Sales, $'] * 100, 1)
-            total = total.sort_values('quantity', ascending = False)
+                    total.rename(columns = {'item_price':'Sales, $', 'item_promotion_discount':'Discount, $'}, inplace = True)
+                    total['Net proceeds'] = total['Sales, $'] - total['Discount, $']
+                    total['Discount, %'] = round(total['Discount, $'] / total['Sales, $'] * 100, 1)
+                    total = total.sort_values('quantity', ascending = False)
 
         return total
 
