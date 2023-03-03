@@ -55,14 +55,14 @@ if st.session_state['login']:
 
             def check_prices():
                 client = gc.gcloud_connect()
-                sql = '''SELECT asin, price FROM `auxillary_development.inventory_report`'''
+                sql = '''SELECT asin, item_name, price FROM `auxillary_development.inventory_report`'''
                 query_job = client.query(sql)  # Make an API request.
                 inventory = query_job.result().to_dataframe()
                 client.close()
                 inventory_asin = inventory[inventory['asin'].isin(asin_list)]
                 inventory_asin[inventory_asin.columns] = inventory_asin[inventory_asin.columns].astype('str')
-                result = (inventory_asin['asin']+' - '+ inventory_asin['price']).tolist()
-                return result
+                # result = (inventory_asin['asin']+' - '+ inventory_asin['price'] + ' - ' + inventory_asin['item_name']).tolist()
+                return inventory_asin
 
             def edit_links():
                 client = gc.gcloud_connect()
@@ -106,8 +106,8 @@ if st.session_state['login']:
             if st.button('Run'):
                 asin_list = [x for x in asins if x != ""]
                 func = functions[option]
-                result = func()
-                st.write('  \n'.join(result))
+                result = func().reset_index().drop('index', axis = 1)
+                st.experimental_data_editor(result)
 
         with st.expander('Business report link generator'):
             from datetime import datetime, timedelta

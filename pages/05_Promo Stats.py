@@ -65,6 +65,8 @@ if st.session_state['login']:
         prefix_sql = f'SELECT shipment_date, description, amazon_order_id, item_promotion_discount FROM `{report}.{table}`'
         if coupons:
             negative_filter.remove('VPC-')
+            negative_filter.remove('DCMS')
+            negative_filter.remove('Mellanni')
         negative_str = f'''WHERE NOT REGEXP_CONTAINS({column},"{'|'.join(negative_filter)}")'''
 
         query = f'{prefix_sql} {negative_str}'
@@ -159,6 +161,7 @@ if st.session_state['login']:
             df.rename(columns = {'sales':'Sales, $', 'discount':'Discount, $'}, inplace = True)
             return df
         orders['item_price'] = orders['item_price'].astype('float')
+        orders['item_promotion_discount'] = orders['item_promotion_discount'].astype('float')
         orders['quantity'] = orders['quantity'].astype('int')
         orders_pivot = orders.pivot_table(
             values = ['item_price','quantity'],
