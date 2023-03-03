@@ -228,6 +228,7 @@ def prepare_for_export(df):
         ff.format_header(df,writer,'Promos')
     return output.getvalue()
 
+@st.cache_data(show_spinner=False)
 def main_promo_stats():
     end = pd.to_datetime('today')
     start = end - pd.to_timedelta(180, 'days')
