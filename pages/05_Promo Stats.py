@@ -252,16 +252,17 @@ if st.session_state['login']:
 
     if 'processed_data' in st.session_state:
         st.write(len(st.session_state.processed_data),st.session_state.processed_data)
-        result = prepare_for_export(st.session_state['processed_data'])
-        st.download_button('Download results',result, file_name = 'Promo_report.xlsx')
-        sales = round(st.session_state['processed_data']['Sales, $'].sum(),2)
-        discount = round(st.session_state['processed_data']['Discount, $'].sum(),2)
-        units = st.session_state['processed_data']['quantity'].sum()
-        percentage = discount/sales
-        metric1, metric2= col1.columns([1,1])
-        metric1.metric('Total Sales and Units', "${:,}".format(sales))
-        metric1.metric('Total Sales and Units',"{:,}".format(units), label_visibility='hidden')
-        metric2.metric('Discount, $ and %', "${:,}".format(discount))
-        metric2.metric('Discount, $ and %', "{:.1%}".format(percentage), label_visibility='hidden')
+        if not isinstance(st.session_state.processed_data,str):
+            result = prepare_for_export(st.session_state['processed_data'])
+            st.download_button('Download results',result, file_name = 'Promo_report.xlsx')
+            sales = round(st.session_state['processed_data']['Sales, $'].sum(),2)
+            discount = round(st.session_state['processed_data']['Discount, $'].sum(),2)
+            units = st.session_state['processed_data']['quantity'].sum()
+            percentage = discount/sales
+            metric1, metric2= col1.columns([1,1])
+            metric1.metric('Total Sales and Units', "${:,}".format(sales))
+            metric1.metric('Total Sales and Units',"{:,}".format(units), label_visibility='hidden')
+            metric2.metric('Discount, $ and %', "${:,}".format(discount))
+            metric2.metric('Discount, $ and %', "{:.1%}".format(percentage), label_visibility='hidden')
 
 
