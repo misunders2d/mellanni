@@ -12,7 +12,6 @@ def login():
     if 'base' not in st.session_state:
         db_token = st.secrets['DB_USERS']
         deta = Deta(db_token)
-        # deta = Deta('a0bc7xb753v_mcmdiBnc2rm6G9341fPNW4uV5S3cqg2x')
         base = deta.Base('mellanni_users')
         results = base.fetch().items
         names = [x['name'] for x in results]
