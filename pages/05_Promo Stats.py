@@ -192,6 +192,7 @@ if st.session_state['login']:
             index = 'ad_group_name',
             aggfunc = 'sum'
             ).reset_index()
+        data_pivot[float_cols] = round(data_pivot[float_cols],2)
         data_pivot.rename(columns = {'_14_day_total_sales':'Sales, $','_14_day_total_units_sold':'quantity'}, inplace = True)
         data_pivot['Discount, $'] = 0
         data_pivot[float_cols] = round(data_pivot[float_cols],2)
