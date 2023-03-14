@@ -144,7 +144,7 @@ if st.session_state['login']:
                 orders = query_job.result().to_dataframe()
                 df = pd.concat([df, orders])
             client.close()
-            df = df.pivot_table(values = ['quantity', 'sales', 'discount'], index = 'asin',aggfunc = 'sum')
+            df = df.pivot_table(values = ['quantity', 'sales', 'discount'], index = 'asin',aggfunc = 'sum').reset_index()
             
         else:
             query = f'''SELECT {column_str} FROM `{report}.{table}` WHERE amazon_order_id IN UNNEST (@orders)'''
@@ -169,6 +169,31 @@ if st.session_state['login']:
             aggfunc = 'sum'
             )#.reset_index()
         return orders_pivot
+
+    @st.cache_data(show_spinner= False)
+    def read_attribution(
+        report = 'auxillary_development',
+        table = 'attribution',
+        start = None, end = None
+        ):
+        query =f'SELECT * FROM `{report}.{table}` WHERE DATE(date) BETWEEN DATE("{start}") AND DATE("{end}")'
+        client = gc.gcloud_connect()
+        query_job = client.query(query)  # Make an API request.
+        data = query_job.result().to_dataframe()
+        client.close()
+        data['date'] = pd.to_datetime(data['date'])
+        data = data.sort_values('date')
+        numerics = ['int','float']
+        num_cols = data.select_dtypes(include = numerics).columns
+        data_pivot = data.pivot_table(
+            values = num_cols,
+            index = 'ad_group_name',
+            aggfunc = 'sum'
+            ).reset_index()
+        data_pivot.rename(columns = {'_14_day_total_sales':'Sales, $','_14_day_total_units_sold':'quantity'}, inplace = True)
+        data_pivot['Discount, $'] = 0
+        data_pivot = data_pivot.sort_values('Sales, $', ascending = False)
+        return data_pivot, data
 
     @st.cache_data(show_spinner=False)
     def process_data(code_list = None, start = None, end = None, coupons = False, skus = False):
@@ -208,7 +233,7 @@ if st.session_state['login']:
                         orders_pivot['Discount, %'] = round(orders_pivot['Discount, $'] / orders_pivot['Sales, $'] * 100, 1)
                         return orders_pivot
                     
-                    total = pd.merge(orders_pivot, promos_pivot, left_index = True, right_index = True)
+                    total = pd.merge(orders_pivot, promos_pivot, left_index = True, right_index = True).reset_index()
                     total = total.pivot_table(
                         values = ['item_price', 'quantity','item_promotion_discount'],
                         index = ['promo_code','description'],
@@ -223,11 +248,12 @@ if st.session_state['login']:
 
         return total
 
-    def prepare_for_export(df):
+    def prepare_for_export(dfs,sheet_names):
         output = BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            df.to_excel(writer, sheet_name = 'Promos', index = False)
-            ff.format_header(df,writer,'Promos')
+            for df,sheet_name in list(zip(dfs,sheet_names)):
+                df.to_excel(writer, sheet_name = sheet_name, index = False)
+                ff.format_header(df,writer,sheet_name)
         return output.getvalue()
 
     end = pd.to_datetime('today')
@@ -241,28 +267,41 @@ if st.session_state['login']:
 
     codes = re.split(' |,|\n',col2.text_area('Input codes to search'))
     if col2.button('Get promo\ncode stats'):
+        st.session_state.file_name,st.session_state.sheet_name = 'Promo_report.xlsx','Promos'
         codes = [x for x in codes if x != '']
         with st.spinner('Please wait, pulling information...'):
             if codes == []:
                 st.session_state.processed_data = process_data(code_list = None,start = d_from, end = d_to)
             else:
                 st.session_state.processed_data = process_data(code_list = codes,start = d_from, end = d_to)
+    if col2.button('Get Attribution data'):
+        st.session_state.file_name,st.session_state.sheet_name = 'Attribution_report.xlsx',['Total','Daily']
+        with st.spinner('Loading Attribution data'):
+            data = read_attribution(start = d_from, end = d_to)
+        st.session_state.processed_data = [data[0], data[1]]
+
     if col3.button('Get SKU data'):
+        st.session_state.file_name,st.session_state.sheet_name = 'SKU_report.xlsx','SKUs'
         st.session_state.processed_data = process_data(code_list = None,start = d_from, end = d_to, coupons = coupons, skus = True)
 
-    if 'processed_data' in st.session_state:
-        st.write(len(st.session_state.processed_data),st.session_state.processed_data)
-        if not isinstance(st.session_state.processed_data,str):
-            result = prepare_for_export(st.session_state['processed_data'])
-            st.download_button('Download results',result, file_name = 'Promo_report.xlsx')
-            sales = round(st.session_state['processed_data']['Sales, $'].sum(),2)
-            discount = round(st.session_state['processed_data']['Discount, $'].sum(),2)
-            units = st.session_state['processed_data']['quantity'].sum()
-            percentage = discount/sales
-            metric1, metric2= col1.columns([1,1])
-            metric1.metric('Total Sales and Units', "${:,}".format(sales))
-            metric1.metric('Total Sales and Units',"{:,}".format(units), label_visibility='hidden')
-            metric2.metric('Discount, $ and %', "${:,}".format(discount))
-            metric2.metric('Discount, $ and %', "{:.1%}".format(percentage), label_visibility='hidden')
+    if 'processed_data' in st.session_state and not isinstance(st.session_state.processed_data,str):
+        if isinstance(st.session_state.processed_data,list):
+            display = st.session_state.processed_data[0]
+            result = prepare_for_export([st.session_state['processed_data'][0],st.session_state['processed_data'][1]],st.session_state.sheet_name)
+        else:
+            display = st.session_state.processed_data
+            result = prepare_for_export([st.session_state['processed_data']],[st.session_state.sheet_name])
+        st.write(display)
+
+        st.download_button('Download results',result, file_name = st.session_state.file_name)
+        sales = round(display['Sales, $'].sum(),2)
+        discount = round(display['Discount, $'].sum(),2)
+        units = display['quantity'].sum()
+        percentage = discount/sales
+        metric1, metric2= col1.columns([1,1])
+        metric1.metric('Total Sales and Units', "${:,}".format(sales))
+        metric1.metric('Total Sales and Units',"{:,}".format(units), label_visibility='hidden')
+        metric2.metric('Discount, $ and %', "${:,}".format(discount))
+        metric2.metric('Discount, $ and %', "{:.1%}".format(percentage), label_visibility='hidden')
 
 
