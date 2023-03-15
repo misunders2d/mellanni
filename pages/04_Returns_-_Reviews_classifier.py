@@ -1,8 +1,8 @@
 import streamlit as st
 from io import BytesIO
 import pandas as pd
-import nltk
-nltk.download('stopwords')
+# import nltk
+# nltk.download('stopwords')
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from sklearn.feature_extraction.text import CountVectorizer
