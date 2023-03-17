@@ -6,4 +6,3 @@ openpyxl
 xlsxwriter
 nltk
 scikit-learn
-deta
