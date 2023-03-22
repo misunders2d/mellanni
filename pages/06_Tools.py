@@ -148,7 +148,46 @@ if st.session_state['login']:
                 return file
 
         with st.expander('Backend checker'):
+            import json
+            def process_backend(files):
+                to_df = []
+                for file in files:
+                    file = file.getvalue()
+                    result = json.loads(file.decode('utf-8'))
+                
+                    kw_fields = [x for x in result['detailPageListingResponse'].keys() if 'keyword' in x.lower()]
+                    if not kw_fields:
+                        break
+                    asin = result['detailPageListingResponse']['asin']['value']
+                    try:
+                        size = result['detailPageListingResponse']['size#1.value']['value']
+                    except:
+                        size = result['detailPageListingResponse']['size_name']['value']
+                    try:
+                        color = result['detailPageListingResponse']['color#1.value']['value']
+                    except:
+                        color = result['detailPageListingResponse']['color_name']['value']
+                    try:
+                        kws = result['detailPageListingResponse']['generic_keyword#1.value']['value']#.split(' ')
+                    except:
+                        kws = result['detailPageListingResponse']['generic_keywords']['value']#.split(' ')
+                    to_df.append([asin, size, color, kws])
+                    df = pd.DataFrame(to_df,columns = ['asin','size','color','kws'])
+                return df
+
+            data_area = st.empty()
+            button_area = st.empty()
             link = 'https://sellercentral.amazon.com/abis/ajax/reconciledDetailsV2?asin='
-            asins = st.text_area('Input ASINs to parse')
-            if st.button('Get links'):
-                asins.write(asins)
+            asins = data_area.text_area('Input ASINs to parse').split('\n')
+            if button_area.button('Get links'):
+                st.session_state['asins'] = True
+                data_area.text_area('Links:','\n'.join(link+asin for asin in asins))
+            if 'asins' in st.session_state:
+                files = button_area.file_uploader('Upload files', type = '.json', accept_multiple_files= True)
+                if files:
+                    final = process_backend(files)
+                    output = BytesIO()
+                    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                        final.to_excel(writer, sheet_name = 'KW', index = False)
+                        ff.format_header(final, writer, 'KW')
+                    st.download_button('Download results',output.getvalue(), file_name = 'backend.xlsx')
