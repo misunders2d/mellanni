@@ -106,7 +106,9 @@ if st.session_state['login']:
             if st.button('Run'):
                 asin_list = [x for x in asins if x != ""]
                 func = functions[option]
-                result = func().reset_index().drop('index', axis = 1)
+                result = func()
+                if isinstance(result,pd.core.frame.DataFrame):
+                    result = result.reset_index().drop('index', axis = 1)
                 st.experimental_data_editor(result)
 
         with st.expander('Business report link generator'):
@@ -144,3 +146,9 @@ if st.session_state['login']:
                 del file['steps']
                 del file['step 0']
                 return file
+
+        with st.expander('Backend checker'):
+            link = 'https://sellercentral.amazon.com/abis/ajax/reconciledDetailsV2?asin='
+            asins = st.text_area('Input ASINs to parse')
+            if st.button('Get links'):
+                asins.write(asins)
