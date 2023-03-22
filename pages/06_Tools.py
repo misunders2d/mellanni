@@ -162,7 +162,10 @@ if st.session_state['login']:
                     try:
                         brand = result['detailPageListingResponse']['brand#1.value']['value']
                     except:
-                        brand = result['detailPageListingResponse']['brand']['value']
+                        try:
+                            brand = result['detailPageListingResponse']['brand']['value']
+                        except:
+                            brand = 'Unknown'
                     platinum = [x for x in result['detailPageListingResponse'].keys() if 'platinum' in x.lower()]
                     pkw = []
                     for p in platinum:
