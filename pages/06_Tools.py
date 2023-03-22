@@ -160,6 +160,15 @@ if st.session_state['login']:
                         break
                     asin = result['detailPageListingResponse']['asin']['value']
                     try:
+                        brand = result['detailPageListingResponse']['brand#1.value']['value']
+                    except:
+                        brand = result['detailPageListingResponse']['brand']['value']
+                    platinum = [x for x in result['detailPageListingResponse'].keys() if 'platinum' in x.lower()]
+                    pkw = []
+                    for p in platinum:
+                        pkw.append(result['detailPageListingResponse'][p]['value'])
+                    pkw = ' '.join(pkw)
+                    try:
                         size = result['detailPageListingResponse']['size#1.value']['value']
                     except:
                         size = result['detailPageListingResponse']['size_name']['value']
@@ -171,8 +180,12 @@ if st.session_state['login']:
                         kws = result['detailPageListingResponse']['generic_keyword#1.value']['value']#.split(' ')
                     except:
                         kws = result['detailPageListingResponse']['generic_keywords']['value']#.split(' ')
-                    to_df.append([asin, size, color, kws])
-                    df = pd.DataFrame(to_df,columns = ['asin','size','color','kws'])
+                    try:
+                        title = result['detailPageListingResponse']['item_name#1.value']['value']
+                    except:
+                        title = result['detailPageListingResponse']['item_name']['value']
+                    to_df.append([asin, brand, size, color, kws, pkw,title])
+                df = pd.DataFrame(to_df,columns = ['asin','brand','size','color','kws','platinum kws','title'])
                 return df
 
             data_area = st.empty()
