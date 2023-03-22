@@ -186,6 +186,7 @@ if st.session_state['login']:
                 files = button_area.file_uploader('Upload files', type = '.json', accept_multiple_files= True)
                 if files:
                     final = process_backend(files)
+                    st.write(final)
                     output = BytesIO()
                     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
                         final.to_excel(writer, sheet_name = 'KW', index = False)
