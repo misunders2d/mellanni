@@ -191,15 +191,20 @@ if st.session_state['login']:
                 df = pd.DataFrame(to_df,columns = ['asin','brand','size','color','kws','platinum kws','title'])
                 return df
 
+            market = st.radio('Select marketplace',['USA','CA'],horizontal = True)
             data_area = st.empty()
             button_area = st.empty()
-            link = 'https://sellercentral.amazon.com/abis/ajax/reconciledDetailsV2?asin='
+            but1,but2,but3 = button_area.columns([1,1,1])
+            if market == 'USA':
+                link = 'https://sellercentral.amazon.com/abis/ajax/reconciledDetailsV2?asin='
+            elif market == 'CA':
+                link = 'https://sellercentral.amazon.ca/abis/ajax/reconciledDetailsV2?asin='
             asins = data_area.text_area('Input ASINs to parse').split('\n')
-            if button_area.button('Get links'):
+            if but1.button('Get links'):
                 st.session_state['asins'] = True
                 data_area.text_area('Links:','\n'.join(link+asin for asin in asins))
             if 'asins' in st.session_state:
-                files = button_area.file_uploader('Upload files', type = '.json', accept_multiple_files= True)
+                files = st.file_uploader('Upload files', type = '.json', accept_multiple_files= True)
                 if files:
                     final = process_backend(files)
                     st.write(final)
@@ -208,3 +213,5 @@ if st.session_state['login']:
                         final.to_excel(writer, sheet_name = 'KW', index = False)
                         ff.format_header(final, writer, 'KW')
                     st.download_button('Download results',output.getvalue(), file_name = 'backend.xlsx')
+            if but3.button('Reset') and 'asins' in st.session_state:
+                del st.session_state['asins']
