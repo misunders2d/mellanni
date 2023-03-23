@@ -191,15 +191,15 @@ if st.session_state['login']:
                 df = pd.DataFrame(to_df,columns = ['asin','brand','size','color','kws','platinum kws','title'])
                 return df
 
-            market = st.radio('Select marketplace',['USA','CA'],horizontal = True)
+            markets = ['USA','CA','UK','DE','FR','IT','SP']
+            market = st.radio('Select marketplace',markets,horizontal = True)
+            extensions = ['com','ca','co.uk','de','fr','it','sp']
+            choice = dict(zip(markets,extensions))
             data_area = st.empty()
             asin_col,links_col = data_area.columns([1,3])
             button_area = st.empty()
             but1,but2,but3 = button_area.columns([1,1,1])
-            if market == 'USA':
-                link = 'https://sellercentral.amazon.com/abis/ajax/reconciledDetailsV2?asin='
-            elif market == 'CA':
-                link = 'https://sellercentral.amazon.ca/abis/ajax/reconciledDetailsV2?asin='
+            link = f'https://sellercentral.amazon.{choice[market]}/abis/ajax/reconciledDetailsV2?asin='
             asins = asin_col.text_area('Input ASINs to parse').split('\n')
             if but1.button('Get links'):
                 st.session_state['asins'] = True
