@@ -193,16 +193,17 @@ if st.session_state['login']:
 
             market = st.radio('Select marketplace',['USA','CA'],horizontal = True)
             data_area = st.empty()
+            asin_col,links_col = data_area.columns([1,3])
             button_area = st.empty()
             but1,but2,but3 = button_area.columns([1,1,1])
             if market == 'USA':
                 link = 'https://sellercentral.amazon.com/abis/ajax/reconciledDetailsV2?asin='
             elif market == 'CA':
                 link = 'https://sellercentral.amazon.ca/abis/ajax/reconciledDetailsV2?asin='
-            asins = data_area.text_area('Input ASINs to parse').split('\n')
+            asins = asin_col.text_area('Input ASINs to parse').split('\n')
             if but1.button('Get links'):
                 st.session_state['asins'] = True
-                data_area.text_area('Links:','\n'.join(link+asin for asin in asins))
+                links_col.text_area('Links:','\n'.join(link+asin for asin in asins))
             if 'asins' in st.session_state:
                 files = st.file_uploader('Upload files', type = '.json', accept_multiple_files= True)
                 if files:
