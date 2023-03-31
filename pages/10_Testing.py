@@ -36,7 +36,8 @@ options = UploadFileRequestOptions(
 files = st.file_uploader('Upload images',accept_multiple_files= True)
 
 #read file into base_64
-if files:
+if files and st.button('Upload'):
+    skus = [x for x in skus if x != '']
     urls = []
     for f in files:
         image_file = f.read()
@@ -45,12 +46,14 @@ if files:
         result = imagekit.upload_file(file = img, file_name = f.name, options = options)
         url = url_endpoint+result.file_path
         urls.append(url)
-    df = pd.DataFrame(columns = ['SKU']+[f'Image_{x}' for x in range(9)])
+
+    df = pd.DataFrame(skus,columns = ['SKU'])
     if len(skus) > 1 and skus != "":
         urls = [urls for _ in range(len(skus))]
         df['SKU'] = skus
-    url_df = pd.DataFrame([urls], columns = [f'Image_{x}' for x in range(len(urls))])
-    df = pd.concat([df, url_df])
+    url_df = pd.DataFrame(urls)
+    df = pd.concat([df, url_df], axis = 1)
+
     st.write(df)
     output = BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
