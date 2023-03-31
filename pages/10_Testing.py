@@ -39,12 +39,12 @@ files = st.file_uploader('Upload images',accept_multiple_files= True)
 if files:
     urls = []
     for f in files:
-        # image_file = f.read()
-        # img = base64.b64encode(image_file)
+        image_file = f.read()
+        img = base64.b64encode(image_file)
         
-        # result = imagekit.upload_file(file = img, file_name = f.name, options = options)
-        # url = url_endpoint+result.file_path
-        urls.append(f.name)
+        result = imagekit.upload_file(file = img, file_name = f.name, options = options)
+        url = url_endpoint+result.file_path
+        urls.append(url)
     df = pd.DataFrame(columns = ['SKU']+[f'Image_{x}' for x in range(9)])
     if len(skus) > 1 and skus != "":
         urls = [urls for _ in range(len(skus))]
