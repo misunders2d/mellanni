@@ -7,3 +7,4 @@ xlsxwriter
 nltk
 scikit-learn
 deta
+imagekitio
