@@ -35,6 +35,8 @@ if st.session_state['login']:
             xray['Sales'] = xray['Sales'].str.replace('\xa0','')
             xray['Sales'] = xray['Sales'].str.replace(',','').astype(float)
             xray['Total Sales'] = xray['Sales'].copy()
+            bsr = int(xray['BSR'].str.replace(',','').mode().values[0])
+            xray['BSR'] = bsr
             xray[['',' ','  ','   ']] = ''
             xray = xray[recolumns]
 
