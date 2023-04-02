@@ -274,7 +274,6 @@ if st.session_state['login']:
 
         result = ff.prepare_for_export([st.session_state['file']],['Search Query Performance'])
         st.download_button('Download full analysis',result,file_name = 'Keyword analysis.xlsx')
-        st.write(len(kw_search))
             
 
     
