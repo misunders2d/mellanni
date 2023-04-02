@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import re
 import login
-from io import BytesIO
+# from io import BytesIO
 from google.cloud import bigquery #pip install google-cloud-bigquery
 from google.oauth2 import service_account
 from modules import gcloud_modules as gc
@@ -251,13 +251,13 @@ if st.session_state['login']:
 
         return total
 
-    def prepare_for_export(dfs,sheet_names):
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            for df,sheet_name in list(zip(dfs,sheet_names)):
-                df.to_excel(writer, sheet_name = sheet_name, index = False)
-                ff.format_header(df,writer,sheet_name)
-        return output.getvalue()
+    # def prepare_for_export(dfs,sheet_names):
+    #     output = BytesIO()
+    #     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+    #         for df,sheet_name in list(zip(dfs,sheet_names)):
+    #             df.to_excel(writer, sheet_name = sheet_name, index = False)
+    #             ff.format_header(df,writer,sheet_name)
+    #     return output.getvalue()
 
     end = pd.to_datetime('today')
     start = end - pd.to_timedelta(180, 'days')
@@ -290,10 +290,10 @@ if st.session_state['login']:
     if 'processed_data' in st.session_state and not isinstance(st.session_state.processed_data,str):
         if isinstance(st.session_state.processed_data,list):
             display = st.session_state.processed_data[0]
-            result = prepare_for_export([st.session_state['processed_data'][0],st.session_state['processed_data'][1]],st.session_state.sheet_name)
+            result = ff.prepare_for_export([st.session_state['processed_data'][0],st.session_state['processed_data'][1]],st.session_state.sheet_name)
         else:
             display = st.session_state.processed_data
-            result = prepare_for_export([st.session_state['processed_data']],[st.session_state.sheet_name])
+            result = ff.prepare_for_export([st.session_state['processed_data']],[st.session_state.sheet_name])
         st.write(display)
 
         st.download_button('Download results',result, file_name = st.session_state.file_name)

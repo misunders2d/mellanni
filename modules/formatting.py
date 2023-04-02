@@ -19,4 +19,14 @@ def format_columns(df,writer,sheet,col_num):
     for c in col_num:
         width = max(df.iloc[:,c].astype(str).map(len).max(),len(df.iloc[:,c].name))
         worksheet.set_column(c,c,width)
-    return None    
+    return None
+
+def prepare_for_export(dfs,sheet_names):
+    from io import BytesIO
+    import pandas as pd
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        for df,sheet_name in list(zip(dfs,sheet_names)):
+            df.to_excel(writer, sheet_name = sheet_name, index = False)
+            format_header(df,writer,sheet_name)
+    return output.getvalue()
