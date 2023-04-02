@@ -252,10 +252,12 @@ if st.session_state['login']:
         kw_search = re.split(',',filters2.text_input('Seach keywords containing',''))
         kw_container = filters3.container()
         all_keywords = filters3.checkbox('Select all', value = True)
+        processed_groups = st.session_state['file']['cluster'].unique().tolist()
+        processed_groups = sorted(processed_groups)
         if all_keywords:
-            kw_groups = kw_container.multiselect('Select Keyword groups',st.session_state['file']['cluster'].unique().tolist(),st.session_state['file']['cluster'].unique().tolist())
+            kw_groups = kw_container.multiselect('Select Keyword groups',processed_groups,processed_groups)
         else:
-            kw_groups = kw_container.multiselect('Select Keyword groups',st.session_state['file']['cluster'].unique().tolist())
+            kw_groups = kw_container.multiselect('Select Keyword groups',processed_groups)
 
         try:
             display_file = display_file[
