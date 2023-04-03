@@ -100,7 +100,7 @@ def sqp_analyze(file):
     file['Niche ATC Conversion'] = file['Cart Adds: Total Count'] / file['Clicks: Total Count']
     file[f'{st.session_state.entity} ATC Conversion'] = file[f'Cart Adds: {st.session_state.entity} Count'] / file[f'Clicks: {st.session_state.entity} Count']
     file['KW Conversion'] = file['Purchases: Total Count'] / file['Clicks: Total Count']
-    file[f'{st.session_state.entity} Conversion'] = file[f'Purchases: {st.session_state.entity} Count'] / file[f'Clicks: {st.session_state.entity} Count']
+    file[f'{st.session_state.entity} Conversion'] = file[f'Purchases: {st.session_state.entity} Count'] / file[f'Clicks: {st.session_state.entity} Count'].fillna(0)
     file['Conversion status'] = 'Above average'
     file.loc[file[f'{st.session_state.entity} Conversion']<=file['KW Conversion'],'Conversion status'] = 'Below average'
     file['Sales increase potential'] = 0
