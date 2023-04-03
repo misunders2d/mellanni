@@ -274,7 +274,7 @@ if st.session_state['login']:
         'Sales increase potential','KW Conversion',f'{st.session_state.entity} Conversion','Conversion status'
     ]
     if 'file' in st.session_state:
-        info_area.write(st.session_state.info)
+        info_area.subheader(st.session_state.info)
         display_file = st.session_state['file'].copy() #copy the full dataframe to be sliced during filtering
         sales = filters1.multiselect('Sales',['high','med','low'],['high','med','low'])
         conversion = filters1.multiselect('Conversion',['high','med','low'], ['high','med','low'])
