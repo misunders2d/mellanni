@@ -67,19 +67,32 @@ def text_processing(file):
         return clusters
     def name_groups(file):
         clusters = file[cluster_col].unique().tolist()
+        # names = {}
+        # for c in clusters:
+        #     kws = file[file[cluster_col] == c][kw_col].values.tolist()
+        #     kw_list = [w for line in [x.split() for x in kws] for w in line]
+        #     counts = pd.DataFrame(kw_list).value_counts()
+        #     limit = counts.describe(percentiles = [0.5,0.9])['90%']
+        #     counts = counts[counts>=limit].index.tolist()
+        #     if len(counts) > 5:
+        #         names[c] = ' '.join([x[0] for x in counts[:5]]) + ' +'
+        #     else:
+        #         names[c] = ' '.join([x[0] for x in counts])
+        #     file[cluster_col] = file[cluster_col].replace(names)
+        #     file[cluster_col] = file[cluster_col].replace('','other')
+
         names = {}
         for c in clusters:
-            kws = file[file[cluster_col] == c][kw_col].values.tolist()
-            kw_list = [w for line in [x.split() for x in kws] for w in line]
-            counts = pd.DataFrame(kw_list).value_counts()
-            limit = counts.describe(percentiles = [0.5,0.9])['90%']
-            counts = counts[counts>=limit].index.tolist()
-            if len(counts) > 5:
-                names[c] = ' '.join([x[0] for x in counts[:5]]) + ' +'
-            else:
-                names[c] = ' '.join([x[0] for x in counts])
+            group = file.loc[file[cluster_col] == c][corpus_col]
+            vectorizer = TfidfVectorizer()
+            X = vectorizer.fit_transform(group)
+            names[c] = ' '.join(pd.DataFrame(
+                X.toarray(), columns=vectorizer.get_feature_names_out()
+                ).sum().sort_values(ascending = False)[:3].index.tolist())
             file[cluster_col] = file[cluster_col].replace(names)
             file[cluster_col] = file[cluster_col].replace('','other')
+
+
         return file
     file = lemmatize(file, kw_col)
     clusters = clusterize_keywords(file)
@@ -281,7 +294,6 @@ if st.session_state['login']:
 
             df_area.write(display_file[display_cols])
             get_stats(display_file)
-            st.write(f'this is{kw_search}here')
         except:
             df_area.write('No matches found')
 
