@@ -99,10 +99,10 @@ def sqp_analyze(file):
     file['Brand CTR'] = file['Clicks: Brand Count'] / file['Impressions: Brand Count']
     file['Niche ATC Conversion'] = file['Cart Adds: Total Count'] / file['Clicks: Total Count']
     file['Brand ATC Conversion'] = file['Cart Adds: Brand Count'] / file['Clicks: Brand Count']
-    file['Niche Conversion'] = file['Purchases: Total Count'] / file['Clicks: Total Count']
+    file['KW Conversion'] = file['Purchases: Total Count'] / file['Clicks: Total Count']
     file['Brand Conversion'] = file['Purchases: Brand Count'] / file['Clicks: Brand Count']
     file['Conversion status'] = 'Above average'
-    file.loc[file['Brand Conversion']<=file['Niche Conversion'],'Conversion status'] = 'Below average'
+    file.loc[file['Brand Conversion']<=file['KW Conversion'],'Conversion status'] = 'Below average'
     file['Sales increase potential'] = 0
     file.loc[file['Brand products per search']<1,'Sales increase potential'] = file['Purchases: Brand Count']/file['Brand products per search']-file['Purchases: Brand Count']
     file['Sales increase potential'] = file['Sales increase potential'].astype(int)
@@ -110,7 +110,7 @@ def sqp_analyze(file):
     normalized_cols = ['_norm_'+x for x in normalize_cols]
     file[normalized_cols] = MinMaxScaler().fit_transform(file[normalize_cols])
     categorical_cols = ['Search','Sales','Conversion']
-    for cat_col, norm_col in list(zip(categorical_cols,normalized_cols+['Niche Conversion'])):
+    for cat_col, norm_col in list(zip(categorical_cols,normalized_cols+['KW Conversion'])):
         file[cat_col] = pd.cut(
             file[norm_col],
             bins = [-1,
@@ -126,7 +126,7 @@ def read_file(file_path):
     pd_action = pd.read_csv if '.csv' in file_path.name[-4:] else pd.read_excel
     f = pd_action(file_path, nrows = 20)
     file_path.seek(0)
-    if 'Search Query' in  f.values:
+    if any(['Search Query' in  f.values,'Search Query' in  f.index]):
         skip = 1
     else:
         skip = 0
@@ -134,7 +134,7 @@ def read_file(file_path):
     return file   
 
 def get_stats(file):
-    niche_conversion = round(float(file['Purchases: Total Count'].sum() / file['Clicks: Total Count'].sum())*100,1)#
+    kw_conversion = round(float(file['Purchases: Total Count'].sum() / file['Clicks: Total Count'].sum())*100,1)#
     brand_conversion = round(float(file['Purchases: Brand Count'].sum() / file['Clicks: Brand Count'].sum())*100,1)#
     niche_ctr = round(float(file['Clicks: Total Count'].sum() / file['Impressions: Total Count'].sum())*100,1)#
     brand_ctr_share = round(float(file['Clicks: Brand Count'].sum() / file['Impressions: Brand Count'].sum())*100,1)#
@@ -186,7 +186,7 @@ def get_stats(file):
         )
     stat9.metric(
         'Total conversion',
-        str(niche_conversion)+'%'
+        str(kw_conversion)+'%'
         )
 
 
@@ -242,7 +242,7 @@ if st.session_state['login']:
 #working area
     display_cols = [
         'Search Query','Search Query Volume','Purchases: Total Count','Purchases: Brand Count','Max position for glance views',
-        'Sales increase potential','Conversion status'
+        'Sales increase potential','KW Conversion','Brand Conversion','Conversion status'
     ]
     if 'file' in st.session_state:
         display_file = st.session_state['file'].copy() #copy the full dataframe to be sliced during filtering
