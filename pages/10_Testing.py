@@ -93,18 +93,19 @@ def sqp_analyze(file):
     bin_labels = [str(int(x*100))+'%' for x in bins]
     file['Max position for glance views'] = file['Impressions: Total Count'] / file['Search Query Volume']
     file['Max position for glance views'] = file['Max position for glance views'].astype(int)
-    file['Brand products per search'] = file['Impressions: Brand Count'] / file['Search Query Volume']
-    file['Brand KW triggers'] = 'OK'
-    file.loc[file['Brand products per search']<1,['Brand KW triggers']] = 'Lost search'
-    file['Brand CTR'] = file['Clicks: Brand Count'] / file['Impressions: Brand Count']
+    file[f'{st.session_state.entity} products per search'] = file[f'Impressions: {st.session_state.entity} Count'] / file['Search Query Volume']
+    file[f'{st.session_state.entity} KW triggers'] = 'OK'
+    file.loc[file[f'{st.session_state.entity} products per search']<1,[f'{st.session_state.entity} KW triggers']] = 'Lost search'
+    file[f'{st.session_state.entity} CTR'] = file[f'Clicks: {st.session_state.entity} Count'] / file[f'Impressions: {st.session_state.entity} Count']
     file['Niche ATC Conversion'] = file['Cart Adds: Total Count'] / file['Clicks: Total Count']
-    file['Brand ATC Conversion'] = file['Cart Adds: Brand Count'] / file['Clicks: Brand Count']
+    file[f'{st.session_state.entity} ATC Conversion'] = file[f'Cart Adds: {st.session_state.entity} Count'] / file[f'Clicks: {st.session_state.entity} Count']
     file['KW Conversion'] = file['Purchases: Total Count'] / file['Clicks: Total Count']
-    file['Brand Conversion'] = file['Purchases: Brand Count'] / file['Clicks: Brand Count']
+    file[f'{st.session_state.entity} Conversion'] = file[f'Purchases: {st.session_state.entity} Count'] / file[f'Clicks: {st.session_state.entity} Count']
     file['Conversion status'] = 'Above average'
-    file.loc[file['Brand Conversion']<=file['KW Conversion'],'Conversion status'] = 'Below average'
+    file.loc[file[f'{st.session_state.entity} Conversion']<=file['KW Conversion'],'Conversion status'] = 'Below average'
     file['Sales increase potential'] = 0
-    file.loc[file['Brand products per search']<1,'Sales increase potential'] = file['Purchases: Brand Count']/file['Brand products per search']-file['Purchases: Brand Count']
+    file.loc[file[f'{st.session_state.entity} products per search']<1,'Sales increase potential'] = file[f'Purchases: {st.session_state.entity} Count']/file[f'{st.session_state.entity} products per search']-file[f'Purchases: {st.session_state.entity} Count']
+    file.loc[file[f'Purchases: {st.session_state.entity} Count']==0,'Sales increase potential'] = file['Purchases: Total Count']/file['Max position for glance views']
     file['Sales increase potential'] = file['Sales increase potential'].astype(int)
     normalize_cols = ['Search Query Volume','Purchases: Total Count']
     normalized_cols = ['_norm_'+x for x in normalize_cols]
@@ -120,6 +121,7 @@ def sqp_analyze(file):
             labels = ['low','med','high'],
             duplicates = 'drop'
             )
+    file['KW Conversion'] = round(file['KW Conversion']*100,1)
     return file
 
 def read_file(file_path):
@@ -131,15 +133,19 @@ def read_file(file_path):
     else:
         skip = 0
     file = pd_action(file_path, skiprows = skip)
-    return file   
+    if any(['ASIN' in x for x in f.columns.tolist()]):
+        st.session_state.entity = 'ASIN'
+    elif any(['Brand' in x for x in f.columns.tolist()]):
+        st.session_state.entity = 'Brand'
+    return file
 
 def get_stats(file):
     kw_conversion = round(float(file['Purchases: Total Count'].sum() / file['Clicks: Total Count'].sum())*100,1)#
-    brand_conversion = round(float(file['Purchases: Brand Count'].sum() / file['Clicks: Brand Count'].sum())*100,1)#
+    brand_conversion = round(float(file[f'Purchases: {st.session_state.entity} Count'].sum() / file[f'Clicks: {st.session_state.entity} Count'].sum())*100,1)#
     niche_ctr = round(float(file['Clicks: Total Count'].sum() / file['Impressions: Total Count'].sum())*100,1)#
-    brand_ctr_share = round(float(file['Clicks: Brand Count'].sum() / file['Impressions: Brand Count'].sum())*100,1)#
+    brand_ctr_share = round(float(file[f'Clicks: {st.session_state.entity} Count'].sum() / file[f'Impressions: {st.session_state.entity} Count'].sum())*100,1)#
     total_purchases = int(file['Purchases: Total Count'].sum())#
-    brand_purchases = int(file['Purchases: Brand Count'].sum())#
+    brand_purchases = int(file[f'Purchases: {st.session_state.entity} Count'].sum())#
     brand_market_share = round(float(brand_purchases / total_purchases)*100,1)#
     keywords_above_niche = len(file[file['Conversion status']=='Above average'])
     keywords_below_niche = len(file[file['Conversion status']=='Below average'])
@@ -150,9 +156,9 @@ def get_stats(file):
 
     # label1.write('Purchases')
     stat1.metric(
-        'Brand purchases',
+        f'{st.session_state.entity} purchases',
         f'{brand_purchases:,}',
-        help = 'Total and brand-specific purchases generated by the keyword pool'
+        help = f'Total and {st.session_state.entity}-specific purchases generated by the keyword pool'
         )
     stat6.metric(
         'Total purchases',
@@ -161,9 +167,9 @@ def get_stats(file):
 
     # label2.write('CTR')
     stat2.metric(
-        'Brand CTR',
+        f'{st.session_state.entity} CTR',
         str(brand_ctr_share)+'%',
-        help = 'Total CTR for the keyword pool and % of clicks the brand got'
+        help = 'Total CTR for the keyword pool and % of clicks the f{st.session_state.entity} got'
         )
     stat7.metric(
         'Total CTR',
@@ -172,15 +178,15 @@ def get_stats(file):
 
     # label3.write('Brand market share')
     stat3.metric(
-        'Brand market share',
+        f'{st.session_state.entity} market share',
         str(brand_market_share)+'%',
-        help = 'Brand sales compared to all sales for this keyword set'        
+        help = f'{st.session_state.entity} sales compared to all sales for this keyword set'        
         )
     stat8.metric('Sales increase potential',sales_increase_potential)
 
     # label4.write('Conversion')
     stat4.metric(
-        'Brand conversion',
+        f'{st.session_state.entity} conversion',
         str(brand_conversion)+'%',
         help = '% of purchases made compared to number of clicks'
         )
@@ -210,6 +216,8 @@ def get_stats(file):
 
 ##############################################################################################################
 #markup area
+if 'entity' not in st.session_state:
+    st.session_state.entity = ''
 stat_area1 = st.empty()
 stat_area2 = st.empty()
 stat1,stat2,stat3,stat4,stat5 = stat_area1.columns([1,1,1,1,1])
@@ -241,15 +249,15 @@ if st.session_state['login']:
 #################################################################################################################
 #working area
     display_cols = [
-        'Search Query','Search Query Volume','Purchases: Total Count','Purchases: Brand Count','Max position for glance views',
-        'Sales increase potential','KW Conversion','Brand Conversion','Conversion status'
+        'Search Query','Search Query Volume',f'Impressions: {st.session_state.entity} Share %','Purchases: Total Count',f'Purchases: {st.session_state.entity} Count','Max position for glance views',
+        'Sales increase potential','KW Conversion',f'{st.session_state.entity} Conversion','Conversion status'
     ]
     if 'file' in st.session_state:
         display_file = st.session_state['file'].copy() #copy the full dataframe to be sliced during filtering
         sales = filters1.multiselect('Sales',['high','med','low'],['high','med','low'])
         conversion = filters1.multiselect('Conversion',['high','med','low'], ['high','med','low'])
         niche_compare = filters2.multiselect('Brand vs Niche',['Above average','Below average'],['Above average','Below average'])
-        kw_search = re.split(',',filters2.text_input('Seach keywords containing',''))
+        kw_search = re.split(' ',filters2.text_input('Seach keywords containing',''))
         kw_container = filters3.container()
         all_keywords = filters3.checkbox('Select all', value = True)
         processed_groups = st.session_state['file']['cluster'].unique().tolist()
@@ -267,10 +275,12 @@ if st.session_state['login']:
                 (display_file['Conversion status'].isin(niche_compare))
             ]
             display_file = display_file[display_file['Search Query'].str.contains('|'.join(kw_search),case = False)]
-
+            # if len(kw_search)!= '':
+            #     display_file = display_file[display_file['Search Query'].str.split(' ').apply(set(kw_search).issubset)]
 
             df_area.write(display_file[display_cols])
             get_stats(display_file)
+            st.write(f'this is{kw_search}here')
         except:
             df_area.write('No matches found')
 
