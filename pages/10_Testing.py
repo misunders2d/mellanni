@@ -39,11 +39,10 @@ def text_processing(file):
         file[corpus_col] = corpus
         return file
     
-    def measure_clusters(vectors):
+    def measure_clusters(vectors,bins):
         sims = {'cosine':cosine_similarity(vectors), 'nocosine':vectors.toarray()}
         optimal = 1000000000
         for key,sim in sims.items():
-            bins = range(2,30)
             wcss = []
             for i in bins:
                 model = KMeans(n_clusters=i, init='k-means++', max_iter=300, n_init=10, random_state=0)
@@ -61,7 +60,11 @@ def text_processing(file):
         corpus = file[corpus_col].values.tolist()
         cv = TfidfVectorizer(stop_words=['english','spanish'],ngram_range=(1,3))
         vectors = cv.fit_transform(corpus)
-        sim, n_clusters, method = measure_clusters(vectors)
+        if len(corpus) > 31:
+            bins = range(2,30)
+        else:
+            bins = range(1,len(corpus))
+        sim, n_clusters, method = measure_clusters(vectors,bins)
         model = KMeans(n_clusters=n_clusters, init='k-means++', max_iter=300, n_init=10, random_state=0)
         clusters = model.fit_predict(sim)
         return clusters
