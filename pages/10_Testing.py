@@ -149,6 +149,7 @@ def read_file(file_path):
         skip = 1
     else:
         skip = 0
+    st.session_state.info = ', '.join(f.columns.tolist()).replace('[','').replace(']','')
     file = pd_action(file_path, skiprows = skip)
     if any(['ASIN' in x for x in f.columns.tolist()]):
         st.session_state.entity = 'ASIN'
@@ -235,6 +236,9 @@ def get_stats(file):
 #markup area
 if 'entity' not in st.session_state:
     st.session_state.entity = ''
+info_area = st.empty()
+if 'info' not in st.session_state:
+    st.session_state.info = ''
 stat_area1 = st.empty()
 stat_area2 = st.empty()
 stat1,stat2,stat3,stat4,stat5 = stat_area1.columns([1,1,1,1,1])
@@ -270,6 +274,7 @@ if st.session_state['login']:
         'Sales increase potential','KW Conversion',f'{st.session_state.entity} Conversion','Conversion status'
     ]
     if 'file' in st.session_state:
+        info_area.write(st.session_state.info)
         display_file = st.session_state['file'].copy() #copy the full dataframe to be sliced during filtering
         sales = filters1.multiselect('Sales',['high','med','low'],['high','med','low'])
         conversion = filters1.multiselect('Conversion',['high','med','low'], ['high','med','low'])
