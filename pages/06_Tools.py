@@ -217,6 +217,24 @@ if st.session_state['login']:
             if but3.button('Reset') and 'asins' in st.session_state:
                 del st.session_state['asins']
 
+        with st.expander('Convert GDrive links to direct links'):
+            import re
+            links_area = st.empty()
+            def clean_links(links):
+                clean = []
+                for i in links:
+                    c = i.replace('https://drive.google.com/file/d/','').replace('/view?usp=sharing','')
+                    c = c.replace('https://drive.google.com/open?id=','').split('&authuser=')[0]
+                    c = 'https://drive.google.com/uc?export=view&id='+c
+                    clean.append(c)
+                return clean
+            links = re.split(',|\n',links_area.text_area('Input links to convert'))
+            links = [x for x in links if x != '']
+            if st.button('Convert'):
+                new_links = clean_links(links)
+                links_area.text_area('Clean links','\n\n'.join(new_links))
+
+
 
         with st.expander('Upload images to web and get direct links'):
             from imagekitio import ImageKit
