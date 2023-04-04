@@ -105,8 +105,8 @@ def text_processing(file):
     return file
 
 def sqp_analyze(file):
-    bins = [0.4, 0.7]
-    bin_labels = [str(int(x*100))+'%' for x in bins]
+    # bins = [0.4, 0.7]
+    # bin_labels = [str(int(x*100))+'%' for x in bins]
     file['Max position for glance views'] = file['Impressions: Total Count'] / file['Search Query Volume']
     file['Max position for glance views'] = file['Max position for glance views'].astype(int)
     file[f'{st.session_state.entity} products per search'] = file[f'Impressions: {st.session_state.entity} Count'] / file['Search Query Volume']
@@ -128,16 +128,33 @@ def sqp_analyze(file):
     normalized_cols = ['_norm_'+x for x in normalize_cols]
     file[normalized_cols] = MinMaxScaler().fit_transform(file[normalize_cols])
     categorical_cols = ['Search','Sales','Conversion']
-    for cat_col, norm_col in list(zip(categorical_cols,normalized_cols+['KW Conversion'])):
-        file[cat_col] = pd.cut(
-            file[norm_col],
-            bins = [-1,
-                    file[norm_col].describe(percentiles = bins).loc[bin_labels[0]],
-                    file[norm_col].describe(percentiles = bins).loc[bin_labels[1]],
-                    1],
-            labels = ['low','med','high'],
-            duplicates = 'drop'
-            )
+    try:
+        bins = [0.4, 0.7]
+        bin_labels = [str(int(x*100))+'%' for x in bins]
+        
+        for cat_col, norm_col in list(zip(categorical_cols,normalized_cols+['KW Conversion'])):
+            file[cat_col] = pd.cut(
+                file[norm_col],
+                bins = [-1,
+                        file[norm_col].describe(percentiles = bins).loc[bin_labels[0]],
+                        file[norm_col].describe(percentiles = bins).loc[bin_labels[1]],
+                        1],
+                labels = ['low','med','high'],
+                duplicates = 'drop'
+                )
+    except:
+        bins = [0.5]
+        bin_labels = [str(int(x*100))+'%' for x in bins]
+        
+        for cat_col, norm_col in list(zip(categorical_cols,normalized_cols+['KW Conversion'])):
+            file[cat_col] = pd.cut(
+                file[norm_col],
+                bins = [-1,
+                        file[norm_col].describe(percentiles = bins).loc[bin_labels[0]],
+                        1],
+                labels = ['low','high'],
+                duplicates = 'drop'
+                )
     file['KW Conversion'] = round(file['KW Conversion']*100,1)
     return file
 
