@@ -234,8 +234,6 @@ if st.session_state['login']:
                 new_links = clean_links(links)
                 links_area.text_area('Clean links','\n\n'.join(new_links))
 
-
-
         with st.expander('Upload images to web and get direct links'):
             from imagekitio import ImageKit
             from imagekitio.models.UploadFileRequestOptions import UploadFileRequestOptions
@@ -275,6 +273,7 @@ if st.session_state['login']:
                     result = imagekit.upload_file(file = img, file_name = f.name, options = options)
                     url = url_endpoint+result.file_path
                     urls.append(url)
+                urls = sorted(urls, reverse = False)
 
                 df = pd.DataFrame(skus,columns = ['SKU'])
                 if len(skus) > 1 and skus != "":
