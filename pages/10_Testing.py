@@ -63,7 +63,7 @@ def text_processing(file):
         if len(corpus) > 31:
             bins = range(2,30)
         else:
-            bins = range(1,len(corpus))
+            bins = range(1,5)
         sim, n_clusters, method = measure_clusters(vectors,bins)
         model = KMeans(n_clusters=n_clusters, init='k-means++', max_iter=300, n_init=10, random_state=0)
         clusters = model.fit_predict(sim)
