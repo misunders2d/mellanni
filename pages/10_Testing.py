@@ -60,10 +60,12 @@ def text_processing(file):
         corpus = file[corpus_col].values.tolist()
         cv = TfidfVectorizer(stop_words=['english','spanish'],ngram_range=(1,3))
         vectors = cv.fit_transform(corpus)
-        if len(corpus) > 31:
+        if len(corpus)<10:
+            bins = 3
+        elif len(corpus)<=50:
+            bins = range(1,4)
+        elif len(corpus) > 50:
             bins = range(2,30)
-        else:
-            bins = range(1,5)
         sim, n_clusters, method = measure_clusters(vectors,bins)
         model = KMeans(n_clusters=n_clusters, init='k-means++', max_iter=300, n_init=10, random_state=0)
         clusters = model.fit_predict(sim)
