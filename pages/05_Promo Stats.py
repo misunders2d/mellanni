@@ -7,6 +7,8 @@ from google.cloud import bigquery #pip install google-cloud-bigquery
 from google.oauth2 import service_account
 from modules import gcloud_modules as gc
 from modules import formatting as ff
+import pytz
+pacific = pytz.timezone('US/Pacific')
 
 st.set_page_config(page_title = 'M Tools App', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state = 'collapsed')
 
@@ -160,12 +162,13 @@ if st.session_state['login']:
         if skus:
             df.rename(columns = {'sales':'Sales, $', 'discount':'Discount, $'}, inplace = True)
             return df
+        orders['purchase_date'] = orders['purchase_date'].dt.tz_convert(pacific).dt.tz_localize(None).dt.date
         orders['item_price'] = orders['item_price'].astype('float')
         orders['item_promotion_discount'] = orders['item_promotion_discount'].astype('float')
         orders['quantity'] = orders['quantity'].astype('int')
         orders_pivot = orders.pivot_table(
             values = ['item_price','quantity'],
-            index = 'amazon_order_id',
+            index = ['amazon_order_id','purchase_date'],
             aggfunc = 'sum'
             )#.reset_index()
         return orders_pivot
@@ -234,9 +237,10 @@ if st.session_state['login']:
                     if skus:
                         orders_pivot['Net proceeds'] = orders_pivot['Sales, $'] - orders_pivot['Discount, $']
                         orders_pivot['Discount, %'] = round(orders_pivot['Discount, $'] / orders_pivot['Sales, $'] * 100, 1)
-                        return orders_pivot
+                        return orders_pivot, orders_pivot
                     
                     total = pd.merge(orders_pivot, promos_pivot, left_index = True, right_index = True).reset_index()
+                    full = total.copy()
                     total = total.pivot_table(
                         values = ['item_price', 'quantity','item_promotion_discount'],
                         index = ['promo_code','description'],
@@ -249,7 +253,7 @@ if st.session_state['login']:
                     total['Discount, %'] = round(total['Discount, $'] / total['Sales, $'] * 100, 1)
                     total = total.sort_values('quantity', ascending = False)
 
-        return total
+        return total, full
 
     # def prepare_for_export(dfs,sheet_names):
     #     output = BytesIO()
@@ -274,9 +278,9 @@ if st.session_state['login']:
         codes = [x for x in codes if x != '']
         with st.spinner('Please wait, pulling information...'):
             if codes == []:
-                st.session_state.processed_data = process_data(code_list = None,start = d_from, end = d_to)
+                st.session_state.processed_data, st.session_state.full = process_data(code_list = None,start = d_from, end = d_to)
             else:
-                st.session_state.processed_data = process_data(code_list = codes,start = d_from, end = d_to)
+                st.session_state.processed_data, st.session_state.full = process_data(code_list = codes,start = d_from, end = d_to)
     if col2.button('Get Attribution data'):
         st.session_state.file_name,st.session_state.sheet_name = 'Attribution_report.xlsx',['Total','Daily']
         with st.spinner('Loading Attribution data'):
@@ -285,7 +289,7 @@ if st.session_state['login']:
 
     if col3.button('Get SKU data'):
         st.session_state.file_name,st.session_state.sheet_name = 'SKU_report.xlsx','SKUs'
-        st.session_state.processed_data = process_data(code_list = None,start = d_from, end = d_to, coupons = coupons, skus = True)
+        st.session_state.processed_data, st.session_state.full = process_data(code_list = None,start = d_from, end = d_to, coupons = coupons, skus = True)
 
     if 'processed_data' in st.session_state and not isinstance(st.session_state.processed_data,str):
         if isinstance(st.session_state.processed_data,list):
@@ -293,7 +297,7 @@ if st.session_state['login']:
             result = ff.prepare_for_export([st.session_state['processed_data'][0],st.session_state['processed_data'][1]],st.session_state.sheet_name)
         else:
             display = st.session_state.processed_data
-            result = ff.prepare_for_export([st.session_state['processed_data']],[st.session_state.sheet_name])
+            result = ff.prepare_for_export([st.session_state['processed_data'],st.session_state.full],[st.session_state.sheet_name,'Full data'])
         st.write(display)
 
         st.download_button('Download results',result, file_name = st.session_state.file_name)
