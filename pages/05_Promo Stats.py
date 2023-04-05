@@ -230,6 +230,7 @@ if st.session_state['login']:
             order_list = promos_pivot.index.tolist()
             if len(order_list) == 0:
                 total = 'Sorry, no data for this time period yet'
+                full = 'Sorry, no data for this time period yet'
             else:
                 with st.spinner(f'Pulling {len(order_list)} orders'):
                     orders_pivot = read_all_orders(order_list, skus = skus)
