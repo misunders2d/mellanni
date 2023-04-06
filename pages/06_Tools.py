@@ -260,7 +260,7 @@ if st.session_state['login']:
                 )
 
             skus = st.text_area('Input SKUs').split('\n')
-            folder = st.text_input('Input folder name, if necessary')
+            folder = st.text_input('Input folder name, if necessary').replace('.','_').replace(' ','_')
             options = UploadFileRequestOptions(
                 use_unique_file_name=False,
                 folder=f'/{folder}/')
