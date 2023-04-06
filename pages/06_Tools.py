@@ -298,7 +298,7 @@ if st.session_state['login']:
         with st.expander('Meeting summarizer'):
             def get_meeting_summary(prompt,text):
                 blocks = re.split('\n| \.',text)
-                word_limit = 2200
+                word_limit = 2000
                 
                 chunks = []
                 limit = 0
