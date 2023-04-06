@@ -5,6 +5,12 @@ from io import BytesIO
 from modules import formatting as ff
 import login
 from modules import gcloud_modules as gc
+import openai
+key = st.secrets['AI_KEY']
+openai.api_key = key
+
+
+
 st.session_state['login'], st.session_state['name'] = login.login()
 name_area = st.empty()
 col1, col2 = st.columns([10,3])
@@ -286,4 +292,71 @@ if st.session_state['login']:
                 output = BytesIO()
                 with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
                     df.to_excel(writer, sheet_name = 'image_links', index = False)
-                st.download_button('Download results',output.getvalue(), file_name = 'image_links.xlsx')            
+                st.download_button('Download results',output.getvalue(), file_name = 'image_links.xlsx')
+
+
+        with st.expander('Meeting summarizer'):
+            def get_meeting_summary(prompt,text):
+                blocks = re.split('\n| \.',text)
+                word_limit = 2200
+                
+                chunks = []
+                limit = 0
+                chunk = []
+                for block in blocks:
+                    limit += len(block.split(' '))
+                    if limit < word_limit:
+                        chunk += [block]
+                    else:
+                        limit = 0
+                        chunks.append(chunk)
+                        chunk = []
+                chunks.append(chunk)
+
+                # chunks = []
+                # n_split = 30
+                
+                # #split to chunks
+                # parts = len(blocks)//n_split
+                # for i in range(parts+1):
+                #     chunks.append(blocks[i*n_split:(i+1)*n_split])
+
+                summaries = []
+                progress_bar = st.progress(len(chunks)/100,'Please wait...')
+
+                for i,c in enumerate(chunks):
+                    messages = [
+                        {'role':'user', 'content':f'Please summarize the following part of the discussion. Please list the key talking points and aciton items:\n{c}'}]
+                    response = openai.ChatCompletion.create(
+                    # model="text-davinci-003",
+                    model = 'gpt-3.5-turbo',
+                    messages =  messages,
+                    temperature=0.9,
+                    max_tokens=1000
+                    )
+                    # Get the generated text and append it to the chat history
+                    message = response['choices'][0]['message']['content'].strip()
+                    summaries.append(message)
+                    progress_bar.progress((i+1)/len(chunks),'Please wait...')
+                
+                #summarize
+                messages = [
+                    {'role':'user', 'content':f'''{prompt}\n'''+'\n\n'.join(summaries)}]
+                response = openai.ChatCompletion.create(
+                # model="text-davinci-003",
+                model = 'gpt-3.5-turbo',
+                messages =  messages,
+                temperature=0.9,
+                max_tokens=1000
+                )
+                # Get the generated text and append it to the chat history
+                final = response['choices'][0]['message']['content'].strip()
+                return final
+            prompt_area = st.empty()
+            text_area = st.empty()
+            prompt_text = 'Please group the following conclusions into one comprehensive meeting summary.\nMake a separate list of key talking points and action items:'
+            prompt_query = prompt_area.text_area('Prompt',prompt_text,help = 'Modify the query if you are not getting the results you need')
+            input_text = text_area.text_area('Input meeting transcription',height = 500)
+            if st.button('Summarize'):
+                st.session_state.result = get_meeting_summary(prompt_query,input_text)
+                text_area.text_area('Summary:',st.session_state.result, height = 500)
