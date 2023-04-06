@@ -320,23 +320,25 @@ if st.session_state['login']:
                 # parts = len(blocks)//n_split
                 # for i in range(parts+1):
                 #     chunks.append(blocks[i*n_split:(i+1)*n_split])
+                if len(chunks) == 1:
+                    summaries = chunks[0]
+                else:
+                    summaries = []
+                    progress_bar = st.progress(len(chunks)/100,'Please wait...')
 
-                summaries = []
-                progress_bar = st.progress(len(chunks)/100,'Please wait...')
-
-                for i,c in enumerate(chunks):
-                    messages = [
-                        {'role':'user', 'content':f'Please summarize the following part of the discussion. Please list the key talking points and aciton items:\n{c}'}]
-                    response = openai.ChatCompletion.create(
-                    # model="text-davinci-003",
-                    model = 'gpt-3.5-turbo',
-                    messages =  messages,
-                    temperature=0.9,
-                    max_tokens=1000
-                    )
-                    # Get the generated text and append it to the chat history
-                    message = response['choices'][0]['message']['content'].strip()
-                    summaries.append(message)
+                    for i,c in enumerate(chunks):
+                        messages = [
+                            {'role':'user', 'content':f'Please summarize the following part of the discussion. Please list the key talking points and aciton items:\n{c}'}]
+                        response = openai.ChatCompletion.create(
+                        # model="text-davinci-003",
+                        model = 'gpt-3.5-turbo',
+                        messages =  messages,
+                        temperature=0.9,
+                        max_tokens=1000
+                        )
+                        # Get the generated text and append it to the chat history
+                        message = response['choices'][0]['message']['content'].strip()
+                        summaries.append(message)
                     progress_bar.progress((i+1)/len(chunks),'Please wait...')
                 
                 #summarize
