@@ -348,7 +348,10 @@ if st.session_state['login']:
             if all([x in cerebro.columns for x in cerebro_columns]):
                 asins = [re.findall(asin_str, x) for x in cerebro.columns]
                 try:
-                    asin = re.search(asin_str,cerebro_file.name).group()
+                    try:
+                        asin = re.search(asin_str,cerebro_file.name).group()
+                    except:
+                        asin = 'Unidentified'
                     asins = [asin] + [x[0] for x in asins if x != []]
                     if len(asins) == 1:
                         asin_col = 'Organic Rank'

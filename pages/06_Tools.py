@@ -296,7 +296,7 @@ if st.session_state['login']:
 
 
         with st.expander('Meeting summarizer'):
-            def get_meeting_summary(prompt,text):
+            def get_meeting_summary(prompt,text, temp):
                 blocks = re.split('\n| \.',text)
                 word_limit = 2000
                 
@@ -328,12 +328,12 @@ if st.session_state['login']:
 
                     for i,c in enumerate(chunks):
                         messages = [
-                            {'role':'user', 'content':f'Please summarize the following part of the discussion. Please list the key talking points and aciton items:\n{c}'}]
+                            {'role':'user', 'content':f'Please summarize the following part of the discussion, explicitly separating key talking points and action items, if any:\n{c}'}]
                         response = openai.ChatCompletion.create(
                         # model="text-davinci-003",
                         model = 'gpt-3.5-turbo',
                         messages =  messages,
-                        temperature=0.9,
+                        temperature=temp,
                         max_tokens=1000
                         )
                         # Get the generated text and append it to the chat history
@@ -348,17 +348,38 @@ if st.session_state['login']:
                 # model="text-davinci-003",
                 model = 'gpt-3.5-turbo',
                 messages =  messages,
-                temperature=0.9,
+                temperature=temp,
                 max_tokens=1000
                 )
                 # Get the generated text and append it to the chat history
                 final = response['choices'][0]['message']['content'].strip()
-                return final
+                messages.append({'role':'assistant','content':final})
+                return final, messages
             prompt_area = st.empty()
             text_area = st.empty()
-            prompt_text = 'Please group the following conclusions into one comprehensive meeting summary.\nMake a separate list of key talking points and action items:'
-            prompt_query = prompt_area.text_area('Prompt',prompt_text,help = 'Modify the query if you are not getting the results you need')
+            clarify_area = st.empty()
+            prompt_text = 'Please summarize the following meeting minutes, stay detailed, but concise. Make sure to explicitly identify key talking points and action items, if any:\n'
+            prompt_query = prompt_area.text_area('Prompt',prompt_text,help = 'Modify the query if you are not getting the results you need', height = 150)
             input_text = text_area.text_area('Input meeting transcription',height = 500)
             if st.button('Summarize'):
-                st.session_state.result = get_meeting_summary(prompt_query,input_text)
+                st.session_state.summarized = True
+                st.session_state.result, st.session_state.messages = get_meeting_summary(prompt_query,input_text, temp = 0.9)
                 text_area.text_area('Summary:',st.session_state.result, height = 500)
+                # if st.session_state.summarized:
+                #     if st.button('Regenerate'):
+                #         st.session_state.result, st.session_state.messages = get_meeting_summary(prompt_query,input_text, temp = 0.5)
+
+                # if st.checkbox('Adjust') or st.session_state.summarized:
+                #     clarification = clarify_area.text_area("Fine-tune the bot's response",'')
+                #     if st.button('Adjust'):
+                #         st.session_state.messages.append({'role':'user','content':clarification})
+                #         response = openai.ChatCompletion.create(
+                #             # model="text-davinci-003",
+                #             model = 'gpt-3.5-turbo',
+                #             messages =  st.session_state.messages,
+                #             temperature=temp,
+                #             max_tokens=1000
+                #             )
+                #         st.session_state.clarified = response['choices'][0]['message']['content'].strip()
+                #         clarify_area.text_area('Adjusted:',st.session_state.clarified, height = 500)
+                        
