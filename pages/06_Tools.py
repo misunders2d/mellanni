@@ -358,7 +358,7 @@ if st.session_state['login']:
             prompt_area = st.empty()
             text_area = st.empty()
             clarify_area = st.empty()
-            prompt_text = 'Please summarize the following meeting minutes, stay detailed, but concise. Make sure to explicitly identify key talking points and action items, if any:\n'
+            prompt_text = 'Please summarize the following meeting minutes, stay detailed, but concise. Make sure to explicitly and separately list key talking points and action items, if any:\n'
             prompt_query = prompt_area.text_area('Prompt',prompt_text,help = 'Modify the query if you are not getting the results you need', height = 150)
             input_text = text_area.text_area('Input meeting transcription',height = 500)
             if st.button('Summarize'):
