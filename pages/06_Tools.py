@@ -363,7 +363,7 @@ if st.session_state['login']:
             input_text = text_area.text_area('Input meeting transcription',height = 500)
             if st.button('Summarize'):
                 st.session_state.summarized = True
-                st.session_state.result, st.session_state.messages = get_meeting_summary(prompt_query,input_text, temp = 0.9)
+                st.session_state.result, st.session_state.messages = get_meeting_summary(prompt_query,input_text, temp = 0.2)
                 text_area.text_area('Summary:',st.session_state.result, height = 500)
                 # if st.session_state.summarized:
                 #     if st.button('Regenerate'):
