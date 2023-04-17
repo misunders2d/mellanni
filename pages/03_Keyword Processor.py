@@ -12,7 +12,7 @@ import pandas as pd
 import re
 from modules import formatting as ff
 import os
-st.write(os.listdir('/home/appuser/'))
+st.write(os.listdir('/home/appuser/nltk_data'))
 
 # import nltk
 # if nltk.download('all') == False:
