@@ -14,9 +14,9 @@ from modules import formatting as ff
 import os
 st.write(os.listdir('/home/appuser/nltk_data'))
 
-# import nltk
-# if nltk.download('all') == False:
-#     nltk.download('all')
+import nltk
+if not os.path.isdir('/home/appuser/nltk_data'):
+    nltk.download('all')
 
 # st.set_page_config(page_title = 'Mellanni Keyword processing', page_icon = 'logo.ico',layout="wide")
 
