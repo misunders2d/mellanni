@@ -13,7 +13,7 @@ import re
 from modules import formatting as ff
 import os
 st.write(os.listdir(os.getcwd()))
-st.set_page_config(page_title = 'Mellanni Keyword processing', page_icon = 'logo.ico',layout="wide")
+# st.set_page_config(page_title = 'Mellanni Keyword processing', page_icon = 'logo.ico',layout="wide")
 
 import login
 st.session_state['login'], st.session_state['name'] = login.login()
