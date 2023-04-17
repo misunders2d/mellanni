@@ -13,6 +13,11 @@ import re
 from modules import formatting as ff
 import os
 st.write(os.listdir(os.getcwd()))
+
+import nltk
+if nltk.download('all') == False:
+    nltk.download('all')
+
 # st.set_page_config(page_title = 'Mellanni Keyword processing', page_icon = 'logo.ico',layout="wide")
 
 import login
