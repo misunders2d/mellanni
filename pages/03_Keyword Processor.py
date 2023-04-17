@@ -39,8 +39,8 @@ if st.session_state['login']:
         from sklearn.cluster import MiniBatchKMeans, KMeans, MeanShift, AgglomerativeClustering, DBSCAN
         from sklearn.metrics.pairwise import cosine_similarity
         import nltk
-        if nltk.download('all') == False:
-            nltk.download('all')
+        # if nltk.download('all') == False:
+        #     nltk.download('all')
         from nltk.corpus import stopwords
         from nltk.stem import WordNetLemmatizer
         import re        
