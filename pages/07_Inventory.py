@@ -13,8 +13,9 @@ import numpy as np
 import os
 from barcode import Code128, Code39
 from barcode.writer import ImageWriter
-remove_ready1 = remove_ready2 = False
-st.write(os.listdir(os.getcwd()))
+remove_ready1 = False
+remove_ready2 = False
+st.write(remove_ready1,remove_ready2)
 
 
 width = 2.2
@@ -26,7 +27,6 @@ template = pd.DataFrame(data = [['sample SKU','required quantity of labels','upc
 
 if not os.path.isdir('barcodes'):
     os.makedirs('barcodes')
-st.write(os.listdir('barcodes'))
 
 def generate_pdf(fnskus, titles, qty):
     #PDF
@@ -78,7 +78,6 @@ def remove_images():
         os.removedirs('barcodes')
     return None
 
-# @st.cache_resource(show_spinner=False)
 def pull_dictionary():
     client = gc.gcloud_connect()
     sql = '''SELECT SKU,FNSKU,UPC,Short_title FROM `auxillary_development.dictionary`'''
@@ -120,5 +119,3 @@ if 'pdf' in st.session_state:
         remove_ready2 = True
     if all([remove_ready1, remove_ready2]):
         remove_images()
-st.write(remove_ready1,remove_ready2)
-st.write(os.listdir(os.getcwd()))
