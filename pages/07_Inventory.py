@@ -117,5 +117,5 @@ if 'pdf' in st.session_state:
         data = output.getvalue(),
         file_name = 'SKUs.xlsx'):
         remove_ready2 = True
-    if all([remove_ready1, remove_ready2]):
-        remove_images()
+    # if all([remove_ready1, remove_ready2]):
+    #     remove_images()
