@@ -5,7 +5,7 @@ Created on Fri May  6 15:15:51 2022
 @author: djoha
 """
 import streamlit as st
-import os
+# import os
 import pandas as pd
 from io import BytesIO
 from PIL import Image
