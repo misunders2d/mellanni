@@ -26,6 +26,7 @@ template = pd.DataFrame(data = [['sample SKU','required quantity of labels','upc
 
 if not os.path.isdir('barcodes'):
     os.makedirs('barcodes')
+    st.write(os.listdir('barcodes'))
 
 # def generate_pdf(fnskus, titles, qty):
 #     #PDF
