@@ -76,17 +76,18 @@ def remove_images():
 
 def pull_dictionary():
     client = gc.gcloud_connect()
-    sql = '''SELECT SKU,FNSKU,UPC,Collection,Size,Color,Short_title FROM `auxillary_development.dictionary`'''
+    sql = '''SELECT sku,fnsku,upc,collection,size,color,short_title FROM `auxillary_development.dictionary`'''
     query_job = client.query(sql)  # Make an API request.
     dictionary = query_job.result().to_dataframe()
     client.close()
+    dictionary = dictionary[~dictionary['fnsku'].isin(['bundle','none','FBM'])]
     return dictionary
 
 col1, col2 = st.columns([10,3])
 
 with col2:
     # @st.cache_data(show_spinner=False)
-    def pull_dictionary():
+    def download_dictionary():
         client = gc.gcloud_connect()
         sql = '''SELECT * FROM `auxillary_development.dictionary`'''
         query_job = client.query(sql)  # Make an API request.
@@ -99,39 +100,36 @@ with col2:
         return output.getvalue()
     
     if col2.checkbox('Dictionary'):
-        dictionary = pull_dictionary()
+        dictionary = download_dictionary()
         st.download_button('Download dictionary',dictionary, file_name = 'Dictionary.xlsx')
 
 with col1:
-    upcs = st.text_area('Input UPCs', height = 300, help = 'Input a list of SKUs you want to generate barcodes for').split('\n')
-    upcs = [x for x in upcs if x != '']
-
-    if st.button('Create barcodes') and len(upcs) > 0:
+    skus = st.text_area('Input SKUs', height = 300, help = 'Input a list of SKUs you want to generate barcodes for').split('\n')
+    sku_list = [x for x in skus if x != '']
+    if st.button('Create barcodes') and len(sku_list) > 0:
         with st.spinner('Please wait'):
             dictionary = pull_dictionary()
-            st.session_state.file = dictionary[dictionary['SKU'].isin(upcs)].reset_index()
+            st.session_state.file = dictionary[dictionary['sku'].isin(sku_list)].reset_index()
             del st.session_state.file['index']
-            fnskus = st.session_state.file['FNSKU']
-            titles = st.session_state.file['Short_title']
-            qty = [1]*len(upcs)
+            fnskus = st.session_state.file['fnsku']
+            titles = st.session_state.file['short_title']
+            qty = [1]*len(sku_list)
             st.session_state.pdf = generate_pdf(fnskus, titles, qty)
     if 'pdf' in st.session_state:
         st.session_state.pdf.output('barcodes/barcodes.pdf', 'F')
         with open('barcodes/barcodes.pdf', "rb") as pdf_file:
             PDFbyte = pdf_file.read()
         remove_images()
-        if st.download_button(
+        st.download_button(
             label = 'Download PDF',
             data=PDFbyte,
-            file_name = 'barcodes.pdf'):
-            remove_ready1 = True
+            file_name = 'barcodes.pdf')
         
         output = BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
             st.session_state.file.to_excel(writer, sheet_name = 'SKUs', index = False)
             ff.format_header(st.session_state.file, writer, 'SKUs')
-        if st.download_button(
+        st.download_button(
             label = 'Download SKU list',
             data = output.getvalue(),
-            file_name = 'SKUs.xlsx'):
-            remove_ready2 = True
+            file_name = 'SKUs.xlsx')
