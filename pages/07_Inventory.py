@@ -13,10 +13,6 @@ import numpy as np
 import os
 from barcode import Code128, Code39
 from barcode.writer import ImageWriter
-remove_ready1 = False
-remove_ready2 = False
-st.write(remove_ready1,remove_ready2)
-
 
 width = 2.2
 height = 0.4
@@ -102,6 +98,7 @@ if 'pdf' in st.session_state:
     st.session_state.pdf.output('barcodes/barcodes.pdf', 'F')
     with open('barcodes/barcodes.pdf', "rb") as pdf_file:
         PDFbyte = pdf_file.read()
+    remove_images()
     if st.download_button(
         label = 'Download PDF',
         data=PDFbyte,
@@ -117,5 +114,3 @@ if 'pdf' in st.session_state:
         data = output.getvalue(),
         file_name = 'SKUs.xlsx'):
         remove_ready2 = True
-    # if all([remove_ready1, remove_ready2]):
-    #     remove_images()
