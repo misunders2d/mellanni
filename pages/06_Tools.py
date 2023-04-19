@@ -330,7 +330,7 @@ if st.session_state['login']:
                         messages = [
                             {'role':'user', 'content':f'''I am sending you the meeting summary that consists of {len(chunks)} parts. Below is part {i+1}.
                             Please compress it, removing all inconsequential details, but keep key talking points and action items, if any.
-                            Please stay within 2000 words limit:\n{c}'''}]
+                            Please stay within 1800 words limit:\n{c}'''}]
                         response = openai.ChatCompletion.create(
                         # model="text-davinci-003",
                         model = 'gpt-3.5-turbo',
