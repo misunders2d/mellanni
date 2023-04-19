@@ -9,3 +9,5 @@ scikit-learn
 deta
 imagekitio
 openai
+python-barcode
+fpdf
