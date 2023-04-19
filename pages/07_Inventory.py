@@ -14,7 +14,7 @@ import os
 from barcode import Code128, Code39
 from barcode.writer import ImageWriter
 remove_ready1 = remove_ready2 = False
-st.write(os.listdir(os.getcwd())))
+st.write(os.listdir(os.getcwd()))
 
 
 width = 2.2
