@@ -78,12 +78,6 @@ def remove_images():
         os.removedirs('barcodes')
     return None
 
-try:
-    remove_images()
-except:
-    pass
-
-
 # @st.cache_resource(show_spinner=False)
 def pull_dictionary():
     client = gc.gcloud_connect()
@@ -126,3 +120,5 @@ if 'pdf' in st.session_state:
         remove_ready2 = True
     if all([remove_ready1, remove_ready2]):
         remove_images()
+st.write(remove_ready1,remove_ready2)
+st.write(os.listdir(os.getcwd()))
