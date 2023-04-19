@@ -76,12 +76,14 @@ def remove_images():
 
 def pull_dictionary():
     client = gc.gcloud_connect()
-    sql = '''SELECT sku,fnsku,upc,collection,size,color,short_title FROM `auxillary_development.dictionary`'''
+    sql = '''SELECT sku,fnsku,upc,collection,sub_collection,size,color,short_title FROM `auxillary_development.dictionary`'''
     query_job = client.query(sql)  # Make an API request.
     dictionary = query_job.result().to_dataframe()
     client.close()
     dictionary = dictionary[~dictionary['fnsku'].isin(['bundle','none','FBM'])]
-    return dictionary
+    dictionary['collection'] = dictionary['collection'].str.replace('1800','Iconic')
+    dictionary['sub_collection'] = dictionary['sub_collection'].str.replace('1800','Iconic')
+   return dictionary
 
 col1, col2 = st.columns([10,3])
 
