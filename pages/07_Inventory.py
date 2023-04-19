@@ -83,7 +83,7 @@ def pull_dictionary():
     dictionary = dictionary[~dictionary['fnsku'].isin(['bundle','none','FBM'])]
     dictionary['collection'] = dictionary['collection'].str.replace('1800','Iconic')
     dictionary['sub_collection'] = dictionary['sub_collection'].str.replace('1800','Iconic')
-   return dictionary
+    return dictionary
 
 col1, col2 = st.columns([10,3])
 
