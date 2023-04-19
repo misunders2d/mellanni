@@ -53,7 +53,7 @@ def generate_pdf(fnskus, titles, qty):
             for p,s in enumerate(title_str):
                 pdf.text(x_coords[ix]+.1+(p/3), y_coords[iy]+0.5+(p/10), s)
             pdf.text(x_coords[ix]+.1, y_coords[iy]+0.6, 'New')
-            pdf.image(f'barcodes\{fnsku}.png', x = x_coords[ix], y = y_coords[iy], w = width, h = height, type = '', link = '')
+            pdf.image(f'barcodes/{fnsku}.png', x = x_coords[ix], y = y_coords[iy], w = width, h = height, type = '', link = '')
             if ix <2:
                 ix += 1
             else:
