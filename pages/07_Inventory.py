@@ -1,8 +1,8 @@
 import streamlit as st
 from modules import formatting as ff
 import textwrap
-from PIL import Image
-from PIL import ImageDraw
+# from PIL import Image
+# from PIL import ImageDraw
 from modules import gcloud_modules as gc
 from PIL import ImageFont
 font = ImageFont.load_default()
@@ -82,35 +82,56 @@ def pull_dictionary():
     client.close()
     return dictionary
 
-upcs = st.text_area('Input UPCs', height = 300, help = 'Input a list of SKUs you want to generate barcodes for').split('\n')
-upcs = [x for x in upcs if x != '']
+col1, col2 = st.columns([10,3])
 
-if st.button('Create barcodes') and len(upcs) > 0:
-    with st.spinner('Please wait'):
-        dictionary = pull_dictionary()
-        st.session_state.file = dictionary[dictionary['SKU'].isin(upcs)].reset_index()
-        del st.session_state.file['index']
-        fnskus = st.session_state.file['FNSKU']
-        titles = st.session_state.file['Short_title']
-        qty = [1]*len(upcs)
-        st.session_state.pdf = generate_pdf(fnskus, titles, qty)
-if 'pdf' in st.session_state:
-    st.session_state.pdf.output('barcodes/barcodes.pdf', 'F')
-    with open('barcodes/barcodes.pdf', "rb") as pdf_file:
-        PDFbyte = pdf_file.read()
-    remove_images()
-    if st.download_button(
-        label = 'Download PDF',
-        data=PDFbyte,
-        file_name = 'barcodes.pdf'):
-        remove_ready1 = True
+with col2:
+    # @st.cache_data(show_spinner=False)
+    def pull_dictionary():
+        client = gc.gcloud_connect()
+        sql = '''SELECT * FROM `auxillary_development.dictionary`'''
+        query_job = client.query(sql)  # Make an API request.
+        dictionary = query_job.result().to_dataframe()
+        client.close()
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            dictionary.to_excel(writer, sheet_name = 'Dictionary', index = False)
+            ff.format_header(dictionary,writer,'Dictionary')
+        return output.getvalue()
     
-    output = BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        st.session_state.file.to_excel(writer, sheet_name = 'SKUs', index = False)
-        ff.format_header(st.session_state.file, writer, 'SKUs')
-    if st.download_button(
-        label = 'Download SKU list',
-        data = output.getvalue(),
-        file_name = 'SKUs.xlsx'):
-        remove_ready2 = True
+    if col2.checkbox('Dictionary'):
+        dictionary = pull_dictionary()
+        st.download_button('Download dictionary',dictionary, file_name = 'Dictionary.xlsx')
+
+with col1:
+    upcs = st.text_area('Input UPCs', height = 300, help = 'Input a list of SKUs you want to generate barcodes for').split('\n')
+    upcs = [x for x in upcs if x != '']
+
+    if st.button('Create barcodes') and len(upcs) > 0:
+        with st.spinner('Please wait'):
+            dictionary = pull_dictionary()
+            st.session_state.file = dictionary[dictionary['SKU'].isin(upcs)].reset_index()
+            del st.session_state.file['index']
+            fnskus = st.session_state.file['FNSKU']
+            titles = st.session_state.file['Short_title']
+            qty = [1]*len(upcs)
+            st.session_state.pdf = generate_pdf(fnskus, titles, qty)
+    if 'pdf' in st.session_state:
+        st.session_state.pdf.output('barcodes/barcodes.pdf', 'F')
+        with open('barcodes/barcodes.pdf', "rb") as pdf_file:
+            PDFbyte = pdf_file.read()
+        remove_images()
+        if st.download_button(
+            label = 'Download PDF',
+            data=PDFbyte,
+            file_name = 'barcodes.pdf'):
+            remove_ready1 = True
+        
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            st.session_state.file.to_excel(writer, sheet_name = 'SKUs', index = False)
+            ff.format_header(st.session_state.file, writer, 'SKUs')
+        if st.download_button(
+            label = 'Download SKU list',
+            data = output.getvalue(),
+            file_name = 'SKUs.xlsx'):
+            remove_ready2 = True
