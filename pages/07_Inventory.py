@@ -18,14 +18,14 @@ st.write(os.listdir(os.getcwd()))
 
 
 width = 2.2
-# height = 0.4
-# options_fnsku = {'module_width':height, 'module_height':width+7, 'font_size':10, 'text_distance':4}
-# options_itf = {'module_width':height, 'module_height':width+7, 'font_size':12, 'text_distance':4, 'font':font}
-# itf_columns = ['SKU','Quantity','UPC','FNSKU']
-# template = pd.DataFrame(data = [['sample SKU','required quantity of labels','upc (NOT ITF)','FNSKU (barcode)']], columns = itf_columns)            
+height = 0.4
+options_fnsku = {'module_width':height, 'module_height':width+7, 'font_size':10, 'text_distance':4}
+options_itf = {'module_width':height, 'module_height':width+7, 'font_size':12, 'text_distance':4, 'font':font}
+itf_columns = ['SKU','Quantity','UPC','FNSKU']
+template = pd.DataFrame(data = [['sample SKU','required quantity of labels','upc (NOT ITF)','FNSKU (barcode)']], columns = itf_columns)            
 
-# if not os.path.isdir('barcodes'):
-#     os.makedirs('barcodes')
+if not os.path.isdir('barcodes'):
+    os.makedirs('barcodes')
 
 # def generate_pdf(fnskus, titles, qty):
 #     #PDF
