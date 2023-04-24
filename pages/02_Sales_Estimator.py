@@ -5,7 +5,7 @@ Created on Fri May  6 15:15:51 2022
 @author: djoha
 """
 import streamlit as st
-# import os
+import re
 import pandas as pd
 from io import BytesIO
 from PIL import Image
@@ -35,7 +35,8 @@ if st.session_state['login']:
             xray['Sales'] = xray['Sales'].str.replace('\xa0','')
             xray['Sales'] = xray['Sales'].str.replace(',','').astype(float)
             xray['Total Sales'] = xray['Sales'].copy()
-            bsr = int(xray['BSR'].str.replace(',','').mode().values[0])
+            xray['BSR'] = xray['BSR'].astype(str).str.extractall('(\d*)').unstack().fillna('').sum(axis = 1).astype(int)
+            bsr = xray['BSR'].astype(int).mode().values[0]
             xray['BSR'] = bsr
             xray[['',' ','  ','   ']] = ''
             xray = xray[recolumns]
