@@ -11,8 +11,8 @@ from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MinMaxScaler
 import nltk
-# if nltk.download('all') == False:
-    # nltk.download('all')
+if nltk.download('all') == False:
+    nltk.download('all')
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import re
