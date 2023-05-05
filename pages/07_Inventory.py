@@ -113,30 +113,30 @@ def generate_itf(sku_list,dictionary, layout, qty,leading = '00'):
         with open(f'barcodes\{sku.replace("-","_")}.png', 'wb') as f:
             Code39(str(upc), writer = ImageWriter(),add_checksum = False).write(f, options = options_itf)
         # time.sleep(0.5)
-        for q in qty:
-            if layout == 'Letter':
-                for p,s in enumerate(sku_str):
-                    pdf.text(x_coords[ix]+.1, y_coords[iy]+(p/7), s)
-                pdf.image(f'barcodes\{sku.replace("-","_")}.png', x = x_coords[ix], y = y_coords[iy]+0.2, w = width, h = height, type = '', link = '')
-                if ix <2:
-                    ix += 1
-                else:
-                    ix = 0
-                    iy +=1
-                if iy <10:
-                    pass
-                else:
-                    iy = 0
-                    pdf.add_page()
-            # pdf.add_page()
-                    ix = 0
-                    iy = 0
-            elif layout == 'Zebra':
-                for p,s in enumerate(sku_str):
-                    pdf.text(xmargin+0.5, ymargin+(p/7), s)
-                pdf.image(f'barcodes\{sku.replace("-","_")}.png', x = xmargin+0.3, y = ymargin+0.2, w = width, h = height, type = '', link = '')
-                # ymargin += 0.2
+        # for q in qty:
+        if layout == 'Letter':
+            for p,s in enumerate(sku_str):
+                pdf.text(x_coords[ix]+.1, y_coords[iy]+(p/7), s)
+            pdf.image(f'barcodes\{sku.replace("-","_")}.png', x = x_coords[ix], y = y_coords[iy]+0.2, w = width, h = height, type = '', link = '')
+            if ix <2:
+                ix += 1
+            else:
+                ix = 0
+                iy +=1
+            if iy <10:
+                pass
+            else:
+                iy = 0
                 pdf.add_page()
+        # pdf.add_page()
+                ix = 0
+                iy = 0
+        elif layout == 'Zebra':
+            for p,s in enumerate(sku_str):
+                pdf.text(xmargin+0.5, ymargin+(p/7), s)
+            pdf.image(f'barcodes\{sku.replace("-","_")}.png', x = xmargin+0.3, y = ymargin+0.2, w = width, h = height, type = '', link = '')
+            # ymargin += 0.2
+            pdf.add_page()
     return pdf
 
 def remove_images():
