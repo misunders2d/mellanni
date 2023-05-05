@@ -11,3 +11,4 @@ imagekitio
 openai
 python-barcode
 fpdf
+matplotlib
