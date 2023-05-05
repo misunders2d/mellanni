@@ -36,7 +36,7 @@ if 'file' in st.session_state:
         ax.plot(f['Date'],f[cols[0]], color = 'red')
         ax.set_ylabel('Price', color = 'red')
         ax1 = ax.twinx()
-        ax1.set_ylim(100)
+        ax1.set_ylim(50)
         ax1.plot(f['Date'],f[cols[1]],linestyle = '--', color = 'green',)
         ax1.set_ylabel('BSR', color = 'green')
         plt.suptitle(brand)
