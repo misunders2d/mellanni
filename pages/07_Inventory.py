@@ -45,7 +45,7 @@ def generate_pdf(fnskus, titles, qty):
     ix = 0
     iy = 0
     for i, fnsku in enumerate(fnskus):
-        with open(f'barcodes/{fnsku}.png', 'wb') as f:
+        with open(f'barcodes\{fnsku}.png', 'wb') as f:
             Code128(str(fnsku), writer = ImageWriter()).write(f, options = options_fnsku)
         title_str = textwrap.wrap(titles[i], width = 40)
         number_barcodes = qty[i]
@@ -53,7 +53,7 @@ def generate_pdf(fnskus, titles, qty):
             for p,s in enumerate(title_str):
                 pdf.text(x_coords[ix]+.1+(p/3), y_coords[iy]+0.5+(p/10), s)
             pdf.text(x_coords[ix]+.1, y_coords[iy]+0.6, 'New')
-            pdf.image(f'barcodes/{fnsku}.png', x = x_coords[ix], y = y_coords[iy], w = width, h = height, type = '', link = '')
+            pdf.image(f'barcodes\{fnsku}.png', x = x_coords[ix], y = y_coords[iy], w = width, h = height, type = '', link = '')
             if ix <2:
                 ix += 1
             else:
@@ -110,7 +110,7 @@ def generate_itf(sku_list,dictionary, layout, qty,leading = '00'):
         sku_str = textwrap.wrap(sku, width = 25)
         upc = f"{leading}{file_sku['upc'].values[0]}"
         # quantity = file_sku['Quantity'].values[0]
-        with open(f'barcodes/{sku.replace("-","_")}.png', 'wb') as f:
+        with open(f'barcodes\{sku.replace("-","_")}.png', 'wb') as f:
             Code39(str(upc), writer = ImageWriter(),add_checksum = False).write(f, options = options_itf)
         # time.sleep(0.5)
         for q in qty:
