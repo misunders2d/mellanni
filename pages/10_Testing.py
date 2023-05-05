@@ -255,6 +255,54 @@ def get_stats(file):
 
     return None
 
+def combine_files(multifile_path):
+    pattern = '(?<=\")(.*?)(?=\")'
+
+    column_list = ['Search Query', 'Search Query Score', 'Search Query Volume',
+        'Impressions: Total Count', 'Impressions: ASIN Count',
+        'Impressions: ASIN Share %', 'Clicks: Total Count',
+        'Clicks: Click Rate %', 'Clicks: ASIN Count', 'Clicks: ASIN Share %',
+        'Clicks: Price (Median)', 'Clicks: ASIN Price (Median)',
+        'Clicks: Same Day Shipping Speed', 'Clicks: 1D Shipping Speed',
+        'Clicks: 2D Shipping Speed', 'Cart Adds: Total Count',
+        'Cart Adds: Cart Add Rate %', 'Cart Adds: ASIN Count',
+        'Cart Adds: ASIN Share %', 'Cart Adds: Price (Median)',
+        'Cart Adds: ASIN Price (Median)', 'Cart Adds: Same Day Shipping Speed',
+        'Cart Adds: 1D Shipping Speed', 'Cart Adds: 2D Shipping Speed',
+        'Purchases: Total Count', 'Purchases: Purchase Rate %',
+        'Purchases: ASIN Count', 'Purchases: ASIN Share %',
+        'Purchases: Price (Median)', 'Purchases: ASIN Price (Median)',
+        'Purchases: Same Day Shipping Speed', 'Purchases: 1D Shipping Speed',
+        'Purchases: 2D Shipping Speed', 'Reporting Date']
+
+    combined = pd.DataFrame()
+    for f in multifile_path:
+        file = pd.read_csv(f, skiprows = 1)
+        combined = pd.concat([combined, file])
+
+    stat_cols = [
+        'Impressions: ASIN Count','Clicks: ASIN Count','Cart Adds: ASIN Count',
+        'Purchases: ASIN Count'
+        ]
+
+    pivot = combined.pivot_table(
+        values = stat_cols,
+        index = 'Search Query',
+        aggfunc = 'sum'
+        ).reset_index()
+
+    for stat_col in stat_cols:
+        del combined[stat_col]
+
+    full = pd.merge(combined, pivot, how = 'left', on = 'Search Query')
+    full = full[column_list]
+    full = full.drop_duplicates('Search Query')
+    full['Impressions: ASIN Share %'] = full['Impressions: ASIN Count'] / full['Impressions: Total Count']
+    full['Clicks: ASIN Share %'] = full['Clicks: ASIN Count'] / full['Clicks: Total Count']
+    full['Cart Adds: ASIN Share %'] = full['Cart Adds: ASIN Count'] / full['Cart Adds: Total Count']
+    full['Purchases: ASIN Share %'] = full['Purchases: ASIN Count'] / full['Purchases: Total Count']    
+    return full, combined
+
 
 ##############################################################################################################
 #markup area
@@ -277,7 +325,7 @@ if st.session_state['login']:
 
     if 'file' not in st.session_state:
         # with st.form('Search Query Performance analysis', clear_on_submit=True):
-        file_path = st.file_uploader('Upload SQP file',)
+        file_path = st.file_uploader('Upload SQP file')
         if file_path:
             with st.spinner('Reading file'):
                 time.sleep(0.5)
@@ -290,7 +338,12 @@ if st.session_state['login']:
             st.session_state['file'] = file
             st.session_state['clusters_all'] = st.session_state['file']['cluster'].tolist()
             # submitted = st.form_submit_button("Let's see what you got",use_container_width=True)
-
+        if st.checkbox('Multiple files to combine'):
+            multifile_path = st.file_uploader('Upload multiple files to combine',accept_multiple_files=True)
+            if multifile_path != []:
+                full, combined = combine_files(multifile_path)
+                combined_result = ff.prepare_for_export([full, combined],['Full','Combined'])
+                st.download_button('Download combined file',combined_result,file_name = 'Combined ASINS.xlsx')
 #################################################################################################################
 #working area
     display_cols = [
