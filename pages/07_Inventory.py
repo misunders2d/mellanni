@@ -110,14 +110,14 @@ def generate_itf(sku_list,dictionary, layout, qty,leading = '00'):
         sku_str = textwrap.wrap(sku, width = 25)
         upc = f"{leading}{file_sku['upc'].values[0]}"
         # quantity = file_sku['Quantity'].values[0]
-        with open(f'barcodes/{sku}.png', 'wb') as f:
+        with open(f'barcodes/{sku.replace("-","_")}.png', 'wb') as f:
             Code39(str(upc), writer = ImageWriter(),add_checksum = False).write(f, options = options_itf)
         # time.sleep(0.5)
         for q in qty:
             if layout == 'Letter':
                 for p,s in enumerate(sku_str):
                     pdf.text(x_coords[ix]+.1, y_coords[iy]+(p/7), s)
-                pdf.image(f'barcodes\{sku}.png', x = x_coords[ix], y = y_coords[iy]+0.2, w = width, h = height, type = '', link = '')
+                pdf.image(f'barcodes\{sku.replace("-","_")}.png', x = x_coords[ix], y = y_coords[iy]+0.2, w = width, h = height, type = '', link = '')
                 if ix <2:
                     ix += 1
                 else:
@@ -134,7 +134,7 @@ def generate_itf(sku_list,dictionary, layout, qty,leading = '00'):
             elif layout == 'Zebra':
                 for p,s in enumerate(sku_str):
                     pdf.text(xmargin+0.5, ymargin+(p/7), s)
-                pdf.image(f'barcodes\{sku}.png', x = xmargin+0.3, y = ymargin+0.2, w = width, h = height, type = '', link = '')
+                pdf.image(f'barcodes\{sku.replace("-","_")}.png', x = xmargin+0.3, y = ymargin+0.2, w = width, h = height, type = '', link = '')
                 # ymargin += 0.2
                 pdf.add_page()
     return pdf
