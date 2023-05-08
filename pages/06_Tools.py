@@ -293,7 +293,7 @@ if st.session_state['login']:
                     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
                         df.to_excel(writer, sheet_name = 'image_links', index = False)
                     st.download_button('Download results',output.getvalue(), file_name = 'image_links.xlsx')
-        except exception as e:
+        except Exception as e:
             st.write(f'Sorry, this block is currently unavailable:\n{e}')
 
         with st.expander('Meeting summarizer'):
