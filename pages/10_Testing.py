@@ -13,7 +13,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MinMaxScaler
 import nltk
 # if nltk.download('all') == False:
-#     nltk.download('all')
+nltk.download('all')
 try:
     from nltk.corpus import stopwords
 except:
