@@ -178,6 +178,8 @@ with col3:
     if col3.checkbox('Dictionary'):
         dictionary = download_dictionary()
         col3.download_button('Download dictionary',dictionary, file_name = 'Dictionary.xlsx')
+    if col3.button('Clear'):
+        remove_images()
 with col2:
     barcode_type = col2.radio('Select barcode type:',['FNSKU','ITF14'])
     
