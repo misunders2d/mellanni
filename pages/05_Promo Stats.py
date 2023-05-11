@@ -184,7 +184,7 @@ if st.session_state['login']:
         query_job = client.query(query)  # Make an API request.
         data = query_job.result().to_dataframe()
         client.close()
-        data['date'] = pd.to_datetime(data['date'], format = "%Y-%m-%d %H:%M:%S", exact = False)
+        data['date'] = pd.to_datetime(data['date'], format = 'mixed', yearfirst=True)
         data = data.sort_values('date')
         numerics = ['int','float']
         num_cols = data.select_dtypes(include = numerics).columns
