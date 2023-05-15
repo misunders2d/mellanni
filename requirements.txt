@@ -12,5 +12,5 @@ openai
 python-barcode
 fpdf
 matplotlib
-# urllib3==1.26.15
+urllib3<2
 # requests-toolbelt==0.10.1
