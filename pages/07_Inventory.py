@@ -186,6 +186,7 @@ with col2:
     if barcode_type == 'ITF14':
         layout = col2.radio('Layout type',['Letter','Zebra'])
         qty_type = 1
+        leading = col2.text_input('Leading digits', '00',max_chars=2, placeholder='00')
     elif barcode_type == 'FNSKU':
         layout = 'Letter'
         qty_type = col2.radio('Labels per sheet',[1,30])
@@ -207,7 +208,7 @@ with col1:
                 st.session_state.pdf = generate_pdf(fnskus, titles, qty)
                 st.session_state.file_name = 'Amazon barcodes.pdf'
             elif barcode_type == 'ITF14':
-                st.session_state.pdf = generate_itf(sku_list,dictionary, layout, qty)
+                st.session_state.pdf = generate_itf(sku_list,dictionary, layout, qty, leading = leading)
                 st.session_state.file_name = 'ITF14 barcodes.pdf'
     if 'pdf' in st.session_state:
         st.session_state.pdf.output('barcodes/barcodes.pdf', 'F')
