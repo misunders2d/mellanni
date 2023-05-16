@@ -134,3 +134,6 @@ dmypy.json
 # secrets file
 .streamlit
 .toml
+
+# project files
+.vscode
