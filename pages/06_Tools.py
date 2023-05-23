@@ -374,7 +374,10 @@ Action items:
             input_text = text_area.text_area('Input meeting transcription',height = 500)
             if st.button('Summarize'):
                 st.session_state.summarized = True
-                st.session_state.result, st.session_state.messages = get_meeting_summary(prompt_query,input_text, temp = 0.2)
+                try:
+                    st.session_state.result, st.session_state.messages = get_meeting_summary(prompt_query,input_text, temp = 0.2)
+                except Exception as e:
+                    st.session_state.result = f'Sorry, an error occurred, please contact the administrator\n\n{e}'
                 text_area.text_area('Summary:',st.session_state.result, height = 500)
                 # if st.session_state.summarized:
                 #     if st.button('Regenerate'):
