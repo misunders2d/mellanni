@@ -3,10 +3,6 @@ import streamlit_authenticator as stauth
 from deta import Deta
 
 def login():
-    # preauthorized_emails = [
-    #     'sergey@mellanni.com','sergey@poluco.co','oleksandr@mellanni.com','yuri@mellanni.com','dima@mellanni.com','ruslan@mellanni.com',
-    #     'olha@mellanni.com', 'valerii@mellanni.com'
-    #     ]
     preauthorized_emails = st.secrets['preauthorized_emails']
     
     if 'base' not in st.session_state:
@@ -25,14 +21,14 @@ def login():
                     
         st.session_state['credentials'] = credentials
         st.session_state['base'] = base
-
-    authenticator = stauth.Authenticate(
-        st.session_state['credentials'],
-        'mellanni_access',
-        'cookie_for_mellanni',
-        cookie_expiry_days=30,
-        preauthorized={'emails':preauthorized_emails})
-    user, authentication_status, name = authenticator.login('Login','main')
+    if 'credentials' in st.session_state:
+        authenticator = stauth.Authenticate(
+            st.session_state['credentials'],
+            'mellanni_access',
+            'cookie_for_mellanni',
+            cookie_expiry_days=30,
+            preauthorized={'emails':preauthorized_emails})
+        user, authentication_status, name = authenticator.login('Login','main')
     if not st.session_state['authentication_status']:
         st.write('OR')
 
