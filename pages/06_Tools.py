@@ -6,6 +6,7 @@ from modules import formatting as ff
 import login
 from modules import gcloud_modules as gc
 import openai
+import time
 key = st.secrets['AI_KEY']
 openai.api_key = key
 
@@ -299,8 +300,7 @@ if st.session_state['login']:
         with st.expander('Meeting summarizer'):
             def get_meeting_summary(prompt,text, temp):
                 blocks = re.split('\n| \.',text)
-                word_limit = 2000
-                
+                word_limit = 1950               
                 chunks = []
                 limit = 0
                 chunk = []
@@ -314,13 +314,6 @@ if st.session_state['login']:
                         chunk = []
                 chunks.append(chunk)
 
-                # chunks = []
-                # n_split = 30
-                
-                # #split to chunks
-                # parts = len(blocks)//n_split
-                # for i in range(parts+1):
-                #     chunks.append(blocks[i*n_split:(i+1)*n_split])
                 if len(chunks) == 1:
                     summaries = chunks[0]
                 else:
@@ -342,6 +335,7 @@ if st.session_state['login']:
                         # Get the generated text and append it to the chat history
                         message = response['choices'][0]['message']['content'].strip()
                         summaries.append(message)
+                        time.sleep(5)
                     progress_bar.progress((i+1)/len(chunks),'Please wait...')
                 
                 #summarize
