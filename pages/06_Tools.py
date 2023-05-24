@@ -79,9 +79,10 @@ if st.session_state['login']:
                 client.close()
                 for a in asin_list:
                     dict_asin = dictionary[dictionary['ASIN'] == a]
-                    sku = dict_asin['SKU'].tolist()[0]
-                    link = f'https://sellercentral.amazon.com/abis/listing/edit?marketplaceID=ATVPDKIKX0DER&ref=xx_myiedit_cont_myifba&sku={sku}&asin={a}&productType=HOME_BED_AND_BATH#product_details'
-                    result.append(link)
+                    sku = dict_asin['SKU'].tolist()#[0]
+                    for s in sku:
+                        link = f'https://sellercentral.amazon.com/abis/listing/edit?marketplaceID=ATVPDKIKX0DER&ref=xx_myiedit_cont_myifba&sku={s}&asin={a}&productType=HOME_BED_AND_BATH#product_details'
+                        result.append(link)
                 return result
                 
             def fix_stranded_inventory():
