@@ -111,3 +111,4 @@ if 'data' in st.session_state:
         )
 
     chart_area.altair_chart(c.interactive(),use_container_width=True)#
+    st.write(f)
