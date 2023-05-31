@@ -104,6 +104,7 @@ if 'data' in st.session_state:
     f = st.session_state.df[st.session_state.df['product'] == product]
     f['brandasin'] = f['brand'] + ' : ' + f['asin']
     plot_file = f[['datetime','brandasin','final_price']]
+    last_date = f['datetime'].values.tolist()[-1]
 
     c = alt.Chart(plot_file, title = product).mark_line().encode(
         x = alt.X('datetime:T'),
@@ -111,4 +112,4 @@ if 'data' in st.session_state:
         )
 
     chart_area.altair_chart(c.interactive(),use_container_width=True)#
-    st.write(f)
+    st.write(f[f['datetime'] == last_date])
