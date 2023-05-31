@@ -101,6 +101,7 @@ if 'data' in st.session_state:
 
     products = st.session_state.df['product'].unique().tolist()
     product = st.selectbox('Select a product',products)
+    f = st.session_state.df[st.session_state.df['product'] == product]
     f['brandasin'] = f['brand'] + ' : ' + f['asin']
     plot_file = f[['datetime','brandasin','final_price']]
 
