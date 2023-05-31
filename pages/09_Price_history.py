@@ -105,8 +105,9 @@ if 'data' in st.session_state:
     f['brandasin'] = f['brand'] + ' : ' + f['asin']
     f['link'] = 'https://www.amazon.com/dp/'+f['asin']
     plot_file = f[['datetime','brandasin','final_price']]
-    link_file = f[['brand','asin','product','link']].to_html(render_links = True, escape = False)
+    link_file = f[['brand','asin','product','link']].copy()
     last_date = pd.to_datetime(f['datetime'].values.tolist()[-1])
+    link_file = link_file[link_file['datetime'] == last_date]
 
     c = alt.Chart(plot_file, title = product).mark_line().encode(
         x = alt.X('datetime:T'),
@@ -115,4 +116,4 @@ if 'data' in st.session_state:
 
     chart_area.altair_chart(c.interactive(),use_container_width=True)#
     # st.write(last_date)
-    st.write(link_file[link_file['datetime'] == last_date])
+    st.write(link_file.to_html(render_links=True, escape=False))
