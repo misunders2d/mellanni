@@ -103,6 +103,7 @@ if 'data' in st.session_state:
     product = st.selectbox('Select a product',products)
     f = st.session_state.df[st.session_state.df['product'] == product]
     f['brandasin'] = f['brand'] + ' : ' + f['asin']
+    f['link'] = 'https://www.amazon.com/dp/'+f['asin']
     plot_file = f[['datetime','brandasin','final_price']]
     last_date = pd.to_datetime(f['datetime'].values.tolist()[-1])
 
