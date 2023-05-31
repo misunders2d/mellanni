@@ -116,4 +116,4 @@ if 'data' in st.session_state:
 
     chart_area.altair_chart(c.interactive(),use_container_width=True)#
     # st.write(last_date)
-    st.write(link_file.to_html(escape=False, index=False), unsafe_allow_html=True)
+    st.write(link_file)#.to_html(escape=False, index=False), unsafe_allow_html=True)
