@@ -100,10 +100,7 @@ if 'data' in st.session_state:
     st.download_button('Export full data',output.getvalue(), file_name = 'Price history.xlsx')
 
     products = st.session_state.df['product'].unique().tolist()
-    product = st.selectbox('Select a product',products,)
-    if st.button('Next'):
-        product = products[products.index(product) + 1]
-    f = st.session_state.df[st.session_state.df['product'] == product]
+    product = st.selectbox('Select a product',products)
     f['brandasin'] = f['brand'] + ' : ' + f['asin']
     plot_file = f[['datetime','brandasin','final_price']]
 
