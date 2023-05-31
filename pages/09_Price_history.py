@@ -59,7 +59,7 @@ def get_prices(queue):
         query_job = client.query(query)  # Make an API request.
         data = query_job.result().to_dataframe()
         client.close()
-        data['datetime'] = pd.to_datetime(data['datetime'], format = "%Y/%m/%d %H:%M:%S")
+        data['datetime'] = pd.to_datetime(data['datetime'], format = "%Y-%m-%d %H:%M:%S")
         data = data.sort_values('datetime')
         queue.put(data)
         return None
