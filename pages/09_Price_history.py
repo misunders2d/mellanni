@@ -112,4 +112,5 @@ if 'data' in st.session_state:
         )
 
     chart_area.altair_chart(c.interactive(),use_container_width=True)#
-    st.write(f[f['datetime'] == last_date])
+    st.write(last_date)
+    # st.write(f[f['datetime'] == last_date])
