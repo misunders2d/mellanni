@@ -18,6 +18,9 @@ import altair as alt
 st.set_page_config(page_title = 'Price tracker', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state='collapsed')
 
 chart_area = st.container()
+notes_area = st.container()
+
+notes_area.write('''*For some products you may see a "null" brand popping up - that is Amazon Basics not giving away it's data''')
 
 def get_asins(queue,mode = 'mapping'):
     # authorize Google Sheets credentials
