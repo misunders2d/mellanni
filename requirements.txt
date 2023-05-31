@@ -13,4 +13,10 @@ python-barcode
 fpdf
 matplotlib
 urllib3<2
+db_dtypes
+#google modules below:
+gspread
+oauth2client
+google-cloud-storage
+google-cloud-bigquery
 # requests-toolbelt==0.10.1
