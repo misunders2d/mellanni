@@ -101,6 +101,9 @@ if 'data' in st.session_state:
     f['brandasin'] = f['brand'] + ' : ' + f['asin']
     plot_file = f[['datetime','brandasin','final_price']]
 
+    c = alt.Chart(plot_file, title = product).mark_line().encode(
+        x = alt.X('datetime:T'),
+        y = alt.Y('final_price:Q'), color = alt.Color('brandasin')
+        )
 
-    c = alt.Chart(plot_file).mark_line().encode(x = 'datetime', y = 'final_price', color = 'brandasin')
-    chart_area.altair_chart(c.interactive(),use_container_width=True)
+    chart_area.altair_chart(c.interactive(),use_container_width=True)#
