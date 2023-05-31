@@ -104,7 +104,7 @@ if 'data' in st.session_state:
     f = st.session_state.df[st.session_state.df['product'] == product]
     f['brandasin'] = f['brand'] + ' : ' + f['asin']
     plot_file = f[['datetime','brandasin','final_price']]
-    last_date = f['datetime'].values.tolist()[-1]
+    last_date = pd.to_datetime(f['datetime'].values.tolist()[-1])
 
     c = alt.Chart(plot_file, title = product).mark_line().encode(
         x = alt.X('datetime:T'),
