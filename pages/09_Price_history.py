@@ -3,7 +3,8 @@ import pandas as pd
 
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-
+import threading
+from queue import Queue
 from google.cloud import bigquery #pip install google-cloud-bigquery
 from google.oauth2 import service_account
 from modules import gcloud_modules as gc
@@ -14,12 +15,11 @@ from io import BytesIO
 import altair as alt
 # from matplotlib import pyplot as plt
 
-st.set_page_config(page_title = 'M Tools App', page_icon = 'media/logo.ico',layout="wide")
+st.set_page_config(page_title = 'Price tracker', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state='collapsed')
 
 chart_area = st.container()
 
-
-def get_asins(mode = 'mapping'):
+def get_asins(queue,mode = 'mapping'):
     # authorize Google Sheets credentials
     scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
     # creds_file = 'competitor_pricing.json'
@@ -41,7 +41,8 @@ def get_asins(mode = 'mapping'):
         # if '' in asins:
         #     asins.remove('')
         asins = [x.strip() for x in asins if re.search('([A-Z0-9]{10})',x)]
-        return asins
+        queue.put(asins)
+        return None
     elif mode == 'mapping':
         products = data['Product'].unique().tolist()
         mapping = {}
@@ -49,19 +50,35 @@ def get_asins(mode = 'mapping'):
             product_asins = data[data['Product'] == product][['ASIN']+asin_cols].values[0].tolist()
             product_asins = [x.strip() for x in product_asins if x != '']
             mapping[product] = product_asins
-        return mapping
+        queue.put(mapping)
+        return None
 
-def get_prices():
+def get_prices(queue):
         query = 'SELECT datetime, asin, brand, final_price FROM `auxillary_development.price_comparison`'
         client = gc.gcloud_connect()
         query_job = client.query(query)  # Make an API request.
         data = query_job.result().to_dataframe()
         client.close()
-        return data
+        queue.put(data)
+        return None
 
-if st.button('Pull data'):
-    st.session_state.mapping = get_asins()
-    st.session_state.prices = get_prices()
+if 'data' not in st.session_state:
+# if st.button('Pull data'):
+
+    q1, q2 = Queue(), Queue()
+    p1 = threading.Thread(target = get_asins,args = (q1,))
+    p2 = threading.Thread(target = get_prices,args = (q2,))
+    processes = [p1,p2]
+    for process in processes:
+        process.start()
+    st.session_state.mapping = q1.get()
+    st.session_state.prices = q2.get()
+    for process in processes:
+        process.join()
+
+
+    # st.session_state.mapping = get_asins()
+    # st.session_state.prices = get_prices()
     st.session_state.prices['datetime'] = pd.to_datetime(st.session_state.prices['datetime'])
 
     st.session_state.df = pd.DataFrame()
@@ -69,7 +86,7 @@ if st.button('Pull data'):
         temp_file = st.session_state.prices[st.session_state.prices['asin'].isin(asins)]
         temp_file['product'] = product
         st.session_state.df = pd.concat([st.session_state.df,temp_file])
-    st.session_state.data = True
+        st.session_state.data = True
 
 if 'data' in st.session_state:
     output = BytesIO()
@@ -86,4 +103,4 @@ if 'data' in st.session_state:
 
 
     c = alt.Chart(plot_file).mark_line().encode(x = 'datetime', y = 'final_price', color = 'brandasin')
-    st.altair_chart(c.interactive(),use_container_width=True)
+    chart_area.altair_chart(c.interactive(),use_container_width=True)
