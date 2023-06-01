@@ -19,6 +19,9 @@ st.set_page_config(page_title = 'Price tracker', page_icon = 'media/logo.ico',la
 
 chart_area = st.container()
 notes_area = st.container()
+button_area = st.container()
+asin_area = st.container()
+col1,col2,col3,col4,col5,col6 = asin_area.columns([1,1,1,1,1,1])
 
 notes_area.write('''*For some products you may see a "null" brand popping up - that is Amazon Basics not giving away it's data''')
 
@@ -57,7 +60,7 @@ def get_asins(queue,mode = 'mapping'):
         return None
 
 def get_prices(queue):
-        query = 'SELECT datetime, asin, brand, final_price FROM `auxillary_development.price_comparison`'
+        query = 'SELECT datetime, asin, brand, final_price, image, coupon, full_price FROM `auxillary_development.price_comparison`'
         client = gc.gcloud_connect()
         query_job = client.query(query)  # Make an API request.
         data = query_job.result().to_dataframe()
@@ -82,9 +85,6 @@ if 'data' not in st.session_state:
         process.join()
 
 
-    # st.session_state.mapping = get_asins()
-    # st.session_state.prices = get_prices()
-
     st.session_state.df = pd.DataFrame()
     for product,asins in st.session_state.mapping.items():
         temp_file = st.session_state.prices[st.session_state.prices['asin'].isin(asins)]
@@ -97,23 +97,26 @@ if 'data' in st.session_state:
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
         st.session_state.df.to_excel(writer, sheet_name = 'Prices', index = False)
         ff.format_header(st.session_state.df, writer, 'Prices')
-    st.download_button('Export full data',output.getvalue(), file_name = 'Price history.xlsx')
+    button_area.download_button('Export full data',output.getvalue(), file_name = 'Price history.xlsx')
 
     products = st.session_state.df['product'].unique().tolist()
-    product = st.selectbox('Select a product',products)
+    product = button_area.selectbox('Select a product',products)
     f = st.session_state.df[st.session_state.df['product'] == product]
     f['brandasin'] = f['brand'] + ' : ' + f['asin']
     f['link'] = 'https://www.amazon.com/dp/'+f['asin']
     plot_file = f[['datetime','brandasin','final_price']]
-    link_file = f[['datetime','brand','asin','product','link']].copy()
+    link_file = f[['datetime','brand','asin','product','link','full_price','coupon','image','final_price']].copy()
     last_date = pd.to_datetime(f['datetime'].values.tolist()[-1])
-    link_file = link_file[link_file['datetime'] == last_date]
+    link_file = link_file[link_file['datetime'] == last_date].reset_index()
 
     c = alt.Chart(plot_file, title = product).mark_line().encode(
         x = alt.X('datetime:T'),
         y = alt.Y('final_price:Q'), color = alt.Color('brandasin')
         )
 
-    chart_area.altair_chart(c.interactive(),use_container_width=True)#
-    # st.write(last_date)
-    st.write(link_file)#.to_html(escape=False, index=False), unsafe_allow_html=True)
+    chart_area.altair_chart(c.interactive(),use_container_width=True)
+    columns = [col1,col2,col3,col4,col5,col6]
+    for index, row in link_file.iterrows():
+        columns[index].markdown(f"[{' : '.join([str(row['brand']),row['asin']])}]({row['link']})")
+        columns[index].image(row['image'])
+        columns[index].markdown(f"**:red[${row['final_price']:.2f}]**")

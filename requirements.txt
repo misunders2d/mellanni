@@ -20,3 +20,4 @@ oauth2client
 google-cloud-storage
 google-cloud-bigquery
 # requests-toolbelt==0.10.1
+#protobuf==3.20.*
