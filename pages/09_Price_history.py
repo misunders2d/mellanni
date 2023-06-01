@@ -23,7 +23,7 @@ button_area = st.container()
 asin_area = st.container()
 col1,col2,col3,col4,col5,col6 = asin_area.columns([1,1,1,1,1,1])
 
-notes_area.write('''*For some products you may see a "null" brand popping up - that is Amazon Basics not giving away it's data''')
+notes_area.write('''*For some products you may see a "null" brand popping up - that is Amazon Basics not giving away it's data (or Mellanni hasn't launched yet)''')
 
 def get_asins(queue,mode = 'mapping'):
     # authorize Google Sheets credentials
@@ -67,6 +67,7 @@ def get_prices(queue):
         client.close()
         data['datetime'] = pd.to_datetime(data['datetime'], format = '%Y-%m-%d %H:%M:%S')
         data = data.sort_values('datetime')
+        data['final_price'] = data['final_price'].fillna('out of stock')
         queue.put(data)
         return None
 
@@ -119,4 +120,7 @@ if 'data' in st.session_state:
     for index, row in link_file.iterrows():
         columns[index].markdown(f"[{' : '.join([str(row['brand']),row['asin']])}]({row['link']})")
         columns[index].image(row['image'])
-        columns[index].markdown(f"**:red[${row['final_price']:.2f}]**")
+        try:
+            columns[index].markdown(f"**:red[${row['final_price']:.2f}]**")
+        except:
+            columns[index].markdown(f"**:red[${row['final_price']}]**")
