@@ -299,8 +299,6 @@ if st.session_state['login']:
             st.write(f'Sorry, this block is currently unavailable:\n{e}')
 
         with st.expander('Text rewriter'):
-            text = None
-            rewrite_text = '''Please rewrite'''
             text_file_obj = st.file_uploader('Upload the excel file with text to work on')
             if text_file_obj:
                 text_file_sheets = pd.ExcelFile(text_file_obj).sheet_names
@@ -312,13 +310,24 @@ if st.session_state['login']:
                         col = st.selectbox('Select a column with text to process', columns)
                         text = text_file[col].values.tolist()
                         st.write(f'There are {len(text)} blocks to work on')
-            
-            if st.button('Rewrite') or 'output' in st.session_state:
+            style = st.radio('Select the rewrite power:', ['hard','medium','slight'],horizontal=True, index = 1)
+            if style == 'hard':
+                prompt = '''Please rewrite the following text, 
+                            keeping the main idea but using different words and changing the order of sentences, 
+                            if applicable. Also, please alter the style of the original text:'''
+            elif style == 'medium':
+                prompt = '''Please rewrite the following text, 
+                            keeping the main idea but using different words and changing the order of sentences, 
+                            if applicable. Also, please keep the style of the original text:'''
+            elif style == 'slight':
+                prompt = '''Please rewrite the following text just slightly, without greatly altering the style or the order of sentences:'''
+
+            if st.button('Rewrite') and 'output' in st.session_state:
                 progress_bar = st.progress(len(text)/100,f'Please wait, working on {len(text)} blocks')
                 final_rewrites = pd.DataFrame(columns = ['Original text','Rewritten text'])
                 for i,t in enumerate(text):
                     messages = [
-                        {'role':'user', 'content':f"Please rewrite the following text, keeping the main idea but using different words and changing the order of sentences, if applicable. Also, please keep the style of the original text:\n{t}"}]
+                        {'role':'user', 'content':f"{prompt}\n{t}"}]
                     try:
                         response = openai.ChatCompletion.create(
                         model = 'gpt-3.5-turbo',
@@ -334,7 +343,7 @@ if st.session_state['login']:
                         st.write(f'Sorry, something went wrong for the following reason\n{e}')
                     progress_bar.progress((i+1)/len(text),f'Rewriting block {i+1} of {len(text)}')
                 st.session_state.output = BytesIO()
-                with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                with pd.ExcelWriter(st.session_state.output, engine='xlsxwriter') as writer:
                     final_rewrites.to_excel(writer, sheet_name = 'Rewriting', index = False)
                     ff.format_header(final_rewrites, writer, 'Rewriting')
                 st.download_button('Download results',st.session_state.output.getvalue(), file_name = 'rewrite.xlsx')
