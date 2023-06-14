@@ -312,22 +312,20 @@ if st.session_state['login']:
                         st.write(f'There are {len(text)} blocks to work on')
             style = st.radio('Select the rewrite power:', ['hard','medium','slight'],horizontal=True, index = 1)
             if style == 'hard':
-                prompt = '''Please rewrite the following text, 
-                            keeping the main idea but using different words and changing the order of sentences, 
-                            if applicable. Also, please alter the style of the original text:'''
+                preprompt = '''Please rewrite the following text, keeping the main idea but using different words and changing the order of sentences, if applicable. Also, please alter the style of the original text'''
             elif style == 'medium':
-                prompt = '''Please rewrite the following text, 
-                            keeping the main idea but using different words and changing the order of sentences, 
-                            if applicable. Also, please keep the style of the original text:'''
+                preprompt = '''Please rewrite the following text, keeping the main idea but using different words and changing the order of sentences, if applicable. Also, please keep the style of the original text'''
             elif style == 'slight':
-                prompt = '''Please rewrite the following text just slightly, without greatly altering the style or the order of sentences:'''
+                preprompt = '''Please rewrite the following text just slightly, without greatly altering the style or the order of sentences'''
+
+            prompt = st.text_area('If needs be, please modify the prompt for the bot:',preprompt)
 
             if st.button('Rewrite'):
                 progress_bar = st.progress(len(text)/100,f'Please wait, working on {len(text)} blocks')
                 final_rewrites = pd.DataFrame(columns = ['Original text','Rewritten text'])
                 for i,t in enumerate(text):
                     messages = [
-                        {'role':'user', 'content':f"{prompt}\n{t}"}]
+                        {'role':'user', 'content':f"{prompt}:\n{t}"}]
                     try:
                         response = openai.ChatCompletion.create(
                         model = 'gpt-3.5-turbo',
