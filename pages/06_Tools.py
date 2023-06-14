@@ -339,6 +339,7 @@ if st.session_state['login']:
                         final_rewrites = pd.concat([final_rewrites, temp])
                     except Exception as e:
                         st.write(f'Sorry, something went wrong for the following reason\n{e}')
+                    time.sleep(0.5)
                     progress_bar.progress((i+1)/len(text),f'Rewriting block {i+1} of {len(text)}')
                 st.session_state.output = BytesIO()
                 with pd.ExcelWriter(st.session_state.output, engine='xlsxwriter') as writer:
