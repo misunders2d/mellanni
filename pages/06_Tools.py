@@ -322,7 +322,7 @@ if st.session_state['login']:
             elif style == 'slight':
                 prompt = '''Please rewrite the following text just slightly, without greatly altering the style or the order of sentences:'''
 
-            if st.button('Rewrite') and 'output' in st.session_state:
+            if st.button('Rewrite'):
                 progress_bar = st.progress(len(text)/100,f'Please wait, working on {len(text)} blocks')
                 final_rewrites = pd.DataFrame(columns = ['Original text','Rewritten text'])
                 for i,t in enumerate(text):
