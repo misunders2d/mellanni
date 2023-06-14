@@ -29,7 +29,7 @@ def login():
             cookie_expiry_days=30,
             preauthorized={'emails':preauthorized_emails})
         user, authentication_status, name = authenticator.login('Login','main')
-    if 'authentication_status' not in st.session_state:
+    if 'authentication_status' not in st.session_state or st.session_state.authentication_status is None:
         st.write('OR')
 
         with st.form('Register'):
@@ -53,5 +53,4 @@ def login():
         st.error('Username/password is incorrect')
     elif st.session_state['authentication_status'] == None:
         st.warning('Please enter your username and password')
-
     return st.session_state['authentication_status'], st.session_state['name']
