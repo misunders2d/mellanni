@@ -317,7 +317,7 @@ if st.session_state['login']:
                 final_rewrites = pd.DataFrame(columns = ['Original text','Rewritten text'])
                 for i,t in enumerate(text):
                     messages = [
-                        {'role':'user', 'content':f"Please rewrite the following text, keeping the main idea but using different words and changing the order of sentences, if applicable\n{t}"}]
+                        {'role':'user', 'content':f"Please rewrite the following text, keeping the main idea but using different words and changing the order of sentences, if applicable. Also, please keep the style of the original text:\n{t}"}]
                     try:
                         response = openai.ChatCompletion.create(
                         model = 'gpt-3.5-turbo',
