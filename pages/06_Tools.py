@@ -311,9 +311,9 @@ if st.session_state['login']:
                         columns = text_file.columns
                         col = st.selectbox('Select a column with text to process', columns)
                         text = text_file[col].values.tolist()
-                        st.write(f'There are {len(text)} bloks to work on')
+                        st.write(f'There are {len(text)} blocks to work on')
             
-            if st.button('Rewrite'):
+            if st.button('Rewrite') or 'output' in st.session_state:
                 progress_bar = st.progress(len(text)/100,f'Please wait, working on {len(text)} blocks')
                 final_rewrites = pd.DataFrame(columns = ['Original text','Rewritten text'])
                 for i,t in enumerate(text):
@@ -333,11 +333,11 @@ if st.session_state['login']:
                     except Exception as e:
                         st.write(f'Sorry, something went wrong for the following reason\n{e}')
                     progress_bar.progress((i+1)/len(text),f'Rewriting block {i+1} of {len(text)}')
-                output = BytesIO()
+                st.session_state.output = BytesIO()
                 with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
                     final_rewrites.to_excel(writer, sheet_name = 'Rewriting', index = False)
                     ff.format_header(final_rewrites, writer, 'Rewriting')
-                st.download_button('Download results',output.getvalue(), file_name = 'rewrite.xlsx')
+                st.download_button('Download results',st.session_state.output.getvalue(), file_name = 'rewrite.xlsx')
 
 
         with st.expander('Meeting summarizer'):
