@@ -298,6 +298,47 @@ if st.session_state['login']:
         except Exception as e:
             st.write(f'Sorry, this block is currently unavailable:\n{e}')
 
+        with st.expander('Text rewriter'):
+            text = None
+            rewrite_text = '''Please rewrite'''
+            text_file_obj = st.file_uploader('Upload the excel file with text to work on')
+            if text_file_obj:
+                text_file_sheets = pd.ExcelFile(text_file_obj).sheet_names
+                if text_file_sheets:
+                    sheet = st.selectbox('Select the sheet with data', text_file_sheets)
+                    if sheet:
+                        text_file = pd.read_excel(text_file_obj, sheet_name = sheet)
+                        columns = text_file.columns
+                        col = st.selectbox('Select a column with text to process', columns)
+                        text = text_file[col].values.tolist()
+            
+            if st.button('Rewrite'):
+                progress_bar = st.progress(len(text)/100,f'Please wait, working on {len(text)} blocks')
+                final_rewrites = pd.DataFrame(columns = ['Original text','Rewritten text'])
+                for i,t in enumerate(text):
+                    messages = [
+                        {'role':'user', 'content':f"Please rewrite the following text, keeping the main idea but using different words and changing the order of sentences, if applicable\n{t}"}]
+                    try:
+                        response = openai.ChatCompletion.create(
+                        model = 'gpt-3.5-turbo',
+                        messages =  messages,
+                        temperature=0.9,
+                        max_tokens=1000
+                        )
+                        # Get the generated text and append it to the chat history
+                        rewritten = response['choices'][0]['message']['content'].strip()
+                        temp = pd.DataFrame([[t,rewritten]], columns = ['Original text','Rewritten text'])
+                        final_rewrites = pd.concat([final_rewrites, temp])
+                    except Exception as e:
+                        st.write(f'Sorry, something went wrong for the following reason\n{e}')
+                    progress_bar.progress((i+1)/len(text),f'Rewriting block {i+1} of {len(text)}')
+                output = BytesIO()
+                with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                    final_rewrites.to_excel(writer, sheet_name = 'Rewriting', index = False)
+                    ff.format_header(final_rewrites, writer, 'Rewriting')
+                st.download_button('Download results',output.getvalue(), file_name = 'rewrite.xlsx')
+
+
         with st.expander('Meeting summarizer'):
             def get_meeting_summary(prompt,text, temp):
                 blocks = re.split('\n| \.',text)
