@@ -29,7 +29,7 @@ def login():
             cookie_expiry_days=30,
             preauthorized={'emails':preauthorized_emails})
         user, authentication_status, name = authenticator.login('Login','main')
-    if not st.session_state['authentication_status']:
+    if 'authentication_status' not in st.session_state:
         st.write('OR')
 
         with st.form('Register'):
