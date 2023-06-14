@@ -11,7 +11,7 @@ key = st.secrets['AI_KEY']
 openai.api_key = key
 
 
-
+st.set_page_config(page_title = 'Mellanni Tools', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state='collapsed')
 st.session_state['login'], st.session_state['name'] = login.login()
 name_area = st.empty()
 col1, col2 = st.columns([10,3])
@@ -311,6 +311,7 @@ if st.session_state['login']:
                         columns = text_file.columns
                         col = st.selectbox('Select a column with text to process', columns)
                         text = text_file[col].values.tolist()
+                        st.write(f'There are {len(text)} bloks to work on')
             
             if st.button('Rewrite'):
                 progress_bar = st.progress(len(text)/100,f'Please wait, working on {len(text)} blocks')
