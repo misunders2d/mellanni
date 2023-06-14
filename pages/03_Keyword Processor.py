@@ -45,8 +45,8 @@ if st.session_state['login']:
         from sklearn.cluster import MiniBatchKMeans, KMeans, MeanShift, AgglomerativeClustering, DBSCAN
         from sklearn.metrics.pairwise import cosine_similarity
         import nltk
-        # if nltk.download('all') == False:
-        #     nltk.download('all')
+        if nltk.download('all') == False:
+            nltk.download('all')
         from nltk.corpus import stopwords
         from nltk.stem import WordNetLemmatizer
         import re        
@@ -161,7 +161,7 @@ if st.session_state['login']:
 
     def clusterize(file,vectors,cols,num_clusters):
         from sklearn.cluster import KMeans
-        model = KMeans(n_clusters = num_clusters)
+        model = KMeans(n_clusters = num_clusters, n_init='auto')
         if vectors is not None:
             model.fit(vectors)
             file['word similarity'] = model.labels_
