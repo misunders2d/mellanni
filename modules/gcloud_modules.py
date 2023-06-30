@@ -16,6 +16,14 @@ def gcloud_connect():
     client = bigquery.Client(credentials = key_path)
     return client
 
+def list_projects():
+    client = gcloud_connect()
+    projects = [x.project_id for x in client.list_projects()]
+    sections = [x.dataset_id for x in client.list_datasets()]
+    table_list = {section:[x.table_id for x in client.list_tables(section)] for section in sections}
+    client.close()
+    return table_list
+
 def push_dictionary():
     import pandas as pd
     dict_path = mm.get_db_path('US')[1]
