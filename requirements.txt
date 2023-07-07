@@ -9,6 +9,7 @@ scikit-learn
 deta
 imagekitio
 openai
+tiktoken
 python-barcode
 fpdf
 matplotlib
