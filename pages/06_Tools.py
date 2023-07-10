@@ -9,7 +9,7 @@ import openai
 import time
 key = st.secrets['AI_KEY']
 openai.api_key = key
-GPT_MODEL = 'gpt-4'#'gpt-3.5-turbo'
+GPT_MODEL = ['gpt-4','gpt-3.5-turbo']
 
 
 st.set_page_config(page_title = 'Mellanni Tools', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state='collapsed')
@@ -352,7 +352,7 @@ if st.session_state['login']:
         with st.expander('Meeting summarizer'):
             def get_meeting_summary(prompt,text, temp):
                 blocks = re.split('\n| \.',text)
-                word_limit = 3800               
+                word_limit = 1950               
                 chunks = []
                 limit = 0
                 chunk = []
@@ -378,7 +378,7 @@ if st.session_state['login']:
                             Please compress it, removing all inconsequential details, but keep key talking points and action items, if any.
                             Please stay within 1800 words limit:\n{c}'''}]
                         response = openai.ChatCompletion.create(
-                        model = GPT_MODEL,
+                        model = GPT_MODEL[1],
                         messages =  messages,
                         temperature=temp,
                         max_tokens=1000
@@ -424,6 +424,7 @@ Action items:
             prompt_query = prompt_area.text_area('Prompt',prompt_text,help = 'Modify the query if you are not getting the results you need', height = 150)
             input_text = text_area.text_area('Input meeting transcription',height = 500)
             if st.button('Summarize'):
+                st.write(f'using {model} for summarization')
                 st.session_state.summarized = True
                 try:
                     st.session_state.result, st.session_state.messages = get_meeting_summary(prompt_query,input_text, temp = 0.2)
