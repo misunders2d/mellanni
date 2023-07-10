@@ -10,6 +10,7 @@ import time
 key = st.secrets['AI_KEY']
 openai.api_key = key
 GPT_MODEL = ['gpt-4','gpt-3.5-turbo']
+model = GPT_MODEL[1]
 
 
 st.set_page_config(page_title = 'Mellanni Tools', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state='collapsed')
@@ -378,7 +379,7 @@ if st.session_state['login']:
                             Please compress it, removing all inconsequential details, but keep key talking points and action items, if any.
                             Please stay within 1800 words limit:\n{c}'''}]
                         response = openai.ChatCompletion.create(
-                        model = GPT_MODEL[1],
+                        model = model,
                         messages =  messages,
                         temperature=temp,
                         max_tokens=1000
