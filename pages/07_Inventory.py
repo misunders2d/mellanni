@@ -41,9 +41,6 @@ def check_skus(sku_list,dictionary):
     else:
         return True
     
-
-
-
 def generate_pdf(fnskus, titles, qty):
     #PDF
     pdf_w = 8.5
@@ -217,6 +214,7 @@ with col1:
     if col1.button('Create barcodes') and len(sku_list) > 0:
         with st.spinner('Please wait'):
             dictionary = pull_dictionary()
+            check_skus(sku_list,dictionary)
             st.session_state.file = dictionary[dictionary['sku'].isin(sku_list)].reset_index()
             del st.session_state.file['index']
             fnskus = st.session_state.file['fnsku']
