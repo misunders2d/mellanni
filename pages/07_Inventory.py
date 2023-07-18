@@ -28,6 +28,22 @@ col1, col2, col3 = top_area.columns([3,2,1])
 if not os.path.isdir('barcodes'):
     os.makedirs('barcodes')
 
+def check_skus(sku_list,dictionary):
+    wrong_skus = []
+    for i, sku in enumerate(sku_list):
+        file_sku = dictionary[dictionary['sku'] == sku]
+        if len(file_sku) == 0:
+            wrong_skus.append(sku)
+    if len(wrong_skus) > 0:
+        skus_out = '\n'.join(wrong_skus)
+        st.text(f'The following SKUs were not found:\n{skus_out}')
+        return False
+    else:
+        return True
+    
+
+
+
 def generate_pdf(fnskus, titles, qty):
     #PDF
     pdf_w = 8.5
@@ -69,6 +85,10 @@ def generate_pdf(fnskus, titles, qty):
     return pdf
 
 def generate_itf(sku_list,dictionary, layout, qty,leading = '00'):
+    if check_skus(sku_list,dictionary):
+        pass
+    else:
+        return None
     if layout == 'Letter':
         pdf_w = 8.5
         pdf_h = 11
@@ -210,7 +230,7 @@ with col1:
             elif barcode_type == 'ITF14':
                 st.session_state.pdf = generate_itf(sku_list,dictionary, layout, qty, leading = leading)
                 st.session_state.file_name = 'ITF14 barcodes.pdf'
-    if 'pdf' in st.session_state:
+    if 'pdf' in st.session_state and st.session_state['pdf'] is not None:
         st.session_state.pdf.output('barcodes/barcodes.pdf', 'F')
         with open('barcodes/barcodes.pdf', "rb") as pdf_file:
             PDFbyte = pdf_file.read()
