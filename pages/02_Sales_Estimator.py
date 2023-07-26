@@ -103,7 +103,7 @@ if st.session_state['login']:
     def read_files(xray_file, reviews_file = None):#, reviews_source = 'H10'):
         check, reviews = False, None
         try:
-            xray = pd.read_csv(xray_file, encoding = 'cp1251').fillna(0)
+            xray = pd.read_csv(xray_file).fillna(0)
         except:
             xray = pd.read_csv(xray_file, encoding = 'cp1251').fillna(0)
         if all(['Product Details' in xray.columns,'ASIN' in xray.columns,'Brand' in xray.columns]):
