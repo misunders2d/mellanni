@@ -100,9 +100,9 @@ if st.session_state['login']:
 
             return reviews
 
-    def read_files(xray_file, reviews_file = None):
+    def read_files(xray_file, reviews_file = None):#, reviews_source = 'H10'):
         check, reviews = False, None
-        xray = pd.read_csv(xray_file).fillna(0)
+        xray = pd.read_csv(xray_file, encoding = 'cp1251').fillna(0)
         if all(['Product Details' in xray.columns,'ASIN' in xray.columns,'Brand' in xray.columns]):
             check = True
             brand = xray['Brand'].unique().tolist()
@@ -110,7 +110,15 @@ if st.session_state['login']:
         else:
             return xray, reviews, check
         if reviews_file != None:
-            reviews = pd.read_csv(reviews_file).fillna(0)
+            try:
+                reviews = pd.read_excel(reviews_file)#.fillna(0)
+            except:
+                reviews = pd.read_csv(reviews_file).fillna(0)
+            if 'Model' in reviews.columns:
+                reviews[['ASIN','Model']] = reviews[['ASIN','Model']].fillna('Unattributed')
+                reviews = reviews.pivot_table(values = 'Rating', index = ['ASIN','Model'], aggfunc = 'count').reset_index()
+                reviews['Review Share'] = reviews['Rating']/sum(reviews['Rating'])*100
+                reviews = reviews.rename(columns = {'Rating':'Review Count','Model':'Description'})
             if all(['Review Count' in reviews.columns,'Review Share' in reviews.columns]):
                 check = True
             else:
@@ -152,14 +160,15 @@ if st.session_state['login']:
             st.image('media/xray_guide.png')
         xray_file = st.file_uploader('Xray file from H10 (mandatory)', type = '.csv')
         if st.checkbox('Add review file'):
+            # reviews_source = st.radio('Select reviews source:',['H10','SellerSprite'],horizontal=True)
             if st.checkbox('Show example', key = 'review_example'):
-                st.image('media/review_guide.png')            
-            reviews_file = st.file_uploader('Review file from H10 (optional)', type = '.csv')
+                st.image('media/review_guide.png')
+            reviews_file = st.file_uploader('Review file from H10 or SellerSprite (optional)', type = ['.csv','.xlsx'])
         else:
-            reviews_file = None
+            reviews_file,reviews_source = None,None
 
     if st.button('Process file(s)'):
-        xray, reviews, check = read_files(xray_file, reviews_file)
+        xray, reviews, check = read_files(xray_file, reviews_file)#, reviews_source)
         if check == True:
             final = process_file(xray,reviews)
             output = BytesIO()
