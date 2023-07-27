@@ -353,7 +353,7 @@ if st.session_state['login']:
         with st.expander('Meeting summarizer'):
             def get_meeting_summary(prompt,text, temp):
                 blocks = re.split('\n| \.',text)
-                word_limit = 1850               
+                word_limit = 1750               
                 chunks = []
                 limit = 0
                 chunk = []
