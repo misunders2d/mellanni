@@ -14,7 +14,7 @@ from sklearn.preprocessing import MinMaxScaler
 import nltk
 if not nltk.download('all'):
     nltk.download('all')
-    
+
 try:
     from nltk.corpus import stopwords
 except:
@@ -126,7 +126,7 @@ def sqp_analyze(file):
     file[f'{st.session_state.entity} ATC Conversion'] = file[f'Cart Adds: {st.session_state.entity} Count'] / file[f'Clicks: {st.session_state.entity} Count']
     file['KW Conversion'] = file['Purchases: Total Count'] / file['Clicks: Total Count']
     file[f'{st.session_state.entity} Conversion'] = 0
-    file.loc[file[f'Purchases: {st.session_state.entity} Count']>0,f'{st.session_state.entity} Conversion'] = (file[f'Purchases: {st.session_state.entity} Count'] / file[f'Clicks: {st.session_state.entity} Count'] * 100).fillna(0)
+    file.loc[file[f'Purchases: {st.session_state.entity} Count']>0,f'{st.session_state.entity} Conversion'] = (file[f'Purchases: {st.session_state.entity} Count'] / file[f'Clicks: {st.session_state.entity} Count']).fillna(0)
     file['Conversion status'] = 'Above average'
     file.loc[file[f'{st.session_state.entity} Conversion']<=file['KW Conversion'],'Conversion status'] = 'Below average'
     file['Sales increase potential'] = 0
@@ -165,6 +165,7 @@ def sqp_analyze(file):
                 duplicates = 'drop'
                 )
     file['KW Conversion'] = round(file['KW Conversion']*100,1)
+    file[f'{st.session_state.entity} Conversion'] = round(file[f'{st.session_state.entity} Conversion']*100,1)
     return file
 
 def read_file(file_path):
