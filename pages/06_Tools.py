@@ -350,7 +350,7 @@ if st.session_state['login']:
                 st.download_button('Download results',st.session_state.output.getvalue(), file_name = 'rewrite.xlsx')
 
 
-        with st.expander('Meeting summarizer'):
+        with st.expander('Meeting summarizer',expanded = True):
             def get_meeting_summary(prompt,text, temp):
                 blocks = re.split('\n| \.',text)
                 word_limit = 1750               
