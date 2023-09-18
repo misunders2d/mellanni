@@ -418,8 +418,8 @@ Key talking points:
 - etc
 
 Action items:
-- action item 1
-- action item 2
+- <Assignee> : action item 1
+- <Assignee> : action item 2
 - etc
             '''
             prompt_query = prompt_area.text_area('Prompt',prompt_text,help = 'Modify the query if you are not getting the results you need', height = 150)
