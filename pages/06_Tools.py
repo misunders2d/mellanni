@@ -376,7 +376,8 @@ if st.session_state['login']:
                     for i,c in enumerate(chunks):
                         messages = [
                             {'role':'user', 'content':f'''I am sending you the meeting summary that consists of {len(chunks)} parts. Below is part {i+1}.
-                            Please compress it, removing all inconsequential details, but keep key talking points and action items, if any.
+                            Please compress it, removing all inconsequential details, but keep key talking points and action items, if any. Please make sure to 
+                             save information about assignees.
                             Please stay within 1800 words limit:\n{c}'''}]
                         response = openai.ChatCompletion.create(
                         model = model,
