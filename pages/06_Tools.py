@@ -119,7 +119,7 @@ if st.session_state['login']:
                 result = func()
                 if isinstance(result,pd.core.frame.DataFrame):
                     result = result.reset_index().drop('index', axis = 1)
-                st.experimental_data_editor(result)
+                st.data_editor(result)
 
         with st.expander('Business report link generator'):
             from datetime import datetime, timedelta
