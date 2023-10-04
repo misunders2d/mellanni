@@ -244,7 +244,7 @@ if st.session_state['login']:
                 new_links = clean_links(links)
                 links_area.text_area('Clean links','\n\n'.join(new_links))
         try:
-            with st.expander('Upload images to web and get direct links'):
+            with st.expander('Upload images to web and get direct links', expanded = True):
                 from imagekitio import ImageKit
                 from imagekitio.models.UploadFileRequestOptions import UploadFileRequestOptions
                 from imagekitio.models.CreateFolderRequestOptions import CreateFolderRequestOptions
@@ -353,7 +353,7 @@ if st.session_state['login']:
         with st.expander('Meeting summarizer',expanded = True):
             def get_meeting_summary(prompt,text, temp):
                 blocks = re.split('\n| \.',text)
-                word_limit = 1750               
+                word_limit = 1500               
                 chunks = []
                 limit = 0
                 chunk = []
