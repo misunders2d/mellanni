@@ -47,7 +47,7 @@ def get_asins(queue,mode = 'mapping'):
         asins = list(set([asin for asin_list in asins for asin in asin_list]))
         # if '' in asins:
         #     asins.remove('')
-        asins = [x for x in asins if x != np.nan]
+        asins = [str(x) for x in asins if x != np.nan]
         asins = [x.strip() for x in asins if re.search('([A-Z0-9]{10})',x)]
         queue.put(asins)
         return None
@@ -56,7 +56,7 @@ def get_asins(queue,mode = 'mapping'):
         mapping = {}
         for product in products:
             product_asins = data[data['Product'] == product][['ASIN']+asin_cols].values[0].tolist()
-            product_asins = [x for x in product_asins if x != np.nan]
+            product_asins = [str(x) for x in product_asins if x != np.nan]
             product_asins = [x.strip() for x in product_asins if x != '']
             mapping[product] = product_asins
         queue.put(mapping)
