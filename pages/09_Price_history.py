@@ -56,6 +56,7 @@ def get_asins(queue,mode = 'mapping'):
         mapping = {}
         for product in products:
             product_asins = data[data['Product'] == product][['ASIN']+asin_cols].values[0].tolist()
+            product_asins = [x for x in product_asins if x != np.nan]
             product_asins = [x.strip() for x in product_asins if x != '']
             mapping[product] = product_asins
         queue.put(mapping)
