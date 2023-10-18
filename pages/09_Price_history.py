@@ -4,6 +4,7 @@ import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import threading
+import numpy as np
 from queue import Queue
 from google.cloud import bigquery #pip install google-cloud-bigquery
 from google.oauth2 import service_account
@@ -46,6 +47,7 @@ def get_asins(queue,mode = 'mapping'):
         asins = list(set([asin for asin_list in asins for asin in asin_list]))
         # if '' in asins:
         #     asins.remove('')
+        asins = [x for x in asins if x != np.nan]
         asins = [x.strip() for x in asins if re.search('([A-Z0-9]{10})',x)]
         queue.put(asins)
         return None
