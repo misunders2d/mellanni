@@ -63,7 +63,9 @@ def get_asins(queue,mode = 'mapping'):
         return None
 
 def get_prices(queue):
-        query = 'SELECT datetime, asin, brand, final_price, image, coupon, full_price FROM `auxillary_development.price_comparison`'
+        # start_date = (pd.to_datetime('today') - pd.Timedelta(days = 30)).date()
+        query = '''SELECT datetime, asin, brand, final_price, image, coupon, full_price
+                    FROM `auxillary_development.price_comparison`'''
         client = gc.gcloud_connect()
         query_job = client.query(query)  # Make an API request.
         data = query_job.result().to_dataframe()
@@ -97,11 +99,12 @@ if 'data' not in st.session_state:
         st.session_state.data = True
 
 if 'data' in st.session_state:
-    output = BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        st.session_state.df.to_excel(writer, sheet_name = 'Prices', index = False)
-        ff.format_header(st.session_state.df, writer, 'Prices')
-    button_area.download_button('Export full data',output.getvalue(), file_name = 'Price history.xlsx')
+    if button_area.button('Prepare export'):
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            st.session_state.df.to_excel(writer, sheet_name = 'Prices', index = False)
+            ff.format_header(st.session_state.df, writer, 'Prices')
+        button_area.download_button('Export full data',output.getvalue(), file_name = 'Price history.xlsx')
 
     products = st.session_state.df['product'].unique().tolist()
     product = button_area.selectbox('Select a product',products)
