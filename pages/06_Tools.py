@@ -493,7 +493,8 @@ if st.session_state['login']:
                 # Get the generated text and append it to the chat history
                 final = response['choices'][0]['message']['content'].strip()
                 messages.append({'role':'assistant','content':final})
-                return final, messages
+                usage_stats = response.get('usage')
+                return final, messages, usage_stats
             prompt_area = st.empty()
             text_area = st.empty()
             clarify_area = st.empty()
@@ -518,10 +519,11 @@ Action items:
                 st.write(f'using {model} for summarization')
                 st.session_state.summarized = True
                 try:
-                    st.session_state.result, st.session_state.messages = get_meeting_summary(prompt_query,input_text, temp = 0.2)
+                    st.session_state.result, st.session_state.messages, st.session_state.usage = get_meeting_summary(prompt_query,input_text, temp = 0.2)
                 except Exception as e:
                     st.session_state.result = f'Sorry, an error occurred, please contact the administrator\n\n{e}'
                 text_area.text_area('Summary:',st.session_state.result, height = 500)
+                st.write(st.session_state.usage)
                 # if st.session_state.summarized:
                 #     if st.button('Regenerate'):
                 #         st.session_state.result, st.session_state.messages = get_meeting_summary(prompt_query,input_text, temp = 0.5)
