@@ -154,6 +154,8 @@ if st.session_state['login']:
                     
                 result = pd.DataFrame(data)
                 asins = result[0].str.split(',', expand = True)
+                for col in asins.columns:
+                    asins[col] = asins[col].str.strip()
                 del result[0]
                 result = pd.concat([asins, result],axis = 1)
                 
