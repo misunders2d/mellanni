@@ -128,14 +128,15 @@ if st.session_state['login']:
 
 
             def process_ld(text):
-                rows = re.split('\t|\n',text)
-
+                rows = re.split('\t|\n',data)
                 if 'Glance views' in rows[0:20]:
                     ld = 'ended'
                 else:
                     ld = 'upcoming'
-
+                
                 asin_indexes = [rows.index(x) for x in rows if re.search('[A-Z0-9]{10}',x)]
+                
+                
                 data = []
                 for i, item in enumerate(asin_indexes):
                     if i < len(asin_indexes)-1:
@@ -143,16 +144,19 @@ if st.session_state['login']:
                     else:
                         data.append(rows[asin_indexes[i]:])
                 if 'Parent' in data[0][0]:
-                    data = data[1:]
-
+                    data = data[1:]    
+                    
+                
                 pattern = re.compile('\$|[0-9]+')
 
                 for i, d in enumerate(data):
-                    data[i] = [x for x in d if all([re.search(pattern,x),'inventory' not in x])]
+                    data[i] = [x for x in d if all([re.search(pattern,x),all(['inventory' not in x, 'Mellanni' not in x])])]
+                    
                 result = pd.DataFrame(data)
                 asins = result[0].str.split(',', expand = True)
                 del result[0]
                 result = pd.concat([asins, result],axis = 1)
+                
                 
                 if ld == 'upcoming':
                     cols = ['ASIN','SKU','Your price','Deal price','Max Deal price',
