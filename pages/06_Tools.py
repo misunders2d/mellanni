@@ -129,7 +129,12 @@ if st.session_state['login']:
 
             def process_ld(text):
                 rows = re.split('\t|\n',text)
-                
+
+                if 'Glance views' in rows[0:20]:
+                    ld = 'ended'
+                else:
+                    ld = 'upcoming'
+
                 asin_indexes = [rows.index(x) for x in rows if re.search('[A-Z0-9]{10}',x)]
                 data = []
                 for i, item in enumerate(asin_indexes):
@@ -149,25 +154,39 @@ if st.session_state['login']:
                 del result[0]
                 result = pd.concat([asins, result],axis = 1)
                 
-                cols = ['ASIN','SKU','Your price','Deal price','Max Deal price',
-                        'Deal price/Max Deal price','Discount, %','Target',
-                        'Min Target','Stock']
-                num_cols = ['Your price','Deal price','Max Deal price',
+                if ld == 'upcoming':
+                    cols = ['ASIN','SKU','Your price','Deal price','Max Deal price',
                             'Deal price/Max Deal price','Discount, %','Target',
                             'Min Target','Stock']
-                result.columns = cols
+                    num_cols = ['Your price','Deal price','Max Deal price',
+                                'Deal price/Max Deal price','Discount, %','Target',
+                                'Min Target','Stock']
+                    result.columns = cols
+                    for col in cols:
+                        result[col] = result[col].str.replace('$','')
+                    result['Max Deal price'] = result['Max Deal price'].str.replace('Max: ','')
+                    result['Min Target'] = result['Min Target'].str.replace('Min: ','')
+                    result['Discount, %'] = result['Discount, %'].str.replace('Min: ','')
+                    for nc in num_cols:
+                        result[nc] = result[nc].astype(float)
+                        
+                    result['Discount, %'] = ((result['Deal price'] / result['Your price']) - 1)*100
                 
-                for col in cols:
-                    result[col] = result[col].str.replace('$','')
-                result['Max Deal price'] = result['Max Deal price'].str.replace('Max: ','')
-                result['Min Target'] = result['Min Target'].str.replace('Min: ','')
-                result['Discount, %'] = result['Discount, %'].str.replace('Min: ','')
-                for nc in num_cols:
-                    result[nc] = result[nc].astype(float)
-                    
-                result['Discount, %'] = round(((result['Deal price'] / result['Your price']) - 1)*100,2)
-
-                result['Deal price/Max Deal price'] = result['Max Deal price'] - result['Deal price']
+                    result['Deal price/Max Deal price'] = result['Max Deal price'] - result['Deal price']
+                
+                
+                elif ld == 'ended':
+                    cols = ['ASIN','SKU','Deal price','Sales','Units Sold','Committed units',
+                            'Sell-through rate','Glance views','Conversion rate']
+                    result = result.iloc[:,0:9]
+                    result.columns = cols
+                    for col in ['Deal price', 'Sales']:
+                        result[col] = result[col].str.replace('$','')
+                    num_cols = ['Deal price','Sales','Units Sold','Committed units','Glance views']
+                    for nc in num_cols:
+                        result[nc] = result[nc].astype(float)
+                    result['Sell-through rate'] = round(result['Units Sold'] / result['Committed units'] *100,2)
+                    result['Conversion rate'] = round(result['Units Sold'] / result['Glance views'] *100,2)
 
                 output = BytesIO()
                 with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
