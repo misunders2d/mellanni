@@ -121,6 +121,45 @@ if st.session_state['login']:
                     result = result.reset_index().drop('index', axis = 1)
                 st.data_editor(result)
 
+        with st.expander('Process LD results'):
+            input_area = st.empty()
+            output_area = st.empty()
+            text = input_area.text_area('Input LD data here')
+
+
+            def process_ld(text):
+                rows = re.split('\t|\n',text)
+                
+                asin_indexes = [rows.index(x) for x in rows if re.search('[A-Z0-9]{10}',x)]
+                data = []
+                for i, item in enumerate(asin_indexes):
+                    if i < len(asin_indexes)-1:
+                        data.append(rows[asin_indexes[i]:asin_indexes[i+1]])
+                    else:
+                        data.append(rows[asin_indexes[i]:])
+                if 'Parent' in data[0][0]:
+                    data = data[1:]
+
+                pattern = re.compile('\$|[0-9]+')
+
+                for i, d in enumerate(data):
+                    data[i] = [x for x in d if all([re.search(pattern,x),'inventory' not in x])]
+                result = pd.DataFrame(data)
+                output = BytesIO()
+                with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                    result.to_excel(writer, sheet_name = 'LD_stats', index = False)
+                    ff.format_header(result,writer,'LD_stats')
+                return output.getvalue()
+
+
+            if st.button('Process LD'):
+                data = process_ld(text)
+                st.download_button('Download excel file',data, file_name = 'LD_stats.xlsx')
+                # output_area.text_area('results',data, label_visibility='hidden')
+
+
+
+
         with st.expander('Business report link generator'):
             from datetime import datetime, timedelta
             e_date = (datetime.now().date()-timedelta(days = 2))
