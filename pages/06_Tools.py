@@ -493,7 +493,7 @@ if st.session_state['login']:
                 # Get the generated text and append it to the chat history
                 final = response['choices'][0]['message']['content'].strip()
                 messages.append({'role':'assistant','content':final})
-                usage_stats = response.get('usage')
+                usage_stats = '\n'.join([str(x[0])+':'+str(x[1]) for x in response.get('usage').items() if response.get('usage').items()])
                 return final, messages, usage_stats
             prompt_area = st.empty()
             text_area = st.empty()
