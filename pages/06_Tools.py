@@ -442,7 +442,7 @@ if st.session_state['login']:
         with st.expander('Meeting summarizer',expanded = True):
             def get_meeting_summary(prompt,text, temp):
                 blocks = re.split('\n| \.',text)
-                word_limit = 1500               
+                word_limit = 10000               
                 chunks = []
                 limit = 0
                 chunk = []
@@ -485,7 +485,7 @@ if st.session_state['login']:
                     {'role':'user', 'content':f'''{prompt}\n'''+'\n\n'.join(summaries)}]
                 response = openai.ChatCompletion.create(
                 # model="text-davinci-003",
-                model = 'gpt-3.5-turbo',
+                model = 'gpt-3.5-turbo-1106',
                 messages =  messages,
                 temperature=temp,
                 max_tokens=1000
