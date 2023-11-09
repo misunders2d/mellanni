@@ -128,7 +128,7 @@ if st.session_state['login']:
 
 
             def process_ld(text):
-                rows = re.split('\t|\n',data)
+                rows = re.split('\t|\n',text)
                 if 'Glance views' in rows[0:20]:
                     ld = 'ended'
                 else:
