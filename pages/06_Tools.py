@@ -145,6 +145,30 @@ if st.session_state['login']:
                 for i, d in enumerate(data):
                     data[i] = [x for x in d if all([re.search(pattern,x),'inventory' not in x])]
                 result = pd.DataFrame(data)
+                asins = result[0].str.split(',', expand = True)
+                del result[0]
+                result = pd.concat([asins, result],axis = 1)
+                
+                cols = ['ASIN','SKU','Your price','Deal price','Max Deal price',
+                        'Deal price/Max Deal price','Discount, %','Target',
+                        'Min Target','Stock']
+                num_cols = ['Your price','Deal price','Max Deal price',
+                            'Deal price/Max Deal price','Discount, %','Target',
+                            'Min Target','Stock']
+                result.columns = cols
+                
+                for col in cols:
+                    result[col] = result[col].str.replace('$','')
+                result['Max Deal price'] = result['Max Deal price'].str.replace('Max: ','')
+                result['Min Target'] = result['Min Target'].str.replace('Min: ','')
+                result['Discount, %'] = result['Discount, %'].str.replace('Min: ','')
+                for nc in num_cols:
+                    result[nc] = result[nc].astype(float)
+                    
+                result['Discount, %'] = ((result['Deal price'] / result['Your price']) - 1)*100
+
+                result['Deal price/Max Deal price'] = result['Max Deal price'] - result['Deal price']
+                
                 output = BytesIO()
                 with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
                     result.to_excel(writer, sheet_name = 'LD_stats', index = False)
