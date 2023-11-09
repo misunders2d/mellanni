@@ -186,10 +186,11 @@ if st.session_state['login']:
                             'Sell-through rate','Glance views','Conversion rate']
                     result = result.iloc[:,0:9]
                     result.columns = cols
-                    for col in ['Deal price', 'Sales']:
-                        result[col] = result[col].str.replace('$','')
                     num_cols = ['Deal price','Sales','Units Sold','Committed units','Glance views']
                     for nc in num_cols:
+                        result[nc] = result[nc].str.replace('$','')
+                        result[nc] = result[nc].str.replace(',','')
+                        
                         result[nc] = result[nc].astype(float)
                     result['Sell-through rate'] = round(result['Units Sold'] / result['Committed units'] *100,2)
                     result['Conversion rate'] = round(result['Units Sold'] / result['Glance views'] *100,2)
