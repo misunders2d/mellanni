@@ -176,7 +176,7 @@ if st.session_state['login']:
                     for nc in num_cols:
                         result[nc] = result[nc].astype(float)
                         
-                    result['Discount, %'] = ((result['Deal price'] / result['Your price']) - 1)*100
+                    result['Discount, %'] = round(((result['Deal price'] / result['Your price']) - 1)*100,2)
                 
                     result['Deal price/Max Deal price'] = result['Max Deal price'] - result['Deal price']
                 
