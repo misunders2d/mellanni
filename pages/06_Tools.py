@@ -216,7 +216,7 @@ if st.session_state['login']:
             s_date = (e_date-timedelta(days = 10))
             start = st.date_input('Starting date', value = s_date)
             end = st.date_input('End date', value = e_date)
-            numdays = (e_date - s_date).days + 1
+            numdays = (end - start).days + 1
             date_range = [e_date - timedelta(days = x) for x in range(numdays)]
             link_list = []
             for d in date_range:
