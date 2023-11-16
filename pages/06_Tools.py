@@ -9,8 +9,8 @@ import openai
 import time
 key = st.secrets['AI_KEY']
 openai.api_key = key
-GPT_MODEL = ['gpt-4','gpt-3.5-turbo']
-model = GPT_MODEL[1]
+GPT_MODEL = ['gpt-4','gpt-3.5-turbo','gpt-3.5-turbo-1106']
+model = GPT_MODEL[2]
 
 
 st.set_page_config(page_title = 'Mellanni Tools', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state='collapsed')
@@ -485,7 +485,7 @@ if st.session_state['login']:
                     {'role':'user', 'content':f'''{prompt}\n'''+'\n\n'.join(summaries)}]
                 response = openai.ChatCompletion.create(
                 # model="text-davinci-003",
-                model = 'gpt-3.5-turbo-1106',
+                model = model,
                 messages =  messages,
                 temperature=temp,
                 max_tokens=1000
