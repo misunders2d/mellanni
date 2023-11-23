@@ -217,7 +217,7 @@ if st.session_state['login']:
             start = st.date_input('Starting date', value = s_date)
             end = st.date_input('End date', value = e_date)
             numdays = (end - start).days + 1
-            date_range = [e_date - timedelta(days = x) for x in range(numdays)]
+            date_range = [end - timedelta(days = x) for x in range(numdays)]
             link_list = []
             for d in date_range:
                 link = f"https://sellercentral.amazon.com/business-reports/ref=xx_sitemetric_dnav_xx#/report?id=102%3ADetailSalesTrafficBySKU&chartCols=&columns=0%2F1%2F2%2F3%2F4%2F5%2F6%2F7%2F8%2F9%2F10%2F11%2F12%2F13%2F14%2F15%2F16%2F17%2F18%2F19%2F20%2F21%2F22%2F23%2F24%2F25%2F26%2F27%2F28%2F29%2F30%2F31%2F32%2F33%2F34%2F35%2F36%2F37&fromDate={d.strftime('%Y-%m-%d')}&toDate={d.strftime('%Y-%m-%d')}"
