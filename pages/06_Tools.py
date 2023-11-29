@@ -161,18 +161,31 @@ if st.session_state['login']:
                 
                 
                 if ld == 'upcoming':
-                    cols = ['ASIN','SKU','Your price','Deal price','Max Deal price',
-                            'Deal price/Max Deal price','Discount, %','Target',
-                            'Min Target','Stock']
-                    num_cols = ['Your price','Deal price','Max Deal price',
+                    if len(result.columns) == 10:
+                        cols = ['ASIN','SKU','Your price','Deal price','Max Deal price',
                                 'Deal price/Max Deal price','Discount, %','Target',
                                 'Min Target','Stock']
+                        num_cols = ['Your price','Deal price','Max Deal price',
+                                    'Deal price/Max Deal price','Discount, %','Target',
+                                    'Min Target','Stock']
+                        result['Discount, %'] = result['Discount, %'].str.replace('Min: ','')
+                        
+                    else:
+                        cols = ['ASIN','SKU','Your price','Deal price','Max Deal price',
+                                'Target',
+                                'Min Target','Stock']
+
+                        num_cols = ['Your price','Deal price','Max Deal price',
+                                    'Target',
+                                    'Min Target','Stock']
+                        
                     result.columns = cols
+                        
                     for col in cols:
                         result[col] = result[col].str.replace('$','')
                     result['Max Deal price'] = result['Max Deal price'].str.replace('Max: ','')
                     result['Min Target'] = result['Min Target'].str.replace('Min: ','')
-                    result['Discount, %'] = result['Discount, %'].str.replace('Min: ','')
+                    
                     for nc in num_cols:
                         result[nc] = result[nc].astype(float)
                         
