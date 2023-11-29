@@ -168,7 +168,7 @@ if st.session_state['login']:
                         num_cols = ['Your price','Deal price','Max Deal price',
                                     'Deal price/Max Deal price','Discount, %','Target',
                                     'Min Target','Stock']
-                        result['Discount, %'] = result['Discount, %'].str.replace('Min: ','')
+                        
                         
                     else:
                         cols = ['ASIN','SKU','Your price','Deal price','Max Deal price',
@@ -180,6 +180,8 @@ if st.session_state['login']:
                                     'Min Target','Stock']
                         
                     result.columns = cols
+                    if "Discount" in result.columns.tolist():
+                        result['Discount, %'] = result['Discount, %'].str.replace('Min: ','')
                         
                     for col in cols:
                         result[col] = result[col].str.replace('$','')
