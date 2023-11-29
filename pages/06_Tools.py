@@ -180,7 +180,7 @@ if st.session_state['login']:
                                     'Min Target','Stock']
                         
                     result.columns = cols
-                    if "Discount" in result.columns.tolist():
+                    if 'Discount, %' in result.columns.tolist():
                         result['Discount, %'] = result['Discount, %'].str.replace('Min: ','')
                         
                     for col in cols:
