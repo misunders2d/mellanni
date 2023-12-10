@@ -22,6 +22,7 @@ itf_columns = ['SKU','Quantity','UPC','FNSKU']
 template = pd.DataFrame(data = [['sample SKU','required quantity of labels','upc (NOT ITF)','FNSKU (barcode)']], columns = itf_columns)            
 
 top_area = st.empty()
+bottom_area = st.empty()
 col1, col2, col3 = top_area.columns([3,2,1])
 
 
@@ -246,3 +247,6 @@ with col1:
             label = 'Download SKU list',
             data = output.getvalue(),
             file_name = 'SKUs.xlsx')
+
+
+bottom_area.markdown('\nAdditional tool to optimize package dimensions\n\nhttps://package-optimizer.streamlit.app/')
