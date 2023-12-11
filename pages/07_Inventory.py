@@ -225,7 +225,7 @@ with col1:
             qty = [qty_type]*len(sku_list)
             if barcode_type == 'FNSKU':
                 st.session_state.pdf = generate_pdf(fnskus, titles, qty)
-                st.session_state.file_name = 'Amazon barcodes.pdf'
+                st.session_state.file_name = 'Individual barcodes.pdf'
             elif barcode_type == 'ITF14':
                 st.session_state.pdf = generate_itf(sku_list,dictionary, layout, qty, leading = leading)
                 st.session_state.file_name = 'ITF14 barcodes.pdf'
@@ -246,7 +246,7 @@ with col1:
         col2.download_button(
             label = 'Download SKU list',
             data = output.getvalue(),
-            file_name = 'SKUs.xlsx')
+            file_name = 'SKU list.xlsx')
 
 
 bottom_area.markdown('\nAdditional tool to optimize package dimensions\n\nhttps://package-optimizer.streamlit.app/')
