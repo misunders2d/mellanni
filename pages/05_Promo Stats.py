@@ -77,7 +77,7 @@ if st.session_state['login']:
             query += code_str
         if all([start is not None, end is not None]):
             start, end = pd.to_datetime(start).date(), pd.to_datetime(end).date()
-            date_str = f' AND (shipment_date >= "{start}" AND shipment_date <= "{end}")'
+            date_str = f' AND (DATE(shipment_date) >= "{start}" AND DATE(shipment_date) <= "{end}")'
             query += date_str
 
         client = gc.gcloud_connect()
@@ -210,7 +210,7 @@ if st.session_state['login']:
             x = ' | '.join(x)
             return x
         if all([start is not None, end is not None]):
-            spinner_str = f'Pulling promo report for {(end-start).days} days'
+            spinner_str = f'Pulling promo report for {(end-start+1).days} days'
         else:
             spinner_str = 'Pulling full promo report'
         with st.spinner(spinner_str):
