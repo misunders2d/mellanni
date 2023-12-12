@@ -210,7 +210,7 @@ if st.session_state['login']:
             x = ' | '.join(x)
             return x
         if all([start is not None, end is not None]):
-            spinner_str = f'Pulling promo report for {(end-start+1).days} days'
+            spinner_str = f'Pulling promo report for {(end-start).days + 1} days'
         else:
             spinner_str = 'Pulling full promo report'
         with st.spinner(spinner_str):
