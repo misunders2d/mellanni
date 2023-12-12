@@ -77,7 +77,7 @@ if st.session_state['login']:
             query += code_str
         if all([start is not None, end is not None]):
             start, end = pd.to_datetime(start).date(), pd.to_datetime(end).date()
-            date_str = f' AND (DATE(shipment_date) >= "{start}" AND DATE(shipment_date) <= "{end}")'
+            date_str = f' AND (DATE(shipment_date) >= DATE("{start}") AND DATE(shipment_date) <= DATE("{end}"))'
             query += date_str
 
         client = gc.gcloud_connect()
