@@ -11,6 +11,7 @@ key = st.secrets['AI_KEY']
 openai.api_key = key
 GPT_MODEL = ['gpt-4','gpt-3.5-turbo','gpt-3.5-turbo-1106']
 model = GPT_MODEL[2]
+MAX_TOKENS = 3000
 
 
 st.set_page_config(page_title = 'Mellanni Tools', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state='collapsed')
@@ -487,7 +488,7 @@ if st.session_state['login']:
                         model = model,
                         messages =  messages,
                         temperature=temp,
-                        max_tokens=1000
+                        max_tokens=MAX_TOKENS
                         )
                         # Get the generated text and append it to the chat history
                         message = response['choices'][0]['message']['content'].strip()
@@ -503,7 +504,7 @@ if st.session_state['login']:
                 model = model,
                 messages =  messages,
                 temperature=temp,
-                max_tokens=1000
+                max_tokens=MAX_TOKENS
                 )
                 # Get the generated text and append it to the chat history
                 final = response['choices'][0]['message']['content'].strip()
