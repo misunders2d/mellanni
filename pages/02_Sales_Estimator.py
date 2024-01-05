@@ -19,9 +19,10 @@ if st.session_state['login']:
     def process_file(xray, reviews):
         price_col = [x for x in xray.columns.tolist() if 'price' in x.lower()][0]
         fee_col = [x for x in xray.columns.tolist() if 'fees' in x.lower()][0]
+        active_sellers_col = [x for x in xray.columns.tolist() if 'active sellers' in x.lower()][0]
         if isinstance(reviews,pd.core.frame.DataFrame) == False:# or reviews == None:
             columns_to_drop = [
-                'Product Details','Revenue','Active Sellers #','Images',
+                'Product Details','Revenue',active_sellers_col,'Images',
                 'Review velocity','Buy Box','Category','Size Tier','Fulfillment',
                 'Dimensions','Weight','Creation Date'
             ]
@@ -83,7 +84,7 @@ if st.session_state['login']:
             reviews = reviews[['ASIN','Review Count', column1,column2,column3,column4,'Sales', 'Total Sales']]
             reviews = reviews.sort_values('Sales', ascending=False)
             columns_to_drop = [
-                'Product Details','Sales','Revenue','Active Sellers #','Images',
+                'Product Details','Sales','Revenue',active_sellers_col,'Images',
                 'Review velocity','Buy Box','Category','Size Tier','Fulfillment',
                 'Dimensions','Weight','Creation Date','Review Count'
                 ]
