@@ -219,9 +219,11 @@ if st.session_state['login']:
 
 
             if st.button('Process LD'):
-                data = process_ld(text)
-                st.download_button('Download excel file',data, file_name = 'LD_stats.xlsx')
-                # output_area.text_area('results',data, label_visibility='hidden')
+                try:
+                    data = process_ld(text)
+                    st.download_button('Download excel file',data, file_name = 'LD_stats.xlsx')
+                except Exception as e:
+                    output_area.text_area('results',e, label_visibility='hidden')
 
 
 
