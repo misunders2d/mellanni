@@ -15,11 +15,10 @@ MAX_TOKENS = 3000
 
 
 st.set_page_config(page_title = 'Mellanni Tools', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state='collapsed')
-st.session_state['login'], st.session_state['name'] = login.login()
 name_area = st.empty()
 col1, col2 = st.columns([10,3])
 
-st.session_state['login'], st.session_state['username']= login.login()
+st.session_state['login'], st.session_state['username'] = login.login()
 
 if st.session_state['login']:
 
