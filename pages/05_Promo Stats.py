@@ -12,7 +12,7 @@ pacific = pytz.timezone('US/Pacific')
 
 st.set_page_config(page_title = 'M Tools App', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state = 'collapsed')
 
-st.session_state['login'], st.session_state['name'] = login.login()
+_, st.session_state['login'], st.session_state['name'] = login.login()
 
 if st.session_state['login']:
 

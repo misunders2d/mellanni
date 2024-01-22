@@ -20,7 +20,7 @@ nltk.download('all')
 # st.set_page_config(page_title = 'Mellanni Keyword processing', page_icon = 'logo.ico',layout="wide")
 
 import login
-st.session_state['login'], st.session_state['name'] = login.login()
+_, st.session_state['login'], st.session_state['name'] = login.login()
 
 if st.session_state['login']:
 

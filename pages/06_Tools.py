@@ -19,6 +19,9 @@ st.session_state['login'], st.session_state['name'] = login.login()
 name_area = st.empty()
 col1, col2 = st.columns([10,3])
 
+_, st.session_state['login'], st.session_state['name'] = login.login()
+
+
 if st.session_state['login']:
     name_area.write(f"Welcome {st.session_state['name']}")
 
