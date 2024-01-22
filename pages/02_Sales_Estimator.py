@@ -12,9 +12,9 @@ from PIL import Image
 from modules import formatting as ff
 
 import login
-st.session_state['login']= login.login()
+st.session_state['login'], st.session_state['username']= login.login()
 
-if st.session_state['login'] and st.session_state['login'] in st.secrets['preauthorized_emails']:
+if st.session_state['login']:
     st.subheader('_Estimate variation sales based on their reviews_')
     def process_file(xray, reviews):
         price_col = [x for x in xray.columns.tolist() if 'price' in x.lower()][0]

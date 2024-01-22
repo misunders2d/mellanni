@@ -8,5 +8,5 @@ import login
 st.session_state['login'] = login.login()
 st.write(st.session_state['login'])
 
-# if st.session_state['login']:
-#     st.write("logged in")
+if st.session_state['login']:
+    st.write("logged in")

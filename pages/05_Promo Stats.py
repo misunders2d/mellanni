@@ -12,9 +12,9 @@ pacific = pytz.timezone('US/Pacific')
 
 st.set_page_config(page_title = 'M Tools App', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state = 'collapsed')
 
-_, st.session_state['login'], st.session_state['name'] = login.login()
+st.session_state['login'], st.session_state['username']= login.login()
 
-if st.session_state['login'] and st.session_state['login'] in st.secrets['preauthorized_emails']:
+if st.session_state['login']:
 
     bad_chars = [
         '%off any%',

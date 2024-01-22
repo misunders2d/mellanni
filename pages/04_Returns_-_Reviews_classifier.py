@@ -17,9 +17,9 @@ from modules import formatting as ff
 st.subheader('Text classifier')
 
 import login
-_, st.session_state['login'], st.session_state['name'] = login.login()
+st.session_state['login'], st.session_state['username']= login.login()
 
-if st.session_state['login'] and st.session_state['login'] in st.secrets['preauthorized_emails']:
+if st.session_state['login']:
 
     choice = st.radio('Switch between Returns comments and Negative Reviews classifier',['Returns','Reviews'], horizontal = True)
 

@@ -19,11 +19,9 @@ st.session_state['login'], st.session_state['name'] = login.login()
 name_area = st.empty()
 col1, col2 = st.columns([10,3])
 
-_, st.session_state['login'], st.session_state['name'] = login.login()
+st.session_state['login'], st.session_state['username']= login.login()
 
-
-if st.session_state['login'] and st.session_state['login'] in st.secrets['preauthorized_emails']:
-    name_area.write(f"Welcome {st.session_state['name']}")
+if st.session_state['login']:
 
     with col2:
         # @st.cache_data(show_spinner=False)
