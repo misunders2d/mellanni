@@ -28,7 +28,7 @@ def login():
             'cookie_for_mellanni',
             cookie_expiry_days=30,
             preauthorized={'emails':preauthorized_emails})
-        user, authentication_status, name = authenticator.login('Login','main')
+        user, authentication_status, name = authenticator.login('Login', location = 'main')
     if 'authentication_status' not in st.session_state or st.session_state.authentication_status is None:
         st.write('OR')
 
