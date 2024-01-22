@@ -22,7 +22,7 @@ col1, col2 = st.columns([10,3])
 _, st.session_state['login'], st.session_state['name'] = login.login()
 
 
-if st.session_state['login']:
+if st.session_state['login'] and st.session_state['login'] in st.secrets['preauthorized_emails']:
     name_area.write(f"Welcome {st.session_state['name']}")
 
     with col2:

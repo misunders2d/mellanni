@@ -14,7 +14,7 @@ st.set_page_config(page_title = 'M Tools App', page_icon = 'media/logo.ico',layo
 
 _, st.session_state['login'], st.session_state['name'] = login.login()
 
-if st.session_state['login']:
+if st.session_state['login'] and st.session_state['login'] in st.secrets['preauthorized_emails']:
 
     bad_chars = [
         '%off any%',

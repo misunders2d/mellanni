@@ -20,9 +20,9 @@ nltk.download('all')
 # st.set_page_config(page_title = 'Mellanni Keyword processing', page_icon = 'logo.ico',layout="wide")
 
 import login
-_, st.session_state['login'], st.session_state['name'] = login.login()
+st.session_state['login'], st.session_state['name'] = login.login()
 
-if st.session_state['login']:
+if st.session_state['login'] and st.session_state['login'] in st.secrets['preauthorized_emails']:
 
     bins = [0.4,0.7]
     labels = ['low','med','high']

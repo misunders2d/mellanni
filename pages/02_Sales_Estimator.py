@@ -12,7 +12,7 @@ from PIL import Image
 from modules import formatting as ff
 
 import login
-_, st.session_state['login'], st.session_state['name'] = login.login()
+st.session_state['login']= login.login()
 
 if st.session_state['login'] and st.session_state['login'] in st.secrets['preauthorized_emails']:
     st.subheader('_Estimate variation sales based on their reviews_')
