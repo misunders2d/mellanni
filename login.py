@@ -5,7 +5,8 @@ def login():
     login_info = oauth.login(
             client_id=st.secrets['GCLIENT_ID'],
             client_secret=st.secrets['GCLIENT_SECRET'],
-            redirect_uri='https://mellanni-tools.streamlit.app/',
+            # redirect_uri = 'localhost'
+            # redirect_uri='https://mellanni-tools.streamlit.app/main',
             # login_button_text="Continue with Google",
             # logout_button_text="Logout",
         )
@@ -18,3 +19,6 @@ def login():
     else:
             st.write("Please login")
             return (None,None,None)
+    
+if __name__ == '__main__':
+       st.write(login())
