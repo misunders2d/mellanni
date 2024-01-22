@@ -13,7 +13,8 @@ def login():
     if login_info:
             user_id, user_email = login_info
             st.write(f"Welcome {user_email}")
+            st.write(login_info)
             return login_info
     else:
             st.write("Please login")
-            return ['','','']
+            return (None,None,None)
