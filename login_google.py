@@ -18,6 +18,12 @@ TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token"
 REVOKE_ENDPOINT = "https://oauth2.googleapis.com/revoke"
 PREAUTHORIZED_EMAILS = st.secrets['preauthorized_emails']
 
+def logout():
+    if 'auth' in st.session_state:
+        del st.session_state["auth"]
+    if 'token' in st.session_state:
+        del st.session_state["token"]
+
 def login():
     if "auth" not in st.session_state:
         # create a button to start the OAuth2 flow
@@ -52,10 +58,7 @@ def login():
             return True
         # st.write(st.session_state["token"])
         # st.button("Logout")
+    st.write("You are not allowed to access this page")
+    if st.button("Logout"):
+        logout()
     return False
-
-def logout():
-    if 'auth' in st.session_state:
-        del st.session_state["auth"]
-    if 'token' in st.session_state:
-        del st.session_state["token"]

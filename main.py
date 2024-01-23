@@ -15,8 +15,4 @@ st.session_state['login'] = login_google.login()
 
 if st.session_state['login']:
     st.write("Logged in")
-else:
-    st.write("You are not allowed to access this page")
-if st.button("Logout"):
-    login_google.logout()
 
