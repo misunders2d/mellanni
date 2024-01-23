@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import streamlit as st
-import streamlit_authenticator as stauth
-import streamlit_google_oauth as oauth
+# import streamlit_authenticator as stauth
 st.set_page_config(page_title = 'Mellanni Tools App', page_icon = 'media/logo.ico',layout="wide")
 
 # import login
@@ -12,6 +11,12 @@ st.set_page_config(page_title = 'Mellanni Tools App', page_icon = 'media/logo.ic
 #     st.write("logged in")
 
 import login_google
-st.session_state['login'] = login_google.login_google()
-if 'login' in st.session_state:
-    st.write(st.session_state['login'])
+st.session_state['login'] = login_google.login()
+
+if st.session_state['login']:
+    st.write("Logged in")
+else:
+    st.write("You are not allowed to access this page")
+if st.button("Logout"):
+    login_google.logout()
+

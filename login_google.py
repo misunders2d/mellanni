@@ -1,29 +1,61 @@
 import streamlit as st
 from streamlit_oauth import OAuth2Component
+import os
+import base64
+import json
 
-# Set environment variables
-AUTHORIZE_URL = "https://accounts.google.com/o/oauth2/auth"
-TOKEN_URL = "https://oauth2.googleapis.com/token"
-REFRESH_TOKEN_URL = "https://oauth2.googleapis.com/token"
-REVOKE_TOKEN_URL = "https://oauth2.googleapis.com/revoke"
-CLIENT_ID = st.secrets['GCLIENT_ID']
-CLIENT_SECRET = st.secrets['GCLIENT_SECRET']
-REDIRECT_URI = "http://localhost:8501"
-SCOPE = "openid profile email"
+# import logging
+# logging.basicConfig(level=logging.INFO)
 
-oauth2 = OAuth2Component(CLIENT_ID, CLIENT_SECRET, AUTHORIZE_URL, TOKEN_URL, REFRESH_TOKEN_URL, REVOKE_TOKEN_URL)
+# st.title("Google OIDC Example")
+# st.write("This example shows how to use the raw OAuth2 component to authenticate with a Google OAuth2 and get email from id_token.")
 
-def login_google():
-    # Check if token exists in session state
-    if 'token' not in st.session_state:
-        # If not, show authorize button
-        result = oauth2.authorize_button("Authorize", REDIRECT_URI, SCOPE)
-        if result and 'token' in result:
-            # If authorization successful, save token in session state
-            st.session_state.token = result.get('token')
-            # THE MAIN APP if user authenticate
-            st.title("App On")
-        return result    
+# create an OAuth2Component instance
+CLIENT_ID = os.environ.get("GCLIENT_ID")
+CLIENT_SECRET = os.environ.get("GCLIENT_SECRET")
+AUTHORIZE_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth"
+TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token"
+REVOKE_ENDPOINT = "https://oauth2.googleapis.com/revoke"
+PREAUTHORIZED_EMAILS = st.secrets['preauthorized_emails']
+
+def login():
+    if "auth" not in st.session_state:
+        # create a button to start the OAuth2 flow
+        oauth2 = OAuth2Component(CLIENT_ID, CLIENT_SECRET, AUTHORIZE_ENDPOINT, TOKEN_ENDPOINT, TOKEN_ENDPOINT, REVOKE_ENDPOINT)
+        result = oauth2.authorize_button(
+            name="Continue with Google",
+            icon="https://www.google.com.tw/favicon.ico",
+            redirect_uri="http://localhost:8501",
+            scope="openid email profile",
+            key="google",
+            extras_params={"prompt": "consent", "access_type": "offline"},
+            use_container_width=True,
+        )
+
+        if result:
+            # st.write(result)
+            # decode the id_token jwt and get the user's email address
+            id_token = result["token"]["id_token"]
+            # verify the signature is an optional step for security
+            payload = id_token.split(".")[1]
+            # add padding to the payload if needed
+            payload += "=" * (-len(payload) % 4)
+            payload = json.loads(base64.b64decode(payload))
+            email = payload["email"]
+            st.session_state["auth"] = email
+            st.session_state["token"] = result["token"]
+            st.rerun()
     else:
-        token = st.session_state['token']
-        return token
+        st.write("You are logged in!")
+        st.write('Your email:',st.session_state["auth"])
+        if st.session_state['auth'] in PREAUTHORIZED_EMAILS:
+            return True
+        # st.write(st.session_state["token"])
+        # st.button("Logout")
+    return False
+
+def logout():
+    if 'auth' in st.session_state:
+        del st.session_state["auth"]
+    if 'token' in st.session_state:
+        del st.session_state["token"]

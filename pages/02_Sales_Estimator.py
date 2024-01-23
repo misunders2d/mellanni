@@ -11,8 +11,11 @@ from io import BytesIO
 from PIL import Image
 from modules import formatting as ff
 
-import login
-st.session_state['login'], st.session_state['username']= login.login()
+# import login
+# st.session_state['login'], st.session_state['username']= login.login()
+import login_google
+st.session_state['login'] = login_google.login()
+
 
 if st.session_state['login']:
     st.subheader('_Estimate variation sales based on their reviews_')
