@@ -3,10 +3,10 @@ import streamlit as st
 # from google.oauth2 import id_token
 
 # # Set your Google client ID and secret
-# CLIENT_ID = '60688562422-lmivhsa8qprhi34u70bt5vgn6qdedrub.apps.googleusercontent.com'
-# CLIENT_SECRET = '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'
+# CLIENT_ID = ''
+# CLIENT_SECRET = ''
 # REDIRECT_URI = 'https://www.google.com/'  # Must match the one configured in the Google Cloud Console
-# CLIENT_FILE = r'G:\Shared drives\70 Data & Technology\70.03 Scripts\mellanni_2\google-cloud\mellanni_login.json'
+# CLIENT_FILE = r''
 
 # def login_with_google():
 #     st.subheader("Login with Google")
@@ -54,9 +54,9 @@ from google_auth_oauthlib.flow import Flow
 import requests
 
 # Replace with your Google OAuth client ID and secret
-CLIENT_ID = '60688562422-lmivhsa8qprhi34u70bt5vgn6qdedrub.apps.googleusercontent.com'
-CLIENT_SECRET = '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'
-CLIENT_FILE = r'G:\Shared drives\70 Data & Technology\70.03 Scripts\mellanni_2\google-cloud\mellanni_login.json'
+CLIENT_ID = ''
+CLIENT_SECRET = ''
+CLIENT_FILE = r''
 
 # Define the redirect URI for your Streamlit app
 REDIRECT_URI = "http://localhost:8501/callback/"
