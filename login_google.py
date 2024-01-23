@@ -24,7 +24,7 @@ def login():
         oauth2 = OAuth2Component(CLIENT_ID, CLIENT_SECRET, AUTHORIZE_ENDPOINT, TOKEN_ENDPOINT, TOKEN_ENDPOINT, REVOKE_ENDPOINT)
         result = oauth2.authorize_button(
             name="Continue with Google",
-            # icon="https://www.google.com.tw/favicon.ico",
+            icon="https://www.google.com.tw/favicon.ico",
             redirect_uri="https://mellanni-tools.streamlit.app/",
             scope="openid email profile",
             key="google",
