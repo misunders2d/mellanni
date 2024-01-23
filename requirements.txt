@@ -22,5 +22,4 @@ google-cloud-storage
 google-cloud-bigquery
 # requests-toolbelt==0.10.1
 #protobuf==3.20.*
-
-git+https://github.com/hunkim/streamlit-google-oauth
+google-api-python-client
