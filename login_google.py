@@ -23,8 +23,7 @@ def login_google():
             st.session_state.token = result.get('token')
             # THE MAIN APP if user authenticate
             st.title("App On")
-            
+        return result    
     else:
         token = st.session_state['token']
-
-    return token
+        return token
