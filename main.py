@@ -13,4 +13,4 @@ st.set_page_config(page_title = 'Mellanni Tools App', page_icon = 'media/logo.ic
 
 import login_google
 st.session_state['login'] = login_google.login_google()
-st.write(st.session_state)
+st.write(st.session_state['login'])
