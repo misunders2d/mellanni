@@ -26,8 +26,11 @@ import re
 
 st.set_page_config(page_title = 'M Tools App', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state='collapsed')
 
-import login
-st.session_state['login'], st.session_state['username']= login.login()
+# import login
+# st.session_state['login'], st.session_state['username']= login.login()
+
+import login_google
+st.session_state['login'] = login_google.login()
 
 st.write(st.session_state['login'])
 

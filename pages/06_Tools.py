@@ -3,7 +3,7 @@ import pandas as pd
 import re
 from io import BytesIO
 from modules import formatting as ff
-import login
+# import login
 from modules import gcloud_modules as gc
 import openai
 import time
@@ -18,7 +18,10 @@ st.set_page_config(page_title = 'Mellanni Tools', page_icon = 'media/logo.ico',l
 name_area = st.empty()
 col1, col2 = st.columns([10,3])
 
-st.session_state['login'], st.session_state['username'] = login.login()
+# st.session_state['login'], st.session_state['username'] = login.login()
+
+import login_google
+st.session_state['login'] = login_google.login()
 
 if st.session_state['login']:
 

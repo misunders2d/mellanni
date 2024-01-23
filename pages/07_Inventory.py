@@ -14,8 +14,11 @@ import os
 from barcode import Code128, Code39
 from barcode.writer import ImageWriter
 
-import login
-st.session_state['login'], st.session_state['username']= login.login()
+# import login
+# st.session_state['login'], st.session_state['username']= login.login()
+
+import login_google
+st.session_state['login'] = login_google.login()
 
 if st.session_state['login']:
     width = 2.2
