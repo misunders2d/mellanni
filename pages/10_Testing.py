@@ -32,8 +32,6 @@ st.set_page_config(page_title = 'M Tools App', page_icon = 'media/logo.ico',layo
 import login_google
 st.session_state['login'] = login_google.login()
 
-st.write(st.session_state['login'])
-
 def text_processing(file):
     cluster_col = 'cluster'
     corpus_col = 'clean kw'

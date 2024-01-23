@@ -35,7 +35,7 @@ def login():
             scope="openid email profile",
             key="google",
             extras_params={"prompt": "consent", "access_type": "offline"},
-            use_container_width=True,
+            use_container_width=True,   
         )
 
         if result:
