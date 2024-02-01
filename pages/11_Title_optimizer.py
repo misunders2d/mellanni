@@ -2,6 +2,8 @@ from openai import OpenAI
 import streamlit as st
 import time, json
 
+st.set_page_config(page_title = 'Mellanni Tools App', page_icon = 'media/logo.ico',layout="wide")
+
 ASSISTANT_KEY = st.secrets['ASSISTANT_KEY']
 assistant_id = 'asst_mvg3s2IB6NBVDUMVQAyhLAmb'
 thread_id = 'thread_RBShV8Ay9B9n1nmJnAXdbBfy'
