@@ -6,6 +6,9 @@ ASSISTANT_KEY = st.secrets['ASSISTANT_KEY']
 assistant_id = 'asst_mvg3s2IB6NBVDUMVQAyhLAmb'
 thread_id = 'thread_RBShV8Ay9B9n1nmJnAXdbBfy'
 
+st.title('AI powered Title and Bulletpoints optimizer')
+st.help('Input short product description, current title and bulletpoints along with the most important keywords.')
+
 product_description_area = st.empty()
 title_area1 = st.empty()
 title_area2 = st.empty()
