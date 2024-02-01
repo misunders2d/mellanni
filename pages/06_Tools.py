@@ -5,10 +5,10 @@ from io import BytesIO
 from modules import formatting as ff
 # import login
 from modules import gcloud_modules as gc
-import openai
+from openai import OpenAI
 import time
 key = st.secrets['AI_KEY']
-openai.api_key = key
+# openai.api_key = key
 GPT_MODEL = ['gpt-4','gpt-3.5-turbo','gpt-3.5-turbo-1106']
 model = GPT_MODEL[2]
 MAX_TOKENS = 3000
@@ -433,20 +433,21 @@ if st.session_state['login']:
             prompt = st.text_area('If needs be, please modify the prompt for the bot:',preprompt)
 
             if st.button('Rewrite'):
+                client = OpenAI(api_key = key)
                 progress_bar = st.progress(len(text)/100,f'Please wait, working on {len(text)} blocks')
                 final_rewrites = pd.DataFrame(columns = ['Original text','Rewritten text'])
                 for i,t in enumerate(text):
                     messages = [
                         {'role':'user', 'content':f"{prompt}:\n{t}"}]
                     try:
-                        response = openai.ChatCompletion.create(
+                        response = client.chat.completions.create(
                         model = GPT_MODEL,
                         messages =  messages,
                         temperature=0.9,
                         max_tokens=1000
                         )
                         # Get the generated text and append it to the chat history
-                        rewritten = response['choices'][0]['message']['content'].strip()
+                        rewritten = response.choices[0].message.content.strip()
                         temp = pd.DataFrame([[t,rewritten]], columns = ['Original text','Rewritten text'])
                         final_rewrites = pd.concat([final_rewrites, temp])
                     except Exception as e:
@@ -489,14 +490,14 @@ if st.session_state['login']:
                             Please compress it, removing all inconsequential details, but keep key talking points and action items, if any. Please make sure to 
                              save information about assignees.
                             Please stay within 1800 words limit:\n{c}'''}]
-                        response = openai.ChatCompletion.create(
+                        response = client.chat.completions.create(
                         model = model,
                         messages =  messages,
                         temperature=temp,
                         max_tokens=MAX_TOKENS
                         )
                         # Get the generated text and append it to the chat history
-                        message = response['choices'][0]['message']['content'].strip()
+                        message = response.choices[0].message.content.strip()
                         summaries.append(message)
                         time.sleep(5)
                     progress_bar.progress((i+1)/len(chunks),'Please wait...')
@@ -504,7 +505,7 @@ if st.session_state['login']:
                 #summarize
                 messages = [
                     {'role':'user', 'content':f'''{prompt}\n'''+'\n\n'.join(summaries)}]
-                response = openai.ChatCompletion.create(
+                response = client.chat.completions.create(
                 # model="text-davinci-003",
                 model = model,
                 messages =  messages,
