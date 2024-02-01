@@ -55,14 +55,15 @@ if button_col1.button('Optimize') and 'result' not in st.session_state:
         status = client.beta.threads.runs.retrieve(run_id = run.id, thread_id = thread_id).status
         log_area.write(status)
         time.sleep(1)
-    messages = client.beta.threads.messages.list(thread_id = thread_id)
-    log_area.write('Done')
-    st.session_state.result = json.loads(messages.data[0].content[0].text.value)
-    st.session_state.optimized_title = (st.session_state.result.get('Title'),False)
-    new_bullets = st.session_state.result.get('Bulletpoints')
-    new_bullets = '\n\n'.join(new_bullets)
-    st.session_state.optimized_bullets =  (new_bullets,False)
-    st.rerun()
+    if status not in ["queued", "in_progress"]:
+        messages = client.beta.threads.messages.list(thread_id = thread_id)
+        log_area.write('Done')
+        st.session_state.result = json.loads(messages.data[0].content[0].text.value)
+        st.session_state.optimized_title = (st.session_state.result.get('Title'),False)
+        new_bullets = st.session_state.result.get('Bulletpoints')
+        new_bullets = '\n\n'.join(new_bullets)
+        st.session_state.optimized_bullets =  (new_bullets,False)
+        st.rerun()
 if button_col2.button('Clear'):
     if 'result' in st.session_state:
         del st.session_state.result
