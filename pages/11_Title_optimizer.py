@@ -25,15 +25,15 @@ if 'optimized_title' not in st.session_state:
 if 'optimized_bullets' not in st.session_state:
     st.session_state.optimized_bullets = ('',True)
 
-product = product_description_area.text_area('Describe your product', placeholder='A bed sheet set made of microfiber with 1 flat sheet, 1 fitted sheet and 2 pillowcases')
-title_current = title_area1.text_area('Current title', height = 2, max_chars=200, placeholder='input your current title here')
+product = product_description_area.text_area('Describe your product', placeholder='Example: A bed sheet set made of microfiber with 1 flat sheet, 1 fitted sheet and 2 pillowcases')
+title_current = title_area1.text_area('Current title', height = 2, max_chars=200, placeholder='Input your current title here')
 title_optimized = title_area2.text_area('Optimized title will be shown here', value = st.session_state.optimized_title[0], disabled = st.session_state.optimized_title[1])
 
 bullets_real_col, bullets_opt_col = bullets_area.columns([1,1])
-bullets_real = bullets_real_col.text_area('current bulletpoints', height = 300)
+bullets_real = bullets_real_col.text_area('Current bulletpoints', height = 300, placeholder='Input your current bulletpoints')
 bullets_optimized = bullets_opt_col.text_area('Optimized bulletpoints', value = st.session_state.optimized_bullets[0], height = 300, disabled=st.session_state.optimized_bullets[1])
 
-keywords = keywords_area.text_area('current keywords')
+keywords = keywords_area.text_area('Current keywords', placeholder='Input your most important keywords - AI will try to use them in the new title')
 
 if 'assistant' not in st.session_state:
     client = client = OpenAI(api_key = ASSISTANT_KEY)
