@@ -43,8 +43,7 @@ if 'assistant' not in st.session_state:
 
 prompt = f'Product:\n{product}\n\nTitle:\n{title_current},\n\nBulletpoints:\n{bullets_real}\n\nKeywords:\n{keywords}'
 
-
-if button_col1.button('Optimize') and 'result' not in st.session_state:
+def process():
     client = st.session_state['client']
     thread = client.beta.threads.create()
     message = client.beta.threads.messages.create(
@@ -76,6 +75,10 @@ if button_col1.button('Optimize') and 'result' not in st.session_state:
     st.session_state.optimized_bullets =  (new_bullets,False)
     client.beta.threads.delete(thread_id = thread.id)
     st.rerun()
-if button_col2.button('Clear'):
+
+if button_col1.button('Optimize') and 'result' not in st.session_state:
+    process()
+if button_col2.button('Try again'):
     if 'result' in st.session_state:
         del st.session_state.result
+    process()
