@@ -6,7 +6,7 @@ st.set_page_config(page_title = 'Mellanni Tools App', page_icon = 'media/logo.ic
 
 ASSISTANT_KEY = st.secrets['ASSISTANT_KEY']
 assistant_id = 'asst_mvg3s2IB6NBVDUMVQAyhLAmb'
-thread_id = 'thread_RBShV8Ay9B9n1nmJnAXdbBfy'
+# thread_id = 'thread_RBShV8Ay9B9n1nmJnAXdbBfy'
 
 st.title('AI powered Title and Bulletpoints optimizer')
 st.subheader('Input short product description, current title and bulletpoints along with the most important keywords.')
@@ -39,37 +39,39 @@ if 'assistant' not in st.session_state:
     client = client = OpenAI(api_key = ASSISTANT_KEY)
     st.session_state['client'] = client
     st.session_state['assistant'] = client.beta.assistants.retrieve(assistant_id)
-    thread = client.beta.threads.retrieve(thread_id = thread_id)
+    # thread = client.beta.threads.retrieve(thread_id = thread_id)
 
 prompt = f'Product:\n{product}\n\nTitle:\n{title_current},\n\nBulletpoints:\n{bullets_real}\n\nKeywords:\n{keywords}'
 
 
 if button_col1.button('Optimize') and 'result' not in st.session_state:
     client = st.session_state['client']
+    thread = client.beta.threads.create()
     message = client.beta.threads.messages.create(
-        thread_id = thread_id,
+        thread_id = thread.id,
         role = 'user',
         content = prompt)
     
     run = client.beta.threads.runs.create(
-        thread_id = thread_id,
+        thread_id = thread.id,
         assistant_id = assistant_id)
     
     if 'status' not in st.session_state:
         st.session_state.status = ['queued']
     while True:
-        st.session_state.status = client.beta.threads.runs.retrieve(run_id = run.id, thread_id = thread_id).status
+        st.session_state.status = client.beta.threads.runs.retrieve(run_id = run.id, thread_id = thread.id).status
         log_area.write(st.session_state.status)
         if st.session_state.status =='completed':
             break
         time.sleep(1)
-    messages = client.beta.threads.messages.list(thread_id = thread_id)
+    messages = client.beta.threads.messages.list(thread_id = thread.id)
     log_area.write('Done')
     st.session_state.result = json.loads(messages.data[0].content[0].text.value)
     st.session_state.optimized_title = (st.session_state.result.get('Title'),False)
     new_bullets = st.session_state.result.get('Bulletpoints')
     new_bullets = '\n\n'.join(new_bullets)
     st.session_state.optimized_bullets =  (new_bullets,False)
+    client.beta.threads.delete(thread_id = thread.id)
     st.rerun()
 if button_col2.button('Clear'):
     if 'result' in st.session_state:
