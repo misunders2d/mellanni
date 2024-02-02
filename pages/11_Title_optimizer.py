@@ -33,7 +33,7 @@ bullets_real_col, bullets_opt_col = bullets_area.columns([1,1])
 bullets_real = bullets_real_col.text_area('Current bulletpoints', height = 300, placeholder='Input your current bulletpoints')
 bullets_optimized = bullets_opt_col.text_area('Optimized bulletpoints', value = st.session_state.optimized_bullets[0], height = 300, disabled=st.session_state.optimized_bullets[1])
 
-keywords = keywords_area.text_area('Current keywords', placeholder='Input your most important keywords - AI will try to use them in the new title')
+keywords = keywords_area.text_area('Current keywords', placeholder='Input your most important keywords - AI will try to use them in the new title and bulletpoints')
 
 if 'assistant' not in st.session_state:
     client = client = OpenAI(api_key = ASSISTANT_KEY)
