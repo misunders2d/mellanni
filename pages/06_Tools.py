@@ -514,7 +514,7 @@ if st.session_state['login']:
                 max_tokens=MAX_TOKENS
                 )
                 # Get the generated text and append it to the chat history
-                final = response['choices'][0]['message']['content'].strip()
+                final = response.choices[0].message.content.strip()
                 messages.append({'role':'assistant','content':final})
                 # usage_stats = ', '.join([str(x[0])+':'+str(x[1]) for x in response.get('usage').items() if response.get('usage').items()])
                 return final, messages#, usage_stats
