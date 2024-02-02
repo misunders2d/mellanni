@@ -61,8 +61,9 @@ if button_col1.button('Optimize') and 'result' not in st.session_state:
     while True:
         st.session_state.status = client.beta.threads.runs.retrieve(run_id = run.id, thread_id = thread.id).status
         log_area.write('Please wait')
-        time.sleep(1)
+        time.sleep(0.5)
         log_area.write(st.session_state.status)
+        time.sleep(0.5)
         if st.session_state.status =='completed':
             break
     messages = client.beta.threads.messages.list(thread_id = thread.id)
