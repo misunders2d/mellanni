@@ -82,7 +82,7 @@ if button_col2.button('Try again'):
     if 'result' in st.session_state:
         del st.session_state.result
     process()
-if button_col3.button('Reset'):
-    for item in st.session_state:
-        del item
-    st.rerun()
+# if button_col3.button('Reset'):
+#     for item in st.session_state:
+#         del item
+#     st.rerun()
