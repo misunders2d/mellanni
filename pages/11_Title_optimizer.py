@@ -45,37 +45,38 @@ prompt = f'Product:\n{product}\n\nTitle:\n{title_current},\n\nBulletpoints:\n{bu
 
 
 if button_col1.button('Optimize') and 'result' not in st.session_state:
-    client = st.session_state['client']
-    thread = client.beta.threads.create()
-    message = client.beta.threads.messages.create(
-        thread_id = thread.id,
-        role = 'user',
-        content = prompt)
-    
-    run = client.beta.threads.runs.create(
-        thread_id = thread.id,
-        assistant_id = assistant_id)
-    time.sleep(0.5)
     if 'status' not in st.session_state:
         st.session_state.status = ['queued']
-    while True:
-        st.session_state.status = client.beta.threads.runs.retrieve(run_id = run.id, thread_id = thread.id).status
-        log_area.write('Please wait')
+    with st.spinner(text = st.session_state.status):
+        client = st.session_state['client']
+        thread = client.beta.threads.create()
+        message = client.beta.threads.messages.create(
+            thread_id = thread.id,
+            role = 'user',
+            content = prompt)
+        
+        run = client.beta.threads.runs.create(
+            thread_id = thread.id,
+            assistant_id = assistant_id)
         time.sleep(0.5)
-        log_area.write(st.session_state.status)
-        time.sleep(0.5)
-        if st.session_state.status =='completed':
-            break
-    messages = client.beta.threads.messages.list(thread_id = thread.id)
-    log_area.write('Done')
-    st.session_state.result = messages.data[0].content[0].text.value
-    st.session_state.optimized_title = (st.session_state.result.split('|')[0].strip(),False)
-    new_bullets = st.session_state.result.split('|')[1:]
-    new_bullets = [x.strip() for x in new_bullets]
-    new_bullets = '\n\n'.join(new_bullets)
-    st.session_state.optimized_bullets =  (new_bullets,False)
-    client.beta.threads.delete(thread_id = thread.id)
-    st.rerun()
+        while True:
+            st.session_state.status = client.beta.threads.runs.retrieve(run_id = run.id, thread_id = thread.id).status
+            log_area.write('Please wait')
+            time.sleep(0.5)
+            log_area.write(st.session_state.status)
+            time.sleep(0.5)
+            if st.session_state.status =='completed':
+                break
+        messages = client.beta.threads.messages.list(thread_id = thread.id)
+        log_area.write('Done')
+        st.session_state.result = messages.data[0].content[0].text.value
+        st.session_state.optimized_title = (st.session_state.result.split('|')[0].strip(),False)
+        new_bullets = st.session_state.result.split('|')[1:]
+        new_bullets = [x.strip() for x in new_bullets]
+        new_bullets = '\n\n'.join(new_bullets)
+        st.session_state.optimized_bullets =  (new_bullets,False)
+        client.beta.threads.delete(thread_id = thread.id)
+        st.rerun()
 if button_col2.button('Clear'):
     if 'result' in st.session_state:
         del st.session_state.result
