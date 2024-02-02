@@ -68,8 +68,9 @@ if button_col1.button('Optimize') and 'result' not in st.session_state:
     messages = client.beta.threads.messages.list(thread_id = thread.id)
     log_area.write('Done')
     st.session_state.result = messages.data[0].content[0].text.value
-    st.session_state.optimized_title = (st.session_state.result.split('|')[0],False)
+    st.session_state.optimized_title = (st.session_state.result.split('|')[0].strip(),False)
     new_bullets = st.session_state.result.split('|')[1:]
+    new_bullets = [x.strip() for x in new_bullets]
     new_bullets = '\n\n'.join(new_bullets)
     st.session_state.optimized_bullets =  (new_bullets,False)
     client.beta.threads.delete(thread_id = thread.id)
