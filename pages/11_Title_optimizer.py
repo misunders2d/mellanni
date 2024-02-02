@@ -17,7 +17,7 @@ title_area2 = st.empty()
 bullets_area = st.empty()
 keywords_area = st.empty()
 button_area = st.empty()
-button_col1, button_col2 = button_area.columns([2,1])
+button_col1, button_col2, button_col3 = button_area.columns([3,1,1])
 log_area = st.empty()
 
 if 'optimized_title' not in st.session_state:
@@ -82,3 +82,7 @@ if button_col2.button('Try again'):
     if 'result' in st.session_state:
         del st.session_state.result
     process()
+if button_col3.button('Reset'):
+    for item in st.session_state:
+        del item
+    st.rerun()
