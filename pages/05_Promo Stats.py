@@ -220,6 +220,7 @@ if st.session_state['login']:
             promos = read_promos(code_list=code_list, start = start, end = end, coupons = coupons)
             code_pattern = '\(([A-Za-z0-9\s]{8,13})\-{0,1}\d{0,1}\)'
             promos['promo_code'] = promos['description'].str.extract(code_pattern).fillna(' ')
+            promos['promo_code'] = promos['promo_code'].str.strip()
             if code_list != None:
                 promos = promos[promos['promo_code'].isin(code_list)]
 
