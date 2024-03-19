@@ -174,11 +174,16 @@ if st.session_state['login']:
         return None
 
     def pull_dictionary():
-        client = gc.gcloud_connect()
-        sql = '''SELECT sku,fnsku,upc,collection,sub_collection,size,color,short_title FROM `auxillary_development.dictionary`'''
-        query_job = client.query(sql)  # Make an API request.
-        dictionary = query_job.result().to_dataframe()
-        client.close()
+        sql_us = '''SELECT sku,fnsku,upc,collection,sub_collection,size,color,short_title FROM `auxillary_development.dictionary`'''
+        sql_eu = '''SELECT sku,fnsku,upc,collection,sub_collection,size,color,short_title FROM `auxillary_development.dictionary_eu`'''
+        sql_uk = '''SELECT sku,fnsku,upc,collection,sub_collection,size,color,short_title FROM `auxillary_development.dictionary_uk`'''
+
+        with gc.gcloud_connect() as client:
+            dictionary_us = client.query(sql_us).to_dataframe()
+            dictionary_eu = client.query(sql_eu).to_dataframe()
+            dictionary_uk = client.query(sql_uk).to_dataframe()
+            
+        dictionary = pd.concat([dictionary_us, dictionary_eu, dictionary_uk])
         dictionary = dictionary[~dictionary['fnsku'].isin(['bundle','none','FBM'])]
         dictionary['collection'] = dictionary['collection'].str.replace('1800','Iconic')
         dictionary['sub_collection'] = dictionary['sub_collection'].str.replace('1800','Iconic')
