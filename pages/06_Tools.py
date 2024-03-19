@@ -522,7 +522,8 @@ if st.session_state['login']:
             text_area = st.empty()
             clarify_area = st.empty()
             prompt_text = '''
-Please summarize the following meeting minutes, stay detailed, but concise. Make sure to explicitly and separately list key talking points and action items, if any,  in the following format:
+Please summarize the following meeting minutes, stay detailed, but concise. Try not to miss any important points.
+Make sure to explicitly and separately list key talking points and action items, if any,  in the following format:
 
 Summary
 
