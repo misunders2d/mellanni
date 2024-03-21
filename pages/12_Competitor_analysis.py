@@ -6,6 +6,9 @@ import keepa
 
 import os, re
 
+st.set_page_config(page_title = 'Competitor analysis', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state = 'collapsed')
+
+
 API_KEY = os.getenv('GPT_VISION_KEY')
 KEEPA_KEY = os.getenv('KEEPA_KEY')
 HEIGHT = 250
@@ -130,7 +133,6 @@ if st.session_state['login']:
 
 
     ############# MAIN PAGE ##########################
-    st.set_page_config(page_title = 'Competitor analysis', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state = 'collapsed')
     try:
         with open('data/instructions.txt','r') as instr:
             st.session_state.INSTRUCTIONS = instr.read()
@@ -158,7 +160,7 @@ if st.session_state['login']:
         st.session_state.INSTRUCTIONS = 'Tell me about these products'
 
 
-    asins_input = asin_col.text_area('Products', placeholder='Enter ASINs or Amazon.com links (up to 5 perferrably)', height=HEIGHT)
+    asins_input = asin_col.text_area('Products', placeholder='Enter ASINs or Amazon.com links (up to 5 perferably)', height=HEIGHT)
     instructions = instr_col.text_area('Instructions (ask the bot anything about the products)', value = st.session_state.INSTRUCTIONS, height=HEIGHT)
 
     if st.button('Analyze'):
