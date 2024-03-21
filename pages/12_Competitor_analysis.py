@@ -166,9 +166,12 @@ if st.session_state['login']:
     if st.button('Analyze'):
         asins_str = re.split(' |,|\n|\t', asins_input)
         asins =  [re.search('([A-Z0-9]{10})', x).group().strip() for x in asins_str if re.search('([A-Z0-9]{10})', x)]
-        items = get_product_details(asins)
-        details = generate_prompt(items, props)
-        # st.write(details)
-        compare_products(details, instructions, props, test = False)
-        st.download_button('Save results', data = st.session_state.result, file_name = 'results.md')
+        if len(asins) == 0:
+            st.error('No products to research')
+        else:
+            items = get_product_details(asins)
+            details = generate_prompt(items, props)
+            # st.write(details)
+            compare_products(details, instructions, props, test = False)
+            st.download_button('Save results', data = st.session_state.result, file_name = 'results.md')
 
