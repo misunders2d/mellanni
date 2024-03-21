@@ -158,7 +158,7 @@ if st.session_state['login']:
         st.session_state.INSTRUCTIONS = 'Tell me about these products'
 
 
-    asins_input = asin_col.text_area('Products', placeholder='Enter ASINs or Amazon.com links', height=HEIGHT)
+    asins_input = asin_col.text_area('Products', placeholder='Enter ASINs or Amazon.com links (up to 5 perferrably)', height=HEIGHT)
     instructions = instr_col.text_area('Instructions (ask the bot anything about the products)', value = st.session_state.INSTRUCTIONS, height=HEIGHT)
 
     if st.button('Analyze'):
