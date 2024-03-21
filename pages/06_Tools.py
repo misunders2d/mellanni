@@ -507,12 +507,11 @@ if st.session_state['login']:
                 messages = [
                     {'role':'user', 'content':f'''{prompt}\n'''+'\n\n'.join(summaries)}]
                 response = client.chat.completions.create(
-                # model="text-davinci-003",
-                model = model,
-                messages =  messages,
-                temperature=temp,
-                max_tokens=MAX_TOKENS
-                )
+                    model = model,
+                    messages =  messages,
+                    temperature=temp,
+                    max_tokens=MAX_TOKENS
+                    )
                 # Get the generated text and append it to the chat history
                 final = response.choices[0].message.content.strip()
                 messages.append({'role':'assistant','content':final})
