@@ -441,7 +441,7 @@ if st.session_state['login']:
                         {'role':'user', 'content':f"{prompt}:\n{t}"}]
                     try:
                         response = client.chat.completions.create(
-                        model = GPT_MODEL,
+                        model = model,
                         messages =  messages,
                         temperature=0.9,
                         max_tokens=1000
