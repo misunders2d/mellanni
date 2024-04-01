@@ -142,3 +142,5 @@ dmypy.json
 # idea folder
 .idea/
 .idea
+idea/
+idea

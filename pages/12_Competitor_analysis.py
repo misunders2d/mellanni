@@ -17,7 +17,7 @@ import login_google
 st.session_state['login'] = login_google.login()
 
 
-if st.session_state['login']:
+if st.session_state['login'][0]:
 
     def get_product_details(asins):
         api = keepa.Keepa(KEEPA_KEY)

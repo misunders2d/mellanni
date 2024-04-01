@@ -25,7 +25,7 @@ nltk.download('all')
 import login_google
 st.session_state['login'] = login_google.login()
 
-if st.session_state['login']:
+if st.session_state['login'][0]:
 
     bins = [0.4,0.7]
     labels = ['low','med','high']

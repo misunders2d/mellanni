@@ -22,7 +22,7 @@ st.subheader('Text classifier')
 import login_google
 st.session_state['login'] = login_google.login()
 
-if st.session_state['login']:
+if st.session_state['login'][0]:
 
     choice = st.radio('Switch between Returns comments and Negative Reviews classifier',['Returns','Reviews'], horizontal = True)
 

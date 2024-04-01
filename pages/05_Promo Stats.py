@@ -17,7 +17,7 @@ st.set_page_config(page_title = 'M Tools App', page_icon = 'media/logo.ico',layo
 import login_google
 st.session_state['login'] = login_google.login()
 
-if st.session_state['login']:
+if st.session_state['login'][0]:
 
     bad_chars = [
         '%off any%',

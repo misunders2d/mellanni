@@ -55,10 +55,10 @@ def login():
         st.write("You are logged in!")
         st.write('Your email:',st.session_state["auth"])
         if st.session_state['auth'] in PREAUTHORIZED_EMAILS:
-            return True
+            return True, st.session_state["auth"]
         # st.write(st.session_state["token"])
         # st.button("Logout")
     st.write("You are not allowed to access this page")
     if st.button("Logout"):
         logout()
-    return False
+    return False, 'Access denied'

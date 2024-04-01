@@ -25,3 +25,4 @@ google-cloud-bigquery
 google-api-python-client
 streamlit-oauth
 keepa
+pandas_gbq

@@ -17,7 +17,7 @@ import login_google
 st.session_state['login'] = login_google.login()
 
 
-if st.session_state['login']:
+if st.session_state['login'][0]:
     st.subheader('_Estimate variation sales based on their reviews_')
     def process_file(xray, reviews):
         price_col = [x for x in xray.columns.tolist() if 'price' in x.lower()][0]
