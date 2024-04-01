@@ -9,11 +9,14 @@ from google.oauth2 import service_account
 
 st.set_page_config(page_title = 'SKU changelog', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state='collapsed')
 
-import login_google
-st.session_state['login'] = login_google.login()
-user_email = st.session_state['login'][1]
+# import login_google
+# st.session_state['login'] = login_google.login()
+# user_email = st.session_state['login'][1]
 
-if st.session_state['login'][0]:
+# if st.session_state['login'][0]:
+
+user_email = 'sergey@mellanni.com'
+if True:
 
     GC_CREDENTIALS = service_account.Credentials.from_service_account_info(st.secrets['gcp_service_account'])
     client = bigquery.Client(credentials=GC_CREDENTIALS)
@@ -160,11 +163,13 @@ if st.session_state['login'][0]:
         notes = change_type_col.text_input('Add notes, if necessary')
         change_date = date_col.date_input('Date of the change', value = 'today')
         add_button = button_col.button('Add changes', type = 'primary', disabled = not button_access)#, on_click=hide_df)
-        st.session_state.changes = pull_changes(marketplace=marketplace)
-        st.session_state.dictionary = pull_dictionary(marketplace=marketplace)
-        st.session_state.changelog = pd.merge(st.session_state.changes, st.session_state.dictionary, how = 'left', on = 'sku')
-        st.session_state.pivot = summarize_changes(st.session_state.changelog)
-
+        try:
+            st.session_state.changes = pull_changes(marketplace=marketplace)
+            st.session_state.dictionary = pull_dictionary(marketplace=marketplace)
+            st.session_state.changelog = pd.merge(st.session_state.changes, st.session_state.dictionary, how = 'left', on = 'sku')
+            st.session_state.pivot = summarize_changes(st.session_state.changelog)
+        except:
+            st.session_state.pivot = pd.DataFrame()
         collection_list, size_list, color_list, sku_list = selectors_row.columns([2,1,1,2])
         collections_filtered = sorted(st.session_state.dictionary['collection'].sort_values().unique().tolist())
         st.session_state.collections = collection_list.multiselect('Collection', collections_filtered)
