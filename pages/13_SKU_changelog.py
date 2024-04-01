@@ -159,7 +159,7 @@ if st.session_state['login'][0]:
         change_type = change_type_col.selectbox('Select a change',options = change_types, index = change_types.index(change_types[-1]))
         notes = change_type_col.text_input('Add notes, if necessary')
         change_date = date_col.date_input('Date of the change', value = 'today')
-        add_button = button_col.button('Add changes', type = 'primary', disabled = button_access)#, on_click=hide_df)
+        add_button = button_col.button('Add changes', type = 'primary', disabled = not button_access)#, on_click=hide_df)
         st.session_state.changes = pull_changes()
         st.session_state.dictionary = pull_dictionary(marketplace=marketplace)
         st.session_state.changelog = pd.merge(st.session_state.changes, st.session_state.dictionary, how = 'left', on = 'sku')
