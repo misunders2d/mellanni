@@ -187,12 +187,12 @@ if st.session_state['login'][0]:
         if 'df_height' not in st.session_state:
             summary_area.write(f'Summary of latest changes for the past {NUM_DAYS} days')
             df_area.dataframe(st.session_state.pivot, use_container_width=True, hide_index=True)
-
+        collections_str = '\n'.join(collections_from_skus)
         warning_text = f'''You are about to commit the following changes to {marketplace} changelog:
     Change: {change_type},
     Notes: {notes},
     Change date: {change_date}
-    {len(st.session_state.skus)} skus impacted, including the following collections: {'\n'.join(collections_from_skus)}
+    {len(st.session_state.skus)} skus impacted, including the following collections: {collections_str}
     '''
 
         if add_button:
