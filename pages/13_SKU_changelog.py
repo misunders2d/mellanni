@@ -163,13 +163,12 @@ if True:
         notes = change_type_col.text_input('Add notes, if necessary')
         change_date = date_col.date_input('Date of the change', value = 'today')
         add_button = button_col.button('Add changes', type = 'primary', disabled = not button_access)#, on_click=hide_df)
-        try:
-            st.session_state.changes = pull_changes(marketplace=marketplace)
-            st.session_state.dictionary = pull_dictionary(marketplace=marketplace)
-            st.session_state.changelog = pd.merge(st.session_state.changes, st.session_state.dictionary, how = 'left', on = 'sku')
-            st.session_state.pivot = summarize_changes(st.session_state.changelog)
-        except:
-            st.session_state.pivot = pd.DataFrame()
+        
+        st.session_state.changes = pull_changes(marketplace=marketplace)
+        st.session_state.dictionary = pull_dictionary(marketplace=marketplace)
+        st.session_state.changelog = pd.merge(st.session_state.changes, st.session_state.dictionary, how = 'left', on = 'sku')
+        st.session_state.pivot = summarize_changes(st.session_state.changelog)
+
         collection_list, size_list, color_list, sku_list = selectors_row.columns([2,1,1,2])
         collections_filtered = sorted(st.session_state.dictionary['collection'].sort_values().unique().tolist())
         st.session_state.collections = collection_list.multiselect('Collection', collections_filtered)
