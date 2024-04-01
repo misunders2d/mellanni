@@ -1,6 +1,6 @@
 import streamlit as st
 from streamlit_oauth import OAuth2Component
-import os
+import os, time
 import base64
 import json
 
@@ -35,7 +35,7 @@ def login():
             scope="openid email profile",
             key="google",
             extras_params={"prompt": "consent", "access_type": "offline"},
-            use_container_width=True,   
+            use_container_width=False 
         )
 
         if result:
@@ -50,6 +50,7 @@ def login():
             email = payload["email"]
             st.session_state["auth"] = email
             st.session_state["token"] = result["token"]
+            time.sleep(0.5)
             st.rerun()
     else:
         st.write("You are logged in!")
