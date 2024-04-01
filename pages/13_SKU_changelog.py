@@ -155,7 +155,7 @@ if st.session_state['login'][0]:
         df_area = st.container()
         
         marketplace_col, date_col, change_type_col, button_col = markets_row.columns([3,1,2,1])
-        marketplace = marketplace_col.radio('Select marketplace', markets_match['dictionaries'].keys(), horizontal=True,)
+        marketplace = marketplace_col.radio('Select marketplace', allowed_markets, horizontal=True,)
         change_type = change_type_col.selectbox('Select a change',options = change_types, index = change_types.index(change_types[-1]))
         notes = change_type_col.text_input('Add notes, if necessary')
         change_date = date_col.date_input('Date of the change', value = 'today')
