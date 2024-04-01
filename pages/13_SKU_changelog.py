@@ -9,14 +9,14 @@ from google.oauth2 import service_account
 
 st.set_page_config(page_title = 'SKU changelog', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state='collapsed')
 
-# import login_google
-# st.session_state['login'] = login_google.login()
-# user_email = st.session_state['login'][1]
+import login_google
+st.session_state['login'] = login_google.login()
+user_email = st.session_state['login'][1]
 
-# if st.session_state['login'][0]:
+if st.session_state['login'][0]:
 
-user_email = 'sergey@mellanni.com'
-if True:
+# user_email = 'sergey@mellanni.com'
+# if True:
 
     GC_CREDENTIALS = service_account.Credentials.from_service_account_info(st.secrets['gcp_service_account'])
     client = bigquery.Client(credentials=GC_CREDENTIALS)
@@ -163,7 +163,7 @@ if True:
         notes = change_type_col.text_input('Add notes, if necessary')
         change_date = date_col.date_input('Date of the change', value = 'today')
         add_button = button_col.button('Add changes', type = 'primary', disabled = not button_access)#, on_click=hide_df)
-        
+
         st.session_state.changes = pull_changes(marketplace=marketplace)
         st.session_state.dictionary = pull_dictionary(marketplace=marketplace)
         st.session_state.changelog = pd.merge(st.session_state.changes, st.session_state.dictionary, how = 'left', on = 'sku')
