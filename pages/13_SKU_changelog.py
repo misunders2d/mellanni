@@ -70,7 +70,7 @@ if True:
                 dictionary = client.query(query).result().to_dataframe()
         return dictionary
 
-    @st.cache_resource
+    # @st.cache_resource
     def pull_changes(
             marketplace:str = 'US',
             start:datetime.date = (pd.to_datetime('today')-pd.Timedelta(days = NUM_DAYS)).date(),
