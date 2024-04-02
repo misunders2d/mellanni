@@ -162,6 +162,7 @@ if st.session_state['login'][0]:
 
 
     def main():
+        global change_types
         markets_row = st.container()
         selectors_row = st.container()
         summary_area = st.container()
