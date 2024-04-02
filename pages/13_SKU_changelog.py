@@ -72,7 +72,7 @@ if st.session_state['login'][0]:
                 dictionary = client.query(query).result().to_dataframe()
         return dictionary
 
-    @st.cache_resource
+    # @st.cache_resource
     def pull_changes(
             marketplace:str = 'US',
             start:datetime.date = (pd.to_datetime('today')-pd.Timedelta(days = NUM_DAYS)).date(),
@@ -91,7 +91,7 @@ if st.session_state['login'][0]:
             return pd.DataFrame(columns = ['date','sku','change_type'])
         return changes
 
-    @st.cache_resource
+    # @st.cache_resource
     def summarize_changes(
         changes:pd.DataFrame
         ) -> pd.DataFrame:
