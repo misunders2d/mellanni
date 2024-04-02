@@ -38,7 +38,8 @@ if st.session_state['login'][0]:
             'EU':'`auxillary_development.dictionary_eu`',
             'UK':'`auxillary_development.dictionary_uk`',
             'WM':'`auxillary_development.dictionary`',
-
+            'Target':'`auxillary_development.dictionary`',
+            'Shopify':'`auxillary_development.dictionary`',
         },
         'changelogs':{
             'US':'`auxillary_development.sku_changelog`',
@@ -46,6 +47,8 @@ if st.session_state['login'][0]:
             'EU':'`auxillary_development.sku_changelog_eu`',
             'UK':'`auxillary_development.sku_changelog_uk`',
             'WM':'`auxillary_development.dictionary_wm`',
+            'Target':'`auxillary_development.dictionary_tgt`',
+            'Shopify':'`auxillary_development.dictionary_shp`',
         }
     }
     markets_access: dict = {
@@ -55,7 +58,7 @@ if st.session_state['login'][0]:
         'bohdan@mellanni.com':['US'],
         'reymond@mellanni.com':['US'],
         'olha@mellanni.com':['EU','UK'],
-        'natalie@mellanni.com':['WM'],
+        'natalie@mellanni.com':['WM', 'Target','Shopify'],
     }
     button_access = user_email in markets_access
     allowed_markets = [x for x in markets_match['dictionaries'].keys() if x in markets_access[user_email]]
