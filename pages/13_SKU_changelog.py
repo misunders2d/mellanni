@@ -14,7 +14,19 @@ import login_google
 st.session_state['login'] = login_google.login()
 user_email = st.session_state['login'][1]
 
-if st.session_state['login'][0]:
+markets_access: dict = {
+    'ruslan@mellanni.com':['CA','US'],
+    'vova@mellanni.com':['CA','US'],
+    'sergey@mellanni.com':['CA','US','UK','Target','Shopify'],
+    'oleksandr@mellanni.com':['US'],
+    'bohdan@mellanni.com':['US'],
+    'reymond@mellanni.com':['US'],
+    'olha@mellanni.com':['UK','DE','FR','ES','IT'],
+    'natalie@mellanni.com':['WM', 'Target','Shopify'],
+}
+
+
+if st.session_state['login'][0] and user_email in markets_access:
 
 # user_email = 'sergey@mellanni.com'
 # if True:
@@ -62,16 +74,6 @@ if st.session_state['login'][0]:
             'Target':'`auxillary_development.dictionary_tgt`',
             'Shopify':'`auxillary_development.dictionary_shp`',
         }
-    }
-    markets_access: dict = {
-        'ruslan@mellanni.com':['CA','US'],
-        'vova@mellanni.com':['CA','US'],
-        'sergey@mellanni.com':['CA','US','UK','Target','Shopify'],
-        'oleksandr@mellanni.com':['US'],
-        'bohdan@mellanni.com':['US'],
-        'reymond@mellanni.com':['US'],
-        'olha@mellanni.com':['UK','DE','FR','ES','IT'],
-        'natalie@mellanni.com':['WM', 'Target','Shopify'],
     }
     button_access = user_email in markets_access
     allowed_markets = [x for x in markets_match['dictionaries'].keys() if x in markets_access.get(user_email,[])]
