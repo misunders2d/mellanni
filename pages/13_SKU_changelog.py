@@ -162,81 +162,80 @@ if st.session_state['login'][0]:
         return None
 
 
-    def main():
-        global change_types
-        markets_row = st.container()
-        selectors_row = st.container()
-        summary_area = st.container()
-        df_area = st.container()
-        
-        marketplace_col, date_col, change_type_col, button_col = markets_row.columns([3,1,2,1])
-        marketplace = marketplace_col.radio('Select marketplace', allowed_markets, horizontal=True)
+    # global change_types
+    markets_row = st.container()
+    selectors_row = st.container()
+    summary_area = st.container()
+    df_area = st.container()
+    
+    marketplace_col, date_col, change_type_col, button_col = markets_row.columns([3,1,2,1])
+    marketplace = marketplace_col.radio('Select marketplace', allowed_markets, horizontal=True)
 
-        if marketplace == 'Shopify':
-            change_types.extend(['MSRP set as Sale Price + discount coupon to standard','Prices back to Standard from MSRP, coupon off'])
-        elif marketplace == 'WM':
-            change_types.extend(['Spec file upload'])
-        change_types = sorted(change_types)
-        change_types.append('Other, please specify in notes')
+    if marketplace == 'Shopify':
+        change_types.extend(['MSRP set as Sale Price + discount coupon to standard','Prices back to Standard from MSRP, coupon off'])
+    elif marketplace == 'WM':
+        change_types.extend(['Spec file upload'])
+    change_types = sorted(change_types)
+    change_types.append('Other, please specify in notes')
 
-        change_type = change_type_col.selectbox('Select a change',options = change_types, index = change_types.index(change_types[-1]))
-        notes = change_type_col.text_input('Add notes, if necessary')
-        change_date = date_col.date_input('Date of the change', value = 'today')
-        add_button = button_col.button('Add changes', type = 'primary', disabled = not button_access)#, on_click=hide_df)
+    change_type = change_type_col.selectbox('Select a change',options = change_types, index = change_types.index(change_types[-1]))
+    notes = change_type_col.text_input('Add notes, if necessary')
+    change_date = date_col.date_input('Date of the change', value = 'today')
+    add_button = button_col.button('Add changes', type = 'primary', disabled = not button_access)#, on_click=hide_df)
 
-        st.session_state.changes = pull_changes(marketplace=marketplace)
-        st.session_state.dictionary = pull_dictionary(marketplace=marketplace)
-        st.session_state.changelog = pd.merge(st.session_state.changes, st.session_state.dictionary, how = 'left', on = 'sku')
-        st.session_state.pivot = summarize_changes(st.session_state.changelog)
-        result = ff.prepare_for_export([st.session_state.changelog], ['changes'])
-        st.download_button('Download changes',result, file_name = 'sku_changelog.xlsx')
+    st.session_state.changes = pull_changes(marketplace=marketplace)
+    st.session_state.dictionary = pull_dictionary(marketplace=marketplace)
+    st.session_state.changelog = pd.merge(st.session_state.changes, st.session_state.dictionary, how = 'left', on = 'sku')
+    st.session_state.pivot = summarize_changes(st.session_state.changelog)
+    result = ff.prepare_for_export([st.session_state.changelog], ['changes'])
+    st.download_button('Download changes',result, file_name = 'sku_changelog.xlsx')
 
-        collection_list, size_list, color_list, sku_list = selectors_row.columns([2,1,1,2])
-        collections_filtered = sorted(st.session_state.dictionary['collection'].sort_values().unique().tolist())
-        st.session_state.collections = collection_list.multiselect('Collection', collections_filtered)
+    collection_list, size_list, color_list, sku_list = selectors_row.columns([2,1,1,2])
+    collections_filtered = sorted(st.session_state.dictionary['collection'].sort_values().unique().tolist())
+    st.session_state.collections = collection_list.multiselect('Collection', collections_filtered)
 
-        sizes_filtered = sorted(st.session_state.dictionary[st.session_state.dictionary['collection'].isin(st.session_state.collections)]['size'].sort_values().unique())
-        st.session_state.sizes = size_list.multiselect('Size',sizes_filtered)
-        
-        colors_filtered = st.session_state.dictionary[
-            (st.session_state.dictionary['collection'].isin(st.session_state.collections))
-            & (st.session_state.dictionary['size'].isin(st.session_state.sizes))
-            ]['color'].sort_values().unique()
-        st.session_state.colors = color_list.multiselect('Color',colors_filtered)
+    sizes_filtered = sorted(st.session_state.dictionary[st.session_state.dictionary['collection'].isin(st.session_state.collections)]['size'].sort_values().unique())
+    st.session_state.sizes = size_list.multiselect('Size',sizes_filtered)
+    
+    colors_filtered = st.session_state.dictionary[
+        (st.session_state.dictionary['collection'].isin(st.session_state.collections))
+        & (st.session_state.dictionary['size'].isin(st.session_state.sizes))
+        ]['color'].sort_values().unique()
+    st.session_state.colors = color_list.multiselect('Color',colors_filtered)
 
-        skus_filtered = generate_skus(st.session_state.collections, st.session_state.sizes, st.session_state.colors, st.session_state.dictionary)
+    skus_filtered = generate_skus(st.session_state.collections, st.session_state.sizes, st.session_state.colors, st.session_state.dictionary)
 
-        st.session_state.skus = sku_list.text_area(f'SKUs ({len(skus_filtered)} selected)', value = ', '.join(skus_filtered))
-        st.session_state.skus = [x.strip() for x in re.split('\n|,|;|\t', st.session_state.skus)]
-        collections_from_skus = generate_collections_from_skus(st.session_state.skus, st.session_state.dictionary)
+    st.session_state.skus = sku_list.text_area(f'SKUs ({len(skus_filtered)} selected)', value = ', '.join(skus_filtered))
+    st.session_state.skus = [x.strip() for x in re.split('\n|,|;|\t', st.session_state.skus)]
+    collections_from_skus = generate_collections_from_skus(st.session_state.skus, st.session_state.dictionary)
 
-        if 'df_height' not in st.session_state:
-            summary_area.write(f'Summary of latest changes for the past {NUM_DAYS} days')
-            df_area.dataframe(st.session_state.pivot, use_container_width=True, hide_index=True)
-        collections_str = '\n'.join(collections_from_skus)
-        warning_text = f'''You are about to commit the following changes to {marketplace} changelog:
-    Change: {change_type},
-    Notes: {notes},
-    Change date: {change_date}
-    {len(st.session_state.skus)} skus impacted, including the following collections: {collections_str}
-    '''
+    if 'df_height' not in st.session_state:
+        summary_area.write(f'Summary of latest changes for the past {NUM_DAYS} days')
+        df_area.dataframe(st.session_state.pivot, use_container_width=True, hide_index=True)
+    collections_str = '\n'.join(collections_from_skus)
+    warning_text = f'''You are about to commit the following changes to {marketplace} changelog:
+Change: {change_type},
+Notes: {notes},
+Change date: {change_date}
+{len(st.session_state.skus)} skus impacted, including the following collections: {collections_str}
+'''
 
-        if add_button:
-            st.session_state.warning = True
-            st.text_area('Warning', value=warning_text, disabled = True, height = 400)
-        if 'warning' in st.session_state:
-            if st.button('Confirm'):
-                add_changes(st.session_state.skus, change_type, notes, marketplace, change_date)
-                # st.session_state.df = add_changes(st.session_state.skus, change_type, notes, marketplace, change_date)
-        # if 'df' in st.session_state:
-        #     st.dataframe(st.session_state.df)
+    if add_button:
+        st.session_state.warning = True
+        st.text_area('Warning', value=warning_text, disabled = True, height = 400)
+    if 'warning' in st.session_state:
+        if st.button('Confirm'):
+            add_changes(st.session_state.skus, change_type, notes, marketplace, change_date)
+            # st.session_state.df = add_changes(st.session_state.skus, change_type, notes, marketplace, change_date)
+    # if 'df' in st.session_state:
+    #     st.dataframe(st.session_state.df)
 
-        # st.write(st.session_state.sizes)
-        # st.write(st.session_state.colors)
-        # st.write(st.session_state.skus)
+    # st.write(st.session_state.sizes)
+    # st.write(st.session_state.colors)
+    # st.write(st.session_state.skus)
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
 
 
 # NEED TO CREATE A CHANGELOG FOR OTHER MARKETPLACES
