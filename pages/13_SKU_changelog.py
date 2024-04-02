@@ -23,14 +23,14 @@ if st.session_state['login'][0]:
     client = bigquery.Client(credentials=GC_CREDENTIALS)
     NUM_DAYS = 30
 
-    change_types = sorted(
-        ['Price increase', 'Price decrease', 'Main image update', 'Secondary images update','Title change',
-        'Bulletpoints change', 'Search terms/backend change','Negative review removal', 'Coupon activated',
-        'Coupon deactivated', 'Discount (promo)','EBC created', 'EBC changed', 'Blocked/Suspended',
-        'Unblocked/Unsuspended','Video added/Updated','PPC budget increased','PPC budget decreased',
-        'Removed from parent','Added to parent','Rebate started','Rebate finished','LD','SMPC']
-        )
-    change_types.append('Other, please specify in notes')
+    change_types = [
+        'Price increase', 'Price decrease', 'Main image update', 'Secondary images update',
+        'Title change','Bulletpoints change', 'Search terms/backend change',
+        'Negative review removal', 'Coupon activated','Coupon deactivated', 'Discount (promo)',
+        'EBC created', 'EBC changed', 'Blocked/Suspended','Unblocked/Unsuspended',
+        'Video added/Updated','PPC budget increased','PPC budget decreased',
+        'Removed from parent','Added to parent','Rebate started','Rebate finished','LD','SMPC'
+        ]
     markets_match:dict = {
         'dictionaries':{
             'US':'`auxillary_development.dictionary`',
@@ -169,6 +169,14 @@ if st.session_state['login'][0]:
         
         marketplace_col, date_col, change_type_col, button_col = markets_row.columns([3,1,2,1])
         marketplace = marketplace_col.radio('Select marketplace', allowed_markets, horizontal=True)
+
+        if marketplace in ('Shopify',):
+            change_types.extend(['MSRP set as Sale Price + discount coupon to standard','Prices back to Standard from MSRP, coupon off'])
+        elif marketplace in ('WM',):
+            change_types.extend(['Spec file upload'])
+        change_types = sorted(change_types)
+        change_types.append('Other, please specify in notes')
+
         change_type = change_type_col.selectbox('Select a change',options = change_types, index = change_types.index(change_types[-1]))
         notes = change_type_col.text_input('Add notes, if necessary')
         change_date = date_col.date_input('Date of the change', value = 'today')
