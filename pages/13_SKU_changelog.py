@@ -174,7 +174,7 @@ if True:
         st.session_state.changelog = pd.merge(st.session_state.changes, st.session_state.dictionary, how = 'left', on = 'sku')
         st.session_state.pivot = summarize_changes(st.session_state.changelog)
         result = ff.prepare_for_export([st.session_state.changelog], ['changes'])
-        st.download_button('Download changes',result, file_name = st.session_state.file_name)
+        st.download_button('Download changes',result, file_name = 'sku_changelog.xlsx')
 
         collection_list, size_list, color_list, sku_list = selectors_row.columns([2,1,1,2])
         collections_filtered = sorted(st.session_state.dictionary['collection'].sort_values().unique().tolist())
