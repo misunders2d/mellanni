@@ -9,14 +9,14 @@ from google.oauth2 import service_account
 
 st.set_page_config(page_title = 'SKU changelog', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state='collapsed')
 
-import login_google
-st.session_state['login'] = login_google.login()
-user_email = st.session_state['login'][1]
+# import login_google
+# st.session_state['login'] = login_google.login()
+# user_email = st.session_state['login'][1]
 
-if st.session_state['login'][0]:
+# if st.session_state['login'][0]:
 
-# user_email = 'sergey@mellanni.com'
-# if True:
+user_email = 'sergey@mellanni.com'
+if True:
 
     GC_CREDENTIALS = service_account.Credentials.from_service_account_info(st.secrets['gcp_service_account'])
     client = bigquery.Client(credentials=GC_CREDENTIALS)
@@ -59,7 +59,7 @@ if st.session_state['login'][0]:
     button_access = user_email in markets_access
     allowed_markets = [x for x in markets_match['dictionaries'].keys() if x in markets_access[user_email]]
 
-    # @st.cache_resource
+    @st.cache_resource
     def pull_dictionary(
         marketplace:str = 'US'
         ) -> pd.DataFrame:
@@ -71,7 +71,7 @@ if st.session_state['login'][0]:
                 dictionary = client.query(query).result().to_dataframe()
         return dictionary
 
-    # @st.cache_resource
+    @st.cache_resource
     def pull_changes(
             marketplace:str = 'US',
             start:datetime.date = (pd.to_datetime('today')-pd.Timedelta(days = NUM_DAYS)).date(),
@@ -87,7 +87,7 @@ if st.session_state['login'][0]:
             return pd.DataFrame(columns = ['date','change'])
         return changes
 
-    # @st.cache_resource
+    @st.cache_resource
     def summarize_changes(
         changes:pd.DataFrame
         ) -> pd.DataFrame:
@@ -186,7 +186,7 @@ if st.session_state['login'][0]:
         skus_filtered = generate_skus(st.session_state.collections, st.session_state.sizes, st.session_state.colors, st.session_state.dictionary)
 
         st.session_state.skus = sku_list.text_area(f'SKUs ({len(skus_filtered)} selected)', value = ', '.join(skus_filtered))
-        st.session_state.skus = [x.trim() for x in re.split('\n|,|;|\t', st.session_state.skus)]
+        st.session_state.skus = [x.strip() for x in re.split('\n|,|;|\t', st.session_state.skus)]
         collections_from_skus = generate_collections_from_skus(st.session_state.skus, st.session_state.dictionary)
 
         if 'df_height' not in st.session_state:
