@@ -3,6 +3,7 @@ import pandas as pd
 import pandas_gbq
 import datetime
 import re
+from modules import formatting as ff
 # from modules import gcloud_modules as gc
 from google.cloud import bigquery
 from google.oauth2 import service_account
@@ -81,10 +82,13 @@ if True:
         report = markets_match['changelogs'].get(marketplace)
         query = f'SELECT {columns} FROM {report} WHERE DATE(date) >= DATE("{start}") AND DATE(date) <= DATE("{end}")'
         if report is not None:
-            with bigquery.Client(credentials=GC_CREDENTIALS) as client:
-                changes = client.query(query).result().to_dataframe()
+            try:
+                with bigquery.Client(credentials=GC_CREDENTIALS) as client:
+                    changes = client.query(query).result().to_dataframe()
+            except:
+                return pd.DataFrame(columns = ['date','sku','change_type'])
         else:
-            return pd.DataFrame(columns = ['date','change'])
+            return pd.DataFrame(columns = ['date','sku','change_type'])
         return changes
 
     # @st.cache_resource
@@ -169,6 +173,8 @@ if True:
         st.session_state.dictionary = pull_dictionary(marketplace=marketplace)
         st.session_state.changelog = pd.merge(st.session_state.changes, st.session_state.dictionary, how = 'left', on = 'sku')
         st.session_state.pivot = summarize_changes(st.session_state.changelog)
+        result = ff.prepare_for_export(st.session_state.changelog, 'changes')
+        st.download_button('Download changes',result, file_name = st.session_state.file_name)
 
         collection_list, size_list, color_list, sku_list = selectors_row.columns([2,1,1,2])
         collections_filtered = sorted(st.session_state.dictionary['collection'].sort_values().unique().tolist())
