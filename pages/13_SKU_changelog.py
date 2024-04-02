@@ -170,9 +170,9 @@ if st.session_state['login'][0]:
         marketplace_col, date_col, change_type_col, button_col = markets_row.columns([3,1,2,1])
         marketplace = marketplace_col.radio('Select marketplace', allowed_markets, horizontal=True)
 
-        if marketplace in ('Shopify',):
+        if marketplace == 'Shopify':
             change_types.extend(['MSRP set as Sale Price + discount coupon to standard','Prices back to Standard from MSRP, coupon off'])
-        elif marketplace in ('WM',):
+        elif marketplace == 'WM':
             change_types.extend(['Spec file upload'])
         change_types = sorted(change_types)
         change_types.append('Other, please specify in notes')
