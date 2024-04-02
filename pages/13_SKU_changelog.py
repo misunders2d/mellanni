@@ -35,7 +35,13 @@ if st.session_state['login'][0]:
         'dictionaries':{
             'US':'`auxillary_development.dictionary`',
             'CA':'`auxillary_development.dictionary_ca`',
-            'EU':'`auxillary_development.dictionary_eu`',
+            # 'EU':'`auxillary_development.dictionary_eu`',
+
+            'DE':'`auxillary_development.dictionary_eu`',
+            'FR':'`auxillary_development.dictionary_eu`',
+            'ES':'`auxillary_development.dictionary_eu`',
+            'IT':'`auxillary_development.dictionary_eu`',
+
             'UK':'`auxillary_development.dictionary_uk`',
             'WM':'`auxillary_development.dictionary`',
             'Target':'`auxillary_development.dictionary`',
@@ -44,7 +50,13 @@ if st.session_state['login'][0]:
         'changelogs':{
             'US':'`auxillary_development.sku_changelog`',
             'CA':'`auxillary_development.sku_changelog_ca`',
-            'EU':'`auxillary_development.sku_changelog_eu`',
+            # 'EU':'`auxillary_development.sku_changelog_eu`',
+
+            'DE':'`auxillary_development.sku_changelog_de`',
+            'FR':'`auxillary_development.sku_changelog_fr`',
+            'ES':'`auxillary_development.sku_changelog_es`',
+            'IT':'`auxillary_development.sku_changelog_it`',
+
             'UK':'`auxillary_development.sku_changelog_uk`',
             'WM':'`auxillary_development.dictionary_wm`',
             'Target':'`auxillary_development.dictionary_tgt`',
@@ -58,7 +70,7 @@ if st.session_state['login'][0]:
         'oleksandr@mellanni.com':['US'],
         'bohdan@mellanni.com':['US'],
         'reymond@mellanni.com':['US'],
-        'olha@mellanni.com':['EU','UK'],
+        'olha@mellanni.com':['UK','DE','FR','ES','IT'],
         'natalie@mellanni.com':['WM', 'Target','Shopify'],
     }
     button_access = user_email in markets_access
