@@ -53,7 +53,7 @@ if st.session_state['login'][0]:
     }
     markets_access: dict = {
         'ruslan@mellanni.com':['CA','US'],
-        'sergey@mellanni.com':['CA','US','UK'],
+        'sergey@mellanni.com':['CA','US','UK','Target','Shopify'],
         'oleksandr@mellanni.com':['US'],
         'bohdan@mellanni.com':['US'],
         'reymond@mellanni.com':['US'],
