@@ -74,7 +74,7 @@ if st.session_state['login'][0]:
         'natalie@mellanni.com':['WM', 'Target','Shopify'],
     }
     button_access = user_email in markets_access
-    allowed_markets = [x for x in markets_match['dictionaries'].keys() if x in markets_access[user_email]]
+    allowed_markets = [x for x in markets_match['dictionaries'].keys() if x in markets_access.get(user_email,[])]
 
     @st.cache_resource
     def pull_dictionary(
