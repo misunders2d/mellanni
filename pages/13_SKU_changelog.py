@@ -59,7 +59,7 @@ if True:
     button_access = user_email in markets_access
     allowed_markets = [x for x in markets_match['dictionaries'].keys() if x in markets_access[user_email]]
 
-    @st.cache_resource
+    # @st.cache_resource
     def pull_dictionary(
         marketplace:str = 'US'
         ) -> pd.DataFrame:
@@ -71,7 +71,7 @@ if True:
                 dictionary = client.query(query).result().to_dataframe()
         return dictionary
 
-    @st.cache_resource
+    # @st.cache_resource
     def pull_changes(
             marketplace:str = 'US',
             start:datetime.date = (pd.to_datetime('today')-pd.Timedelta(days = NUM_DAYS)).date(),
@@ -87,7 +87,7 @@ if True:
             return pd.DataFrame(columns = ['date','change'])
         return changes
 
-    @st.cache_resource
+    # @st.cache_resource
     def summarize_changes(
         changes:pd.DataFrame
         ) -> pd.DataFrame:
