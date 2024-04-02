@@ -58,7 +58,8 @@ if st.session_state['login'][0]:
     }
     button_access = user_email in markets_access
     allowed_markets = [x for x in markets_match['dictionaries'].keys() if x in markets_access[user_email]]
-    @st.cache_resource
+
+    # @st.cache_resource
     def pull_dictionary(
         marketplace:str = 'US'
         ) -> pd.DataFrame:
@@ -185,7 +186,7 @@ if st.session_state['login'][0]:
         skus_filtered = generate_skus(st.session_state.collections, st.session_state.sizes, st.session_state.colors, st.session_state.dictionary)
 
         st.session_state.skus = sku_list.text_area(f'SKUs ({len(skus_filtered)} selected)', value = ', '.join(skus_filtered))
-        st.session_state.skus = re.split('\n|,|;|\t', st.session_state.skus)
+        st.session_state.skus = [x.trim() for x in re.split('\n|,|;|\t', st.session_state.skus)]
         collections_from_skus = generate_collections_from_skus(st.session_state.skus, st.session_state.dictionary)
 
         if 'df_height' not in st.session_state:
