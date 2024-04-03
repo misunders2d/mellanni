@@ -197,6 +197,8 @@ if st.session_state['login'][0] and user_email in markets_access:
         change_types.extend(['MSRP set as Sale Price + discount coupon to standard','Prices back to Standard from MSRP, coupon off'])
     elif marketplace == 'WM':
         change_types.extend(['Spec file upload','Unpublished - OOS','Published - Back in Stock'])
+    elif marketplace in ('UK', 'DE','FR','ES','IT'):
+        change_types.extend(['TOP DEAL STARTED', 'TOP DEAL ENDED', 'BEST DEAL STARTED', 'BEST DEAL ENDED', 'OUTLET DEAL STARTED', 'OUTLET DEAL ENDED'])
     change_types = sorted(change_types)
     change_types.append('Other, please specify in notes')
 
