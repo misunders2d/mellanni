@@ -191,7 +191,8 @@ st.subheader("Upload a photo of your bedroom and we'll suggest a few options :sm
 image_input= st.file_uploader('Upload your image')
 image_area = st.empty()
 img_col0,img_col1,img_col2, img_col3, img_col4, img_col5 = image_area.columns([1,1,1,1,1,1])
-if image_input:
+if image_input and len(st.session_state.IMAGES) > 0:
+    st.session_state.IMAGES = []
     resized_image = resize_image(image_input)
     byte_image = convert_image_to_bytes(resized_image)
     st.session_state.encoded_image = encode_image(byte_image)
