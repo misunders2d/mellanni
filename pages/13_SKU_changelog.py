@@ -115,9 +115,14 @@ if st.session_state['login'][0] and user_email in markets_access:
         changes:pd.DataFrame
         ) -> pd.DataFrame:
         pivot = changes.pivot_table(
-            values=['sku', 'change_type', 'date'],
+            values=['sku', 'change_type', 'date', 'notes'],
             index=['collection'],
-            aggfunc={'sku':lambda x: len(x.unique()), 'change_type': lambda x: ', '.join(x.unique().tolist()), 'date':lambda x: min(x)+' - '+max(x)}
+            aggfunc={
+                'sku':lambda x: len(x.unique()),
+                'change_type': lambda x: ', '.join(x.unique().tolist()),
+                'date':lambda x: min(x)+' - '+max(x),
+                'notes': lambda x: ', '.join(x.unique().tolist())
+                }
         ).reset_index()
         pivot = pivot.rename(columns = {'date':'date range','sku':'# of skus affected'})
         return pivot
