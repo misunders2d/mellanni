@@ -88,8 +88,11 @@ def get_colors(stock):
 def match_color(alias, color, df):
     color = color.lower()
     df = df[(df['collection'].isin(collections_mapping[alias])) & (df['color'].str.lower() == color)]
-    df = df.sort_values('afn_fulfillable_quantity', ascending = False)
-    asin = df.loc[:,'asin'].values[0]
+    if len(df)>0:
+        df = df.sort_values('afn_fulfillable_quantity', ascending = False)
+        asin = df.loc[:,'asin'].values[0]
+    else:
+        asin = 'Not found'
     return asin
 
 st.session_state.stock = get_stock()
