@@ -105,9 +105,9 @@ if st.session_state['login'][0] and user_email in markets_access:
                 with bigquery.Client(credentials=GC_CREDENTIALS) as client:
                     changes = client.query(query).result().to_dataframe()
             except:
-                return pd.DataFrame(columns = ['date','sku','change_type'])
+                return pd.DataFrame(columns = ['date','sku','change_type', 'notes'])
         else:
-            return pd.DataFrame(columns = ['date','sku','change_type'])
+            return pd.DataFrame(columns = ['date','sku','change_type','notes'])
         return changes
 
     # @st.cache_resource
@@ -194,7 +194,7 @@ if st.session_state['login'][0] and user_email in markets_access:
     if marketplace == 'Shopify':
         change_types.extend(['MSRP set as Sale Price + discount coupon to standard','Prices back to Standard from MSRP, coupon off'])
     elif marketplace == 'WM':
-        change_types.extend(['Spec file upload'])
+        change_types.extend(['Spec file upload','Unpublished - OOS','Published - Back in Stock'])
     change_types = sorted(change_types)
     change_types.append('Other, please specify in notes')
 
