@@ -23,6 +23,7 @@ markets_access: dict = {
     'reymond@mellanni.com':['US'],
     'olha@mellanni.com':['UK','DE','FR','ES','IT'],
     'natalie@mellanni.com':['WM', 'Target','Shopify'],
+    'andreia@mellanni.com':['WM', 'Target','Shopify'],
 }
 
 
