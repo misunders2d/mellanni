@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import pandas_gbq
 import datetime
+from numpy import nan
 import re, time
 from modules import formatting as ff
 # from modules import gcloud_modules as gc
@@ -114,6 +115,7 @@ if st.session_state['login'][0] and user_email in markets_access:
     def summarize_changes(
         changes:pd.DataFrame
         ) -> pd.DataFrame:
+        changes['notes'] = changes['notes'].replace('',nan)
         pivot = changes.pivot_table(
             values=['sku', 'change_type', 'date', 'notes'],
             index=['collection'],
