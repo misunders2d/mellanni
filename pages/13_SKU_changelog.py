@@ -115,7 +115,7 @@ if st.session_state['login'][0] and user_email in markets_access:
     def summarize_changes(
         changes:pd.DataFrame
         ) -> pd.DataFrame:
-        changes['notes'] = changes['notes'].replace('',nan)
+        # changes['notes'] = changes['notes'].replace('',nan)
         pivot = changes.pivot_table(
             values=['sku', 'change_type', 'date', 'notes'],
             index=['collection'],
