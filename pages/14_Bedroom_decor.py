@@ -103,7 +103,6 @@ COLOR_PROMPT = f'Please choose ONLY from these available colors: {COLOR_STR}'
 PROMPT = f"""You are supplied with an image of a bedroom.
 As a bedding designer and expert please suggest the best color combinations of bedding items for this specific bedroom interior and layout - a set of pillowcases, flat sheet, fitted sheet,
 bedskirt (if applicable) and a coverlet (if applicable).
-{COLOR_PROMPT}
 Keep in mind the color of walls, ceiling, floor, the bed itself, any furniture and wall decorations, if any.
 Please choose {NUM_OPTIONS} best options and describe them in detail as if you were generating prompts for an image-genearting model.
 When describing, please try to stay as close to the original image, as possible - the ONLY thing that needs to be changed is the color of bedding items.
@@ -139,6 +138,7 @@ def describe_image(image_bytes):
     message: list = [
         {"role": "user","content":
           [{"type": "text","text": PROMPT},
+           {"type":"text","text":COLOR_PROMPT},
           {"type": "image_url",
            "image_url":{
                "url": f"data:image/jpeg;base64,{image_bytes}",
