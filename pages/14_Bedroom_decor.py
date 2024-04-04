@@ -246,6 +246,7 @@ Also make sure to correctly reflect all the items mentioned in the prompt (espec
 THE IMAGE MUST BE A FRONT-FACING IMAGE OF THE BED WITH BEDDING ITEMS AND THE WALL BEHIND:\n
 """ + full_prompt.get('prompt') + f'''\nMake sure the image contains the following items: {ITEMS}, and that their respective color is as follows: {ITEMS_STR}
 DISREGARD ALL PANTONE MENTIONS and use just Pantone numbers for color references. DO NOT DRAW MORE THAN TWO PILLOWS. DO NOT PUT ANY LOGOS OR TEXT ON THE IMAGE.
+DO NOT RENDER ANY PANTONE swatches, icons or references.
 '''
     
 
