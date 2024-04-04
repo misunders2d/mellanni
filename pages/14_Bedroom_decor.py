@@ -22,6 +22,7 @@ HEIGHT = 250
 NUM_OPTIONS = 'two to three'
 STYLE = 'vivid'#,'vivid', 'natural'
 IMG_SIZE: str =  "1024x1024"
+st.session_state.DONE = False
 st.session_state.IMAGES = []
 collections_mapping = {
     'pillowcases':['1800 Pillowcase Set 2 pc','1800 Pillowcase Set 4 pc'],
@@ -299,8 +300,9 @@ if 'encoded_image' in st.session_state:
     with st.spinner('Please wait, working on designs'):
         if st.button('Gimme options!'):
             st.session_state.result = describe_image(st.session_state.encoded_image)
+            st.session_state.DONE = True
 
-if 'result' in st.session_state:
+if 'result' in st.session_state and st.session_state.DONE == True:
     if 'error' in st.session_state.result:
         st.warning(f"Error: {st.session_state.result.get('error')}")
         st.stop()
