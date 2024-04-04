@@ -37,14 +37,14 @@ JSON_EXAMPLE = {
         "fitted sheet":"fitted sheet color",
         "bed skirt":"bed skirt color (if any)",
         "coverlet":"coverlet color (if any)",
-        "prompt":"description 1"},
+        "prompt":"description with suggested colors"},
     "option 2": {
         "pillowcase":"pillowcase color",
         "flat sheet":"flat sheet color",
         "fitted sheet":"fitted sheet color",
         "bed skirt":"bed skirt color (if any)",
         "coverlet":"coverlet color (if any)",
-        "prompt":"description 2"},
+        "prompt":"description with suggested color"},
 }
 ERROR_JSON = {"error":"this is not an image of a bedroom"}
 
@@ -130,7 +130,7 @@ Return your response STRICTLY in json format, like this:
 {JSON_EXAMPLE}
 and so on, where values for "pillowcase", "flat sheet", "fitted sheet", "bed skirt" and "coverlet" are their respective colors from your suggestion,
 and values for "prompt" is the description you generated, with the only difference being the color of bedding items and additional coverlet or bed skirt if you are suggesting them and they were absent on the original photo.
-DO NOT CHANGE ANYTHING IN THE DESCRIPTION EXCEPT FOR THE COLOR OF THE ITEMS.
+MAKE SURE TO CHANGE THE COLOR OF THE ITEMS in each of your descriptions.
 Do not add anything from yourself."""
 # In case you cannot identify a bed and bedding on the supplied image, please return the following JSON response:
 # {ERROR_JSON}
@@ -234,32 +234,35 @@ if 'result' in st.session_state:
     if 'error' in st.session_state.result:
         st.warning(f"Error: {st.session_state.result.get('error')}")
         st.stop()
-    IMG_OPTIONS = st.session_state.result.keys()
-    IMG_PROMPTS = [st.session_state.result[x] for x in IMG_OPTIONS]
-    threads = []
-    progress_start = 0
-    my_bar = st.progress(progress_start, 'One last step, rendering suggestions')
-    for prompt in IMG_PROMPTS:
-        threads.append(threading.Thread(target = generate_image, args = (prompt,)))
-    
-    for thread in threads:
-        scriptrunner.add_script_run_ctx(thread)
-        thread.start()
+    try:
+        IMG_OPTIONS = st.session_state.result.keys()
+        IMG_PROMPTS = [st.session_state.result[x] for x in IMG_OPTIONS]
+        threads = []
+        progress_start = 0
+        my_bar = st.progress(progress_start, 'One last step, rendering suggestions')
+        for prompt in IMG_PROMPTS:
+            threads.append(threading.Thread(target = generate_image, args = (prompt,)))
         
-    for thread in threads:
-        thread.join()
-        progress_start += 1/len(IMG_PROMPTS)
-        my_bar.progress(progress_start)
+        for thread in threads:
+            scriptrunner.add_script_run_ctx(thread)
+            thread.start()
+            
+        for thread in threads:
+            thread.join()
+            progress_start += 1/len(IMG_PROMPTS)
+            my_bar.progress(progress_start)
 
-    while len(st.session_state.IMAGES) < len(IMG_PROMPTS):
-        time.sleep(1)
-    render_images = list(zip([img_col1, img_col2, img_col3, img_col4, img_col5],st.session_state.IMAGES))
-    for col in render_images:
-        img = col[1].get('url')
-        col[0].image(img) 
-        col[0].write(f"Pillowcases: [{col[1].get('pillowcase')}](https://www.amazon.com/dp/{match_color('pillowcases',col[1].get('pillowcase'), st.session_state.stock)})")
-        col[0].write(f"Flat sheet: [{col[1].get('flat sheet')}](https://www.amazon.com/dp/{match_color('flat sheet',col[1].get('flat sheet'), st.session_state.stock)})")
-        col[0].write(f"Fitted sheet: [{col[1].get('fitted sheet')}](https://www.amazon.com/dp/{match_color('fitted sheet',col[1].get('fitted sheet'), st.session_state.stock)})")
-        col[0].write(f"Bed skirt: [{col[1].get('bed skirt')}](https://www.amazon.com/dp/{match_color('bed skirt',col[1].get('bed skirt'), st.session_state.stock)})")
-        col[0].write(f"Coverlet: [{col[1].get('coverlet')}](https://www.amazon.com/dp/{match_color('coverlet',col[1].get('coverlet'), st.session_state.stock)})")
-    st.write(f'Total tokens used: {input_tokens + output_tokens}. Estimated cost: ${(input_tokens * 10 / 1000000) + (output_tokens * 30 / 1000000):.3f}')
+        while len(st.session_state.IMAGES) < len(IMG_PROMPTS):
+            time.sleep(1)
+        render_images = list(zip([img_col1, img_col2, img_col3, img_col4, img_col5],st.session_state.IMAGES))
+        for col in render_images:
+            img = col[1].get('url')
+            col[0].image(img) 
+            col[0].write(f"Pillowcases: [{col[1].get('pillowcase')}](https://www.amazon.com/dp/{match_color('pillowcases',col[1].get('pillowcase'), st.session_state.stock)})")
+            col[0].write(f"Flat sheet: [{col[1].get('flat sheet')}](https://www.amazon.com/dp/{match_color('flat sheet',col[1].get('flat sheet'), st.session_state.stock)})")
+            col[0].write(f"Fitted sheet: [{col[1].get('fitted sheet')}](https://www.amazon.com/dp/{match_color('fitted sheet',col[1].get('fitted sheet'), st.session_state.stock)})")
+            col[0].write(f"Bed skirt: [{col[1].get('bed skirt')}](https://www.amazon.com/dp/{match_color('bed skirt',col[1].get('bed skirt'), st.session_state.stock)})")
+            col[0].write(f"Coverlet: [{col[1].get('coverlet')}](https://www.amazon.com/dp/{match_color('coverlet',col[1].get('coverlet'), st.session_state.stock)})")
+        st.write(f'Total tokens used: {input_tokens + output_tokens}. Estimated cost: ${(input_tokens * 10 / 1000000) + (output_tokens * 30 / 1000000):.3f}')
+    except Exception as e:
+        st.error(e)
