@@ -19,7 +19,7 @@ st.set_page_config(page_title = 'Bedroom designer', page_icon = 'media/logo.ico'
 API_KEY = os.getenv('GPT_VISION_KEY')
 KEEPA_KEY = os.getenv('KEEPA_KEY')
 HEIGHT = 250
-NUM_OPTIONS = 'two to three'
+NUM_OPTIONS = 'one or two'
 STYLE = 'vivid'#,'vivid', 'natural'
 st.session_state.IMAGES = []
 collections_mapping = {
@@ -37,15 +37,16 @@ JSON_EXAMPLE = {
         "fitted sheet":"fitted sheet color",
         "bed skirt":"bed skirt color (if any)",
         "coverlet":"coverlet color (if any)",
-        "prompt":"prompt 1"},
+        "prompt":"description 1"},
     "option 2": {
         "pillowcase":"pillowcase color",
         "flat sheet":"flat sheet color",
         "fitted sheet":"fitted sheet color",
         "bed skirt":"bed skirt color (if any)",
         "coverlet":"coverlet color (if any)",
-        "prompt":"prompt 2"},
+        "prompt":"description 2"},
 }
+ERROR_JSON = {"error":"this is not an image of a bedroom"}
 
 input_tokens = 0
 output_tokens = 0
@@ -86,13 +87,14 @@ def get_colors(stock):
     return colors
 
 def match_color(alias, color, df):
-    color = color.lower()
-    df = df[(df['collection'].isin(collections_mapping[alias])) & (df['color'].str.lower() == color)]
+    df['color'] = df['color'].str.lower().str.replace('-',' ').str.replace('/',' ').str.replace('  ',' ').str.replace('\\',' ').str.strip()
+    color = color.lower().replace('-',' ').replace('/',' ').replace('  ',' ').replace('\\',' ').strip()
+    df = df[(df['collection'].isin(collections_mapping[alias])) & (df['color'] == color)]
     if len(df)>0:
         df = df.sort_values('afn_fulfillable_quantity', ascending = False)
         asin = df.loc[:,'asin'].values[0]
     else:
-        asin = 'Not found'
+        asin = 'Not_found'
     return asin
 
 st.session_state.stock = get_stock()
@@ -103,7 +105,7 @@ for k, v in st.session_state.colors.items():
     COLOR_STR += k+": "+v+',\n\n'
 COLOR_PROMPT = f'Please choose ONLY from these available colors: {COLOR_STR}'
 
-PROMPT = f"""You are supplied with an image of a bedroom.
+PROMPT_OLD = f"""You are supplied with an image of a bedroom.
 As a bedding designer and expert please suggest the best color combinations of bedding items for this specific bedroom interior and layout - a set of pillowcases, flat sheet, fitted sheet,
 bedskirt (if applicable) and a coverlet (if applicable).
 Keep in mind the color of walls, ceiling, floor, the bed itself, any furniture and wall decorations, if any.
@@ -114,7 +116,25 @@ DO NOT ADD EXTRA PILLOWS OR PILLOWCASES.
 Please explicitly name the color of each bedding item in your prompt.
 Return your response STRICTLY in json format, like this:
 {JSON_EXAMPLE}
-and so on, where values for "pillowcase", "flat sheet", "fitted sheet", "bed skirt" and "coverlet" are their respective colors from your suggestion. Do not add anything from yourself."""
+and so on, where values for "pillowcase", "flat sheet", "fitted sheet", "bed skirt" and "coverlet" are their respective colors from your suggestion. Do not add anything from yourself.
+If the image supplied does not appear to be an image of a bedroom, please return the following JSON response:
+{ERROR_JSON}"""
+
+PROMPT = f"""Below is an image of a bedroom.
+Describe the bedroom interior in detail, explicitly mention the view angle, color and material of walls, ceiling, floor and anything visible in the picture.
+Also describe in great detail the bed - the material and color of which it is made, and everything that's on the bed - sheets, pillowcases, bed skirt, coverlets etc.
+Then, please suggest {NUM_OPTIONS} best options of colors for all bedding items that you see, make sure to explicitly include pillowcases, flat sheet, fitted sheet,
+bedskirt (if applicable) and a coverlet (if applicable).
+
+Return your response STRICTLY in json format, like this:
+{JSON_EXAMPLE}
+and so on, where values for "pillowcase", "flat sheet", "fitted sheet", "bed skirt" and "coverlet" are their respective colors from your suggestion,
+and values for "prompt" is the description you generated, with the only difference being the color of bedding items and additional coverlet or bed skirt if you are suggesting them and they were absent on the original photo.
+DO NOT CHANGE ANYTHING IN THE DESCRIPTION EXCEPT FOR THE COLOR OF THE ITEMS.
+Do not add anything from yourself."""
+# In case you cannot identify a bed and bedding on the supplied image, please return the following JSON response:
+# {ERROR_JSON}
+# """
 
 def resize_image(image_obj):
     full_image = Image.open(image_obj)
@@ -152,7 +172,7 @@ def describe_image(image_bytes):
     client = OpenAI(api_key = API_KEY)
 
     response = client.chat.completions.create(
-      model="gpt-4-1106-vision-preview",
+      model="gpt-4-vision-preview",
       messages = message,
       max_tokens=1500,
       temperature = 0.0,
@@ -161,6 +181,7 @@ def describe_image(image_bytes):
     )
     
     stop = response.choices[0].finish_reason
+
     if stop == 'stop':
         description = response.choices[0].message.content
     else:
@@ -172,7 +193,7 @@ def describe_image(image_bytes):
     return json.loads(description.replace("```","").replace("json\n",""))
 
 def generate_image(full_prompt):
-    prompt = "My prompt has full detail so no need to add more:\n" + full_prompt.get('prompt')
+    prompt = "My prompt has full detail so no need to add more. PLEASE DO NOT REWRITE OR MODIFY THE ORIGINAL PROMPT:\n" + full_prompt.get('prompt')
     client = OpenAI(api_key = API_KEY)
 
     response = client.images.generate(
@@ -207,7 +228,12 @@ if 'encoded_image' in st.session_state:
         if st.button('Refine'):
             st.session_state.result = describe_image(st.session_state.encoded_image)
 
+
+
 if 'result' in st.session_state:
+    if 'error' in st.session_state.result:
+        st.warning(f'Error: {st.session_state.result.get('error')}')
+        st.stop()
     IMG_OPTIONS = st.session_state.result.keys()
     IMG_PROMPTS = [st.session_state.result[x] for x in IMG_OPTIONS]
     threads = []
