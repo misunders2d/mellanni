@@ -37,14 +37,14 @@ JSON_EXAMPLE = {
         "fitted sheet":"fitted sheet color",
         "bed skirt":"bed skirt color (if any)",
         "coverlet":"coverlet color (if any)",
-        "prompt":"description with suggested colors"},
+        "prompt":"description with updated bedding items' colors"},
     "option 2": {
         "pillowcase":"pillowcase color",
         "flat sheet":"flat sheet color",
         "fitted sheet":"fitted sheet color",
         "bed skirt":"bed skirt color (if any)",
         "coverlet":"coverlet color (if any)",
-        "prompt":"description with suggested color"},
+        "prompt":"description with updated bedding items' colors"},
 }
 ERROR_JSON = {"error":"this is not an image of a bedroom"}
 
@@ -128,10 +128,10 @@ bedskirt (if applicable) and a coverlet (if applicable).
 
 Return your response STRICTLY in json format, like this:
 {JSON_EXAMPLE}
-and so on, where values for "pillowcase", "flat sheet", "fitted sheet", "bed skirt" and "coverlet" are their respective colors from your suggestion,
-and values for "prompt" is the description you generated, with the only difference being the color of bedding items and additional coverlet or bed skirt if you are suggesting them and they were absent on the original photo.
-MAKE SURE TO CHANGE THE COLOR OF THE ITEMS in each of your descriptions.
-Do not add anything from yourself."""
+and so on, where values for "pillowcase", "flat sheet", "fitted sheet", "bed skirt" and "coverlet" are their respective colors that you suggest,
+and values for "prompt" is the description you generated, where the description remains unchanged except for the color of bedding items you suggest,  and additional coverlet or bed skirt if you are suggesting them and they were absent on the original photo.
+MAKE SURE TO CHANGE THE COLOR OF THE ITEMS in each of your descriptions and add bed skirt and/or coverlet if you are suggesting them. Do not change anything else in your original description.
+Besides the json response do not add anything from yourself."""
 # In case you cannot identify a bed and bedding on the supplied image, please return the following JSON response:
 # {ERROR_JSON}
 # """
