@@ -148,6 +148,7 @@ If there is a coverlet on the original photo, add coverlet suggestions.
 Describe the "improved" bedding using the same interior and bed details you noted before, explicitly mentioning the colors of all bedding items.
 Make sure to capitalize all bedding items and their color names.
 Stay detail-focused, do not add anything emotional or whimsical.
+Make sure to shape your description so that it implies creating a photorealistic image based on it.
 
 Return your response STRICTLY in json format, like this:
 {JSON_EXAMPLE}
@@ -298,7 +299,7 @@ if image_input:
     img_col0.image(resized_image)
     img_col0.write('Original bedroom')
 if 'encoded_image' in st.session_state:
-    with st.spinner('Please wait, working on designs'):
+    with st.spinner('Please wait, working on designs (will take 20-40 seconds)'):
         if st.button('Gimme options!'):
             st.session_state.result = describe_image(st.session_state.encoded_image)
             st.session_state.DONE = True
