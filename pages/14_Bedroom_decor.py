@@ -87,6 +87,7 @@ def get_colors(stock):
     colors = {}
     for alias, collection in collections_mapping.items():
         colors[alias] = ', '.join(stock[stock['collection'].isin(collection)]['color'].unique().tolist())
+    stock['color'] = stock['color'].str.upper()
     pantones = stock.drop_duplicates('color')[['color','pantone_number']].set_index('color').to_dict(orient = 'index')
     pantones = {k:v['pantone_number'] for k, v in pantones.items()}
     return colors, pantones
@@ -137,8 +138,8 @@ make sure to explicitly include pillowcases, flat sheet, fitted sheet.
 DO NOT suggest a bedskirt if it's not on the on the original photo.
 If there is a coverlet on the original photo, add coverlet suggestions.
 Describe the "improved" bedding using the same interior and bed details you noted before, explicitly mentioning the colors of all bedding items.
+Make sure to capitalize all bedding items and their color names.
 Stay detail-focused, do not add anything emotional or whimsical.
-In your improved description focus more on the bed and bedding items, rather then on the interior, but don't disregard the interior completely.
 
 Return your response STRICTLY in json format, like this:
 {JSON_EXAMPLE}
@@ -213,10 +214,10 @@ def describe_image(image_bytes):
 def generate_image(full_prompt):
     prompt = """
 My prompt has full detail so no need to add more. PLEASE DO NOT REWRITE OR MODIFY THE ORIGINAL PROMPT.
-Make sure to strictly follow the prompt below, MAKE SURE TO CORRECTLY REFLECT THE COLORS OF ALL OF THE ITEMS.
-Also make sure to correctly reflect all the items mentioned in the prompt (especially bed skirt, coverlet and number of pillowcases).
+Make sure to strictly follow the prompt below, MAKE SURE TO CORRECTLY REFLECT THE COLORS OF ALL OF THE ITEMS. Stick to the Pantone color references supplied below.
+Also make sure to correctly reflect all the items mentioned in the prompt (especially bed skirt,fitted sheet, flat sheet, coverlet and number of pillowcases).
 Do not alter the viewing angle, if it is mentioned in the prompt:\n
-""" + full_prompt.get('prompt') + f'\nMake sure to follow the correct Pantone colors, if available: {PANTONE_MATCH}\nDO NOT DRAW PANTONE ICONS, LOGOS OR OTHER MENTIONS!'
+""" + full_prompt.get('prompt') + f'\nMake sure to follow these Pantone colors, if available: {PANTONE_MATCH}\nDO NOT DRAW PANTONE ICONS, LOGOS OR OTHER MENTIONS! DO NOT ADD PANTONE REFERENCES!'
     client = OpenAI(api_key = API_KEY)
 
     response = client.images.generate(
