@@ -193,7 +193,7 @@ def describe_image(image_bytes):
         description = json.loads(description.replace("```","").replace("json\n",""))
     except:
         description = {"error":"There was an error, please try again."}
-    return 
+    return description
 
 def generate_image(full_prompt):
     prompt = "My prompt has full detail so no need to add more. PLEASE DO NOT REWRITE OR MODIFY THE ORIGINAL PROMPT:\n" + full_prompt.get('prompt')
