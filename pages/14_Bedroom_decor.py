@@ -341,3 +341,49 @@ if 'result' in st.session_state and st.session_state.DONE == True:
         # st.write(f'Total tokens used: {input_tokens + output_tokens}. Estimated cost: ${(input_tokens * 10 / 1000000) + (output_tokens * 30 / 1000000):.3f}')
     except Exception as e:
         st.error(e)
+
+
+
+
+
+
+def sd_edit():
+    api_token = 'sk-0DMBi176Doh5313obroljSIMdFgKkv0sTbmT2mAd2QVcVB6j'
+
+    image_url = r'C:\temp\pics\New folder\PXL_20240403_125303646.jpg'
+
+    def resize_image(image_obj):
+        full_image = Image.open(image_obj)
+        cropped_image = ImageOps.contain(full_image, (1024,1024))
+        return cropped_image
+
+    def convert_image_to_bytes(image_obj):
+        img_byte_arr = BytesIO()
+        image_obj.save(img_byte_arr, format='PNG')
+        img_byte_arr = img_byte_arr.getvalue()
+        return img_byte_arr
+
+    resized_image = resize_image(image_url)
+    bytes_image = convert_image_to_bytes(resized_image)
+    response = requests.post(
+        f"https://api.stability.ai/v2beta/stable-image/edit/search-and-replace",
+        headers={
+            "authorization": f"Bearer {api_token}",
+            "accept": "image/*"
+        },
+        files={
+            # "image": open("./husky-in-a-field.png", "rb")
+            "image": bytes_image
+        },
+        data={
+            "prompt": "All pillows are of (Navy:0.9) (Blue:0.9) color; Duvet cover set is of (Black:0.9) color",
+            "search_prompt": "pillows, duvet cover set",
+            "output_format": "jpeg",
+        },
+    )
+
+    if response.status_code == 200:
+        with open(r"c:\temp\pics\test.jpeg", 'wb') as file:
+            file.write(response.content)
+    else:
+        raise Exception(str(response.json()))
