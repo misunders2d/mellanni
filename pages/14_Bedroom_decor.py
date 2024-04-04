@@ -216,7 +216,7 @@ My prompt has full detail so no need to add more. PLEASE DO NOT REWRITE OR MODIF
 Make sure to strictly follow the prompt below, MAKE SURE TO CORRECTLY REFLECT THE COLORS OF ALL OF THE ITEMS.
 Also make sure to correctly reflect all the items mentioned in the prompt (especially bed skirt, coverlet and number of pillowcases).
 Do not alter the viewing angle, if it is mentioned in the prompt:\n
-""" + full_prompt.get('prompt') + f'\nMake sure to follow the correct Pantone colors, if available: {PANTONE_MATCH}\nDO NOT DRAW PANTONE REFERENCES!'
+""" + full_prompt.get('prompt') + f'\nMake sure to follow the correct Pantone colors, if available: {PANTONE_MATCH}\nDO NOT DRAW PANTONE ICONS, LOGOS OR OTHER MENTIONS!'
     client = OpenAI(api_key = API_KEY)
 
     response = client.images.generate(
