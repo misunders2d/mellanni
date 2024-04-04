@@ -37,14 +37,14 @@ JSON_EXAMPLE = {
         "fitted sheet":"fitted sheet color",
         "bed skirt":"bed skirt color (if any)",
         "coverlet":"coverlet color (if any)",
-        "prompt":"description with updated bedding items' colors"},
+        "prompt":"description WITH UPDATED BEDDING ITEMS' COLORS AND ADDITIONAL ITEMS, IF APPLICABLE"},
     "option 2": {
         "pillowcase":"pillowcase color",
         "flat sheet":"flat sheet color",
         "fitted sheet":"fitted sheet color",
         "bed skirt":"bed skirt color (if any)",
         "coverlet":"coverlet color (if any)",
-        "prompt":"description with updated bedding items' colors"},
+        "prompt":"description WITH UPDATED BEDDING ITEMS' COLORS AND ADDITIONAL ITEMS, IF APPLICABLE"},
 }
 ERROR_JSON = {"error":"this is not an image of a bedroom"}
 
@@ -71,12 +71,15 @@ def get_stock():
         '1800 Bedskirt','1800 Fitted Sheet','1800 Flat Sheet','1800 Pillowcase Set 2 pc',
         '1800 Pillowcase Set 4 pc','1800 Ultrasonic Coverlet'
         ])
-    query = f'''SELECT asin, collection, size, color
+    query = f'''SELECT asin, collection, size, color, pattern, pantone_number
                 FROM `auxillary_development.dictionary`
                 WHERE collection IN("{collections}")'''
     dictionary = client.query(query).result().to_dataframe()
     stock = pd.merge(dictionary, inventory, how = 'right', on = 'asin')
     stock = stock.dropna(subset = 'collection')
+    stock = stock[~stock['color'].str.lower().str.contains('hydrengea')]
+    stock['pattern'] = stock['pattern'].str.replace('True'.lower(),'True').str.replace('False'.lower(),'False')
+    stock = stock[stock['pattern'] == 'False']
     return stock
 
 @st.cache_resource(show_spinner=False)
@@ -84,7 +87,9 @@ def get_colors(stock):
     colors = {}
     for alias, collection in collections_mapping.items():
         colors[alias] = ', '.join(stock[stock['collection'].isin(collection)]['color'].unique().tolist())
-    return colors
+    pantones = stock.drop_duplicates('color')[['color','pantone_number']].set_index('color').to_dict(orient = 'index')
+    pantones = {k:v['pantone_number'] for k, v in pantones.items()}
+    return colors, pantones
 
 def match_color(alias, color, df):
     df['color'] = df['color'].str.lower().str.replace('-',' ').str.replace('/',' ').str.replace('  ',' ').str.replace('\\',' ').str.strip()
@@ -101,9 +106,10 @@ st.session_state.stock = get_stock()
 st.session_state.colors = get_colors(st.session_state.stock)
 
 COLOR_STR = ''
-for k, v in st.session_state.colors.items():
+for k, v in st.session_state.colors[0].items():
     COLOR_STR += k+": "+v+',\n\n'
 COLOR_PROMPT = f'Please choose ONLY from these available colors: {COLOR_STR}'
+PANTONE_MATCH = st.session_state.colors[1]
 
 PROMPT_OLD = f"""You are supplied with an image of a bedroom.
 As a bedding designer and expert please suggest the best color combinations of bedding items for this specific bedroom interior and layout - a set of pillowcases, flat sheet, fitted sheet,
@@ -120,17 +126,25 @@ and so on, where values for "pillowcase", "flat sheet", "fitted sheet", "bed ski
 If the image supplied does not appear to be an image of a bedroom, please return the following JSON response:
 {ERROR_JSON}"""
 
-PROMPT = f"""Below is an image of a bedroom.
-Describe the bedroom interior in detail, explicitly mention the view angle, color and material of walls, ceiling, floor and anything visible in the picture.
-Also describe in great detail the bed - the material and color of which it is made, and everything that's on the bed - sheets, pillowcases, bed skirt, coverlets etc.
-Then, please suggest {NUM_OPTIONS} best options of colors for all bedding items that you see, make sure to explicitly include pillowcases, flat sheet, fitted sheet,
-bedskirt (if applicable) and a coverlet (if applicable).
+PROMPT = f"""You are a bedding design expert and an expert in photoshooting.
+Below is an image of a bedroom.
+Note the bedroom interior in detail,explicitly remember the view angle (side of the bed you are seeing) and relative positions of items on the image,
+color and material of walls, ceiling, floor and anything visible in the picture.
+Also note full details of the bed - the material and color of which it is made.
+DISREGARD THE COLOR OF everything that's on the bed - sheets, pillowcases, bed skirt, coverlets etc, specifically record the number of pillows.
+Then, based on the current details, please come up with {NUM_OPTIONS} best suggestions of color designs for all bedding items that you see,
+make sure to explicitly include pillowcases, flat sheet, fitted sheet,
+bedskirt (ONLY if it exists on the original image) and a coverlet (ONLY if it exists on the original image).
+Describe the "improved" bedding using the same interior and bed details you noted before, explicitly mentioning the colors of all bedding items.
+Stay detail-focused, do not add anything emotional or whimsical.
+In your improved description focus more on the bed and bedding items, rather then on the interior, but don't disregard the interior completely.
 
 Return your response STRICTLY in json format, like this:
 {JSON_EXAMPLE}
 and so on, where values for "pillowcase", "flat sheet", "fitted sheet", "bed skirt" and "coverlet" are their respective colors that you suggest,
-and values for "prompt" is the description you generated, where the description remains unchanged except for the color of bedding items you suggest,  and additional coverlet or bed skirt if you are suggesting them and they were absent on the original photo.
-MAKE SURE TO CHANGE THE COLOR OF THE ITEMS in each of your descriptions and add bed skirt and/or coverlet if you are suggesting them. Do not change anything else in your original description.
+and values for "prompt" is the description you generated, where the description remains unchanged except for the color of bedding items you suggest, and additional coverlet or bed skirt if you are suggesting them and they were absent on the original photo.
+MAKE SURE TO CHANGE THE COLOR OF THE ITEMS in each of your descriptions according to your design suggestions and add bed skirt and/or coverlet if you are suggesting them.
+Do not change anything else in your description.
 Besides the json response do not add anything from yourself."""
 # In case you cannot identify a bed and bedding on the supplied image, please return the following JSON response:
 # {ERROR_JSON}
@@ -196,14 +210,19 @@ def describe_image(image_bytes):
     return description
 
 def generate_image(full_prompt):
-    prompt = "My prompt has full detail so no need to add more. PLEASE DO NOT REWRITE OR MODIFY THE ORIGINAL PROMPT:\n" + full_prompt.get('prompt')
+    prompt = """
+My prompt has full detail so no need to add more. PLEASE DO NOT REWRITE OR MODIFY THE ORIGINAL PROMPT.
+Make sure to strictly follow the prompt below, MAKE SURE TO CORRECTLY REFLECT THE COLORS OF ALL OF THE ITEMS.
+Also make sure to correctly reflect all the items mentioned in the prompt (especially bed skirt, coverlet and number of pillowcases).
+Do not alter the viewing angle, if it is mentioned in the prompt:\n
+""" + full_prompt.get('prompt') + f'\nMake sure to follow the correct Pantone colors, if available: {PANTONE_MATCH}\nDO NOT DRAW PANTONE REFERENCES!'
     client = OpenAI(api_key = API_KEY)
 
     response = client.images.generate(
         model="dall-e-3",
         prompt=prompt,
         size="1024x1024",
-        quality="standard",
+        quality="hd",
         style = STYLE,
         )
 
@@ -215,9 +234,11 @@ def generate_image(full_prompt):
 #############PAGE LAYOUT##########################################
 st.title('Design your bedroom like a pro')
 st.subheader("Upload a photo of your bedroom and we'll suggest a few options :smile:")
-image_input= st.file_uploader('Upload your image')
+input_area = st.empty()
+input_col, img_col0 = input_area.columns([2,1])
+image_input= input_col.file_uploader('Upload your bedroom photo. Make sure to provide enough light and color details on your image.', accept_multiple_files=False)
 image_area = st.empty()
-img_col0,img_col1,img_col2, img_col3, img_col4, img_col5 = image_area.columns([1,1,1,1,1,1])
+img_col1,img_col2, img_col3, img_col4, img_col5 = image_area.columns([1,1,1,1,1])
 if image_input:
     if len(st.session_state.IMAGES) > 0:
         st.session_state.IMAGES = []
@@ -228,7 +249,7 @@ if image_input:
     img_col0.write('Original bedroom')
 if 'encoded_image' in st.session_state:
     with st.spinner('Please wait, working on designs'):
-        if st.button('Refine'):
+        if st.button('Gimme options!'):
             st.session_state.result = describe_image(st.session_state.encoded_image)
 
 
@@ -266,6 +287,7 @@ if 'result' in st.session_state:
             col[0].write(f"Fitted sheet: [{col[1].get('fitted sheet')}](https://www.amazon.com/dp/{match_color('fitted sheet',col[1].get('fitted sheet'), st.session_state.stock)})")
             col[0].write(f"Bed skirt: [{col[1].get('bed skirt')}](https://www.amazon.com/dp/{match_color('bed skirt',col[1].get('bed skirt'), st.session_state.stock)})")
             col[0].write(f"Coverlet: [{col[1].get('coverlet')}](https://www.amazon.com/dp/{match_color('coverlet',col[1].get('coverlet'), st.session_state.stock)})")
+            col[0].write(col[1].get('prompt'))
         st.write(f'Total tokens used: {input_tokens + output_tokens}. Estimated cost: ${(input_tokens * 10 / 1000000) + (output_tokens * 30 / 1000000):.3f}')
     except Exception as e:
         st.error(e)
