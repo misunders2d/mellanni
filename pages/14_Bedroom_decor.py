@@ -133,8 +133,9 @@ color and material of walls, ceiling, floor and anything visible in the picture.
 Also note full details of the bed - the material and color of which it is made.
 DISREGARD THE COLOR OF everything that's on the bed - sheets, pillowcases, bed skirt, coverlets etc, specifically record the number of pillows.
 Then, based on the current details, please come up with {NUM_OPTIONS} best suggestions of color designs for all bedding items that you see,
-make sure to explicitly include pillowcases, flat sheet, fitted sheet,
-bedskirt (ONLY if it exists on the original image) and a coverlet (ONLY if it exists on the original image).
+make sure to explicitly include pillowcases, flat sheet, fitted sheet.
+If there is a bedskirt on the original photo, add bedskirt suggestions.
+If there is a coverlet on the original photo, add coverlet suggestions.
 Describe the "improved" bedding using the same interior and bed details you noted before, explicitly mentioning the colors of all bedding items.
 Stay detail-focused, do not add anything emotional or whimsical.
 In your improved description focus more on the bed and bedding items, rather then on the interior, but don't disregard the interior completely.
@@ -287,7 +288,7 @@ if 'result' in st.session_state:
             col[0].write(f"Fitted sheet: [{col[1].get('fitted sheet')}](https://www.amazon.com/dp/{match_color('fitted sheet',col[1].get('fitted sheet'), st.session_state.stock)})")
             col[0].write(f"Bed skirt: [{col[1].get('bed skirt')}](https://www.amazon.com/dp/{match_color('bed skirt',col[1].get('bed skirt'), st.session_state.stock)})")
             col[0].write(f"Coverlet: [{col[1].get('coverlet')}](https://www.amazon.com/dp/{match_color('coverlet',col[1].get('coverlet'), st.session_state.stock)})")
-            col[0].write(col[1].get('prompt'))
-        st.write(f'Total tokens used: {input_tokens + output_tokens}. Estimated cost: ${(input_tokens * 10 / 1000000) + (output_tokens * 30 / 1000000):.3f}')
+        #     col[0].write(col[1].get('prompt'))
+        # st.write(f'Total tokens used: {input_tokens + output_tokens}. Estimated cost: ${(input_tokens * 10 / 1000000) + (output_tokens * 30 / 1000000):.3f}')
     except Exception as e:
         st.error(e)
