@@ -19,8 +19,9 @@ st.set_page_config(page_title = 'Bedroom designer', page_icon = 'media/logo.ico'
 API_KEY = os.getenv('GPT_VISION_KEY')
 KEEPA_KEY = os.getenv('KEEPA_KEY')
 HEIGHT = 250
-NUM_OPTIONS = 'one or two'
+NUM_OPTIONS = 'two to three'
 STYLE = 'vivid'#,'vivid', 'natural'
+IMG_SIZE: str =  "1024x1024"
 st.session_state.IMAGES = []
 collections_mapping = {
     'pillowcases':['1800 Pillowcase Set 2 pc','1800 Pillowcase Set 4 pc'],
@@ -37,14 +38,16 @@ JSON_EXAMPLE = {
         "fitted sheet":"fitted sheet color",
         "bed skirt":"bed skirt color (only if it exists in the original image)",
         "coverlet":"coverlet color (if any)",
-        "prompt":"description WITH UPDATED BEDDING ITEMS' COLORS AND ADDITIONAL ITEMS, IF APPLICABLE"},
+        "prompt":"description WITH UPDATED BEDDING ITEMS' COLORS AND ADDITIONAL ITEMS, IF APPLICABLE"
+        },
     "option 2": {
         "pillowcase":"pillowcase color",
         "flat sheet":"flat sheet color",
         "fitted sheet":"fitted sheet color",
         "bed skirt":"bed skirt color (only if it exists in the original image)",
         "coverlet":"coverlet color (if any)",
-        "prompt":"description WITH UPDATED BEDDING ITEMS' COLORS AND ADDITIONAL ITEMS, IF APPLICABLE"},
+        "prompt":"description WITH UPDATED BEDDING ITEMS' COLORS AND ADDITIONAL ITEMS, IF APPLICABLE"
+        },
 }
 ERROR_JSON = {"error":"this is not an image of a bedroom"}
 
@@ -87,10 +90,15 @@ def get_colors(stock):
     colors = {}
     for alias, collection in collections_mapping.items():
         colors[alias] = ', '.join(stock[stock['collection'].isin(collection)]['color'].unique().tolist())
+    return colors
+
+def match_pantones(colors: list, stock: pd.DataFrame) -> dict:
+    colors = [color.upper() for color in colors]
     stock['color'] = stock['color'].str.upper()
+    stock = stock[stock['color'].isin(colors)]
     pantones = stock.drop_duplicates('color')[['color','pantone_number']].set_index('color').to_dict(orient = 'index')
     pantones = {k:v['pantone_number'] for k, v in pantones.items()}
-    return colors, pantones
+    return pantones
 
 def match_color(alias, color, df):
     df['color'] = df['color'].str.lower().str.replace('-',' ').str.replace('/',' ').str.replace('  ',' ').str.replace('\\',' ').str.strip()
@@ -107,10 +115,9 @@ st.session_state.stock = get_stock()
 st.session_state.colors = get_colors(st.session_state.stock)
 
 COLOR_STR = ''
-for k, v in st.session_state.colors[0].items():
+for k, v in st.session_state.colors.items():
     COLOR_STR += k+": "+v+',\n\n'
 COLOR_PROMPT = f'Please choose ONLY from these available colors: {COLOR_STR}'
-PANTONE_MATCH = st.session_state.colors[1]
 
 PROMPT_OLD = f"""You are supplied with an image of a bedroom.
 As a bedding designer and expert please suggest the best color combinations of bedding items for this specific bedroom interior and layout - a set of pillowcases, flat sheet, fitted sheet,
@@ -129,7 +136,7 @@ If the image supplied does not appear to be an image of a bedroom, please return
 
 PROMPT = f"""You are a bedding design expert and an expert in photoshooting.
 Below is an image of a bedroom.
-Note the bedroom interior in detail,explicitly remember the view angle (side of the bed you are seeing) and relative positions of items on the image,
+Note the bedroom interior in detail and relative positions of items on the image,
 color and material of walls, ceiling, floor and anything visible in the picture.
 Also note full details of the bed - the material and color of which it is made.
 DISREGARD THE COLOR OF everything that's on the bed - sheets, pillowcases, bed skirt, coverlets etc, specifically record the number of pillows.
@@ -151,6 +158,13 @@ Besides the json response do not add anything from yourself."""
 # In case you cannot identify a bed and bedding on the supplied image, please return the following JSON response:
 # {ERROR_JSON}
 # """
+PROMPT_TEST: str = f'''You are a bedding design expert and you are supplied with an image of a bedroom.
+Please take a careful look at this image, note the bedroom interior and suggest {NUM_OPTIONS} bedding improvements,
+specifically colors for pillowcases, flat sheet, fitted sheet, bed skirt and coverlet, based on your expertise and aesthetic compatibility with the interior.
+Return your response STRICTLY in json format, like this:
+{JSON_EXAMPLE}
+and so on, where values for "pillowcase", "flat sheet", "fitted sheet", "bed skirt" and "coverlet" are their respective colors from your suggestion. Do not add anything from yourself.
+'''
 
 def resize_image(image_obj):
     full_image = Image.open(image_obj)
@@ -212,20 +226,52 @@ def describe_image(image_bytes):
     return description
 
 def generate_image(full_prompt):
+    PANTONE_DICT = match_pantones(full_prompt.values(), st.session_state.stock)
+    pantone_match = {item:PANTONE_DICT.get(value, value) for item, value in full_prompt.items()}
+    include_items = {'ONE '+item.upper():value for item, value in pantone_match.items() if 'None' not in  value}
+    ITEMS = ', '.join([item for item in include_items])
+    ITEMS = ITEMS.replace('PILLOWCASE','TWO PILLOWCASES')
+    ITEMS_STR = ''
+    for item, color in include_items.items():
+        ITEMS_STR += item + ': ' + color + ', '
+    ITEMS_STR = ITEMS_STR.replace('PILLOWCASE','PILLOWCASES')
+
+
     prompt = """
-My prompt has full detail so no need to add more. PLEASE DO NOT REWRITE OR MODIFY THE ORIGINAL PROMPT.
-Make sure to strictly follow the prompt below, MAKE SURE TO CORRECTLY REFLECT THE COLORS OF ALL OF THE ITEMS. Stick to the Pantone color references supplied below.
+My prompt has full detail so no need to add more. DO NOT REWRITE OR MODIFY THE ORIGINAL PROMPT!
+Make sure to strictly follow the prompt below, MAKE SURE TO CORRECTLY REFLECT THE COLORS OF ALL OF THE ITEMS, ESPECIALLY WHEN THEY ARE GIVEN IN PANTONE CODING.
+Stick to the Pantone color references supplied below.
 Also make sure to correctly reflect all the items mentioned in the prompt (especially bed skirt,fitted sheet, flat sheet, coverlet and number of pillowcases).
-Do not alter the viewing angle, if it is mentioned in the prompt:\n
-""" + full_prompt.get('prompt') + f'\nMake sure to follow these Pantone colors, if available: {PANTONE_MATCH}\nDO NOT DRAW PANTONE ICONS, LOGOS OR OTHER MENTIONS! DO NOT ADD PANTONE REFERENCES!'
+THE IMAGE MUST BE A FRONT-FACING IMAGE OF THE BED WITH BEDDING ITEMS AND THE WALL BEHIND:\n
+""" + full_prompt.get('prompt') + f'''\nMake sure the image contains the following items: {ITEMS}, and that their respective color is as follows: {ITEMS_STR}
+DISREGARD ALL PANTONE MENTIONS and use just Pantone numbers for color references. DO NOT DRAW MORE THAN TWO PILLOWS. DO NOT PUT ANY LOGOS OR TEXT ON THE IMAGE.
+'''
+    
+
+#     pre_prompt = f"""
+# My prompt has full detail so no need to add more. PLEASE DO NOT REWRITE OR MODIFY THE ORIGINAL PROMPT.
+# Make sure to strictly follow the prompt below, MAKE SURE TO CORRECTLY REFLECT THE COLORS AND QUANTITIES OF ALL OF THE ITEMS.
+# Stick to the Pantone color codes in the prompt, unless you are only supplied with a color name.
+# Also make sure to correctly reflect all the items mentioned in the prompt (especially bed skirt,fitted sheet, flat sheet, coverlet and number of pillowcases).
+# DO NOT DRAW MORE THAN TWO PILLOWS.
+# DO NOT REFERENCE OR REFLECT Pantone icons, color swatches etc. on the image!
+# DISREGARD ALL PANTONE MENTIONS and use just Pantone numbers for color references.
+# DO NOT PUT ANY LOGOS OR TEXT ON THE IMAGE.
+# Do not alter the viewing angle, keep it as a side view all the time:\n"""
+#     add_prompt = f"""
+# A photorealistic image of a stack of bedding consisting of the following bedding items - {ITEMS} on a white background.
+# The items are of the following colors: {ITEMS_STR}. The items are laying on top of each other forming a neat stack. The number of items must be strictly observed!
+# """
+#     prompt = pre_prompt + add_prompt
     client = OpenAI(api_key = API_KEY)
 
     response = client.images.generate(
         model="dall-e-3",
         prompt=prompt,
-        size="1024x1024",
+        size = IMG_SIZE,
         quality="hd",
         style = STYLE,
+        n = 1
         )
 
     image_url = response.data[0].url
@@ -253,8 +299,6 @@ if 'encoded_image' in st.session_state:
     with st.spinner('Please wait, working on designs'):
         if st.button('Gimme options!'):
             st.session_state.result = describe_image(st.session_state.encoded_image)
-
-
 
 if 'result' in st.session_state:
     if 'error' in st.session_state.result:
