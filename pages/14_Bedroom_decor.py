@@ -232,7 +232,7 @@ if 'encoded_image' in st.session_state:
 
 if 'result' in st.session_state:
     if 'error' in st.session_state.result:
-        st.warning(f'Error: {st.session_state.result.get('error')}')
+        st.warning(f"Error: {st.session_state.result.get('error')}")
         st.stop()
     IMG_OPTIONS = st.session_state.result.keys()
     IMG_PROMPTS = [st.session_state.result[x] for x in IMG_OPTIONS]
