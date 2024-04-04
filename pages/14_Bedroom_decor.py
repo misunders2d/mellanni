@@ -134,7 +134,7 @@ Also note full details of the bed - the material and color of which it is made.
 DISREGARD THE COLOR OF everything that's on the bed - sheets, pillowcases, bed skirt, coverlets etc, specifically record the number of pillows.
 Then, based on the current details, please come up with {NUM_OPTIONS} best suggestions of color designs for all bedding items that you see,
 make sure to explicitly include pillowcases, flat sheet, fitted sheet.
-If there is a bedskirt on the original photo, add bedskirt suggestions.
+DO NOT suggest a bedskirt if it's not on the on the original photo.
 If there is a coverlet on the original photo, add coverlet suggestions.
 Describe the "improved" bedding using the same interior and bed details you noted before, explicitly mentioning the colors of all bedding items.
 Stay detail-focused, do not add anything emotional or whimsical.
