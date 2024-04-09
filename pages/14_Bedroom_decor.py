@@ -6,6 +6,7 @@ from PIL import Image, ImageOps
 from io import BytesIO
 from random import randint
 import threading
+import requests
 import os
 import pandas as pd
 from datetime import date, timedelta
@@ -18,6 +19,7 @@ st.set_page_config(page_title = 'Bedroom designer', page_icon = 'media/logo.ico'
 
 API_KEY = os.getenv('GPT_VISION_KEY')
 KEEPA_KEY = os.getenv('KEEPA_KEY')
+SD_TOKEN = os.getenv('SD_KEY')
 HEIGHT = 250
 NUM_OPTIONS = 'two to three'
 STYLE = 'vivid'#,'vivid', 'natural'
@@ -34,20 +36,22 @@ collections_mapping = {
 
 JSON_EXAMPLE = {
     "option 1": {
+        'bed':'style and material of the bed',
         "pillowcase":"pillowcase color",
         "flat sheet":"flat sheet color",
         "fitted sheet":"fitted sheet color",
         "bed skirt":"bed skirt color (only if it exists in the original image)",
         "coverlet":"coverlet color (if any)",
-        "prompt":"description WITH UPDATED BEDDING ITEMS' COLORS AND ADDITIONAL ITEMS, IF APPLICABLE"
+        # "prompt":"description WITH UPDATED BEDDING ITEMS' COLORS AND ADDITIONAL ITEMS, IF APPLICABLE"
         },
     "option 2": {
+        'bed':'style and material of the bed',
         "pillowcase":"pillowcase color",
         "flat sheet":"flat sheet color",
         "fitted sheet":"fitted sheet color",
         "bed skirt":"bed skirt color (only if it exists in the original image)",
         "coverlet":"coverlet color (if any)",
-        "prompt":"description WITH UPDATED BEDDING ITEMS' COLORS AND ADDITIONAL ITEMS, IF APPLICABLE"
+        # "prompt":"description WITH UPDATED BEDDING ITEMS' COLORS AND ADDITIONAL ITEMS, IF APPLICABLE"
         },
 }
 ERROR_JSON = {"error":"this is not an image of a bedroom"}
@@ -135,6 +139,16 @@ and so on, where values for "pillowcase", "flat sheet", "fitted sheet", "bed ski
 If the image supplied does not appear to be an image of a bedroom, please return the following JSON response:
 {ERROR_JSON}"""
 
+PROMPT_SD = f"""You are a bedding styling and design expert.
+You are supplied with an an image of a bedroom.
+Please note all the bedding items on the bed and suggest {NUM_OPTIONS} best color combinations of bedding items for this type and style of interior.
+Return your response STRICTLY in json format, like this:
+{JSON_EXAMPLE}
+and so on, where values for "pillowcase", "flat sheet", "fitted sheet", "bed skirt" and "coverlet" are their respective colors that you suggest,
+value for "bed" is the type, material and style of the bed itself.
+Besides the json response do not add anything from yourself.
+"""
+
 PROMPT = f"""You are a bedding design expert and an expert in photoshooting.
 Below is an image of a bedroom.
 Note the bedroom interior in detail and relative positions of items on the image,
@@ -192,7 +206,7 @@ def describe_image(image_bytes):
 
     message: list = [
         {"role": "user","content":
-          [{"type": "text","text": PROMPT},
+          [{"type": "text","text": PROMPT_SD},
            {"type":"text","text":COLOR_PROMPT},
           {"type": "image_url",
            "image_url":{
@@ -226,6 +240,39 @@ def describe_image(image_bytes):
     except:
         description = {"error":"There was an error, please try again."}
     return description
+
+def sd_edit(bytes_image, version):
+    # option = options[version]
+    option = {item:color.upper() for item, color in version.items()}
+    PANTONE_DICT = match_pantones(option.values(), st.session_state.stock)
+    pantone_match = {item:value + " (" + PANTONE_DICT.get(value, value) + ")" for item, value in option.items() if item != 'bed' and value != 'NOT APPLICABLE'}
+
+    # bedding = ', '.join(["("+str(value) + ":0.9)" + " " + str(key) for key, value in pantone_match.items()])
+    bedding = ', '.join([str(value) + " " + str(key) for key, value in pantone_match.items()])
+
+    prompt = f'''A {option.get('bed')} bed, with the following bedding items with respective Pantone color numbers: {bedding}'''.replace('pillowcase', 'pillowcases')
+    response = requests.post(
+        f"https://api.stability.ai/v2beta/stable-image/edit/search-and-replace",
+        headers={
+            "authorization": f"Bearer {SD_TOKEN}",
+            "accept": "image/*"
+        },
+        files={
+            "image": bytes_image
+        },
+        data={
+            "prompt": prompt,
+            "search_prompt": 'bed with bed sheets and bedding items',
+            "output_format": "jpeg",
+        },
+    )
+
+    if response.status_code == 200:
+        option['url'] = Image.open(BytesIO(response.content))
+        option['revised_prompt'] = prompt
+        st.session_state.IMAGES.append(option)
+    else:
+        raise Exception(str(response.json()))
 
 def generate_image(full_prompt):
     PANTONE_DICT = match_pantones(full_prompt.values(), st.session_state.stock)
@@ -282,18 +329,46 @@ DO NOT RENDER ANY PANTONE swatches, icons or references.
     st.session_state.IMAGES.append(full_prompt)
     return None
 
+
+options = {
+    "option 1":{
+        "bed":"Modern, wood, platform style",
+        "pillowcase":"White",
+        "flat sheet":"Light Blue",
+        "fitted sheet":"Sand",
+        "bed skirt":"Not applicable",
+        "coverlet":"Spa Blue"
+        },
+    "option 2":{
+        "bed":"Modern, wood, platform style",
+        "pillowcase":"Blush Pink",
+        "flat sheet":"Golden Ivory",
+        "fitted sheet":"Light Gray",
+        "bed skirt":"Not applicable",
+        "coverlet":"Beige"
+        },
+    "option 3":{
+        "bed":"Modern, wood, platform style",
+        "pillowcase":"Sage",
+        "flat sheet":"White",
+        "fitted sheet":"Gray",
+        "bed skirt":"Not applicable",
+        "coverlet":"Olive Green"
+        }
+    }
+
 #############PAGE LAYOUT##########################################
 st.title('Design your bedroom like a pro')
 st.subheader("Upload a photo of your bedroom and we'll suggest a few options :smile:")
 input_area = st.empty()
 input_col, img_col0 = input_area.columns([2,1])
-image_input= input_col.file_uploader('Upload your bedroom photo. Make sure to provide enough light and color details on your image.', accept_multiple_files=False)
+st.session_state.image_input= input_col.file_uploader('Upload your bedroom photo. Make sure to provide enough light and color details on your image.', accept_multiple_files=False)
 image_area = st.empty()
 img_col1,img_col2, img_col3, img_col4, img_col5 = image_area.columns([1,1,1,1,1])
-if image_input:
+if st.session_state.image_input:
     if len(st.session_state.IMAGES) > 0:
         st.session_state.IMAGES = []
-    resized_image = resize_image(image_input)
+    resized_image = resize_image(st.session_state.image_input)
     byte_image = convert_image_to_bytes(resized_image)
     st.session_state.encoded_image = encode_image(byte_image)
     img_col0.image(resized_image)
@@ -302,7 +377,9 @@ if 'encoded_image' in st.session_state:
     with st.spinner('Please wait, working on designs (will take 20-40 seconds)'):
         if st.button('Gimme options!'):
             st.session_state.result = describe_image(st.session_state.encoded_image)
+            # st.session_state.result = options
             st.session_state.DONE = True
+            # st.write(st.session_state.result)
 
 if 'result' in st.session_state and st.session_state.DONE == True:
     if 'error' in st.session_state.result:
@@ -315,7 +392,9 @@ if 'result' in st.session_state and st.session_state.DONE == True:
         progress_start = 0
         my_bar = st.progress(progress_start, 'One last step, rendering suggestions')
         for prompt in IMG_PROMPTS:
-            threads.append(threading.Thread(target = generate_image, args = (prompt,)))
+        # for prompt in options:
+            # threads.append(threading.Thread(target = generate_image, args = (prompt,)))
+            threads.append(threading.Thread(target = sd_edit, args = (byte_image, prompt)))
         
         for thread in threads:
             scriptrunner.add_script_run_ctx(thread)
@@ -326,64 +405,23 @@ if 'result' in st.session_state and st.session_state.DONE == True:
             progress_start += 1/len(IMG_PROMPTS)
             my_bar.progress(progress_start)
 
+
         while len(st.session_state.IMAGES) < len(IMG_PROMPTS):
             time.sleep(1)
+
+        # st.write(st.session_state.IMAGES)
+
         render_images = list(zip([img_col1, img_col2, img_col3, img_col4, img_col5],st.session_state.IMAGES))
         for col in render_images:
             img = col[1].get('url')
-            col[0].image(img) 
+            col[0].image(img)
             col[0].write(f"Pillowcases: [{col[1].get('pillowcase')}](https://www.amazon.com/dp/{match_color('pillowcases',col[1].get('pillowcase'), st.session_state.stock)})")
             col[0].write(f"Flat sheet: [{col[1].get('flat sheet')}](https://www.amazon.com/dp/{match_color('flat sheet',col[1].get('flat sheet'), st.session_state.stock)})")
             col[0].write(f"Fitted sheet: [{col[1].get('fitted sheet')}](https://www.amazon.com/dp/{match_color('fitted sheet',col[1].get('fitted sheet'), st.session_state.stock)})")
             col[0].write(f"Bed skirt: [{col[1].get('bed skirt')}](https://www.amazon.com/dp/{match_color('bed skirt',col[1].get('bed skirt','No color'), st.session_state.stock)})")
             col[0].write(f"Coverlet: [{col[1].get('coverlet')}](https://www.amazon.com/dp/{match_color('coverlet',col[1].get('coverlet'), st.session_state.stock)})")
-        #     col[0].write(col[1].get('prompt'))
-        # st.write(f'Total tokens used: {input_tokens + output_tokens}. Estimated cost: ${(input_tokens * 10 / 1000000) + (output_tokens * 30 / 1000000):.3f}')
+            col[0].write(col[1].get('bed'))
+            col[0].write(col[1].get('prompt'))
+        st.write(f'Total tokens used: {input_tokens + output_tokens}. Estimated cost: ${(input_tokens * 10 / 1000000) + (output_tokens * 30 / 1000000):.3f}')
     except Exception as e:
         st.error(e)
-
-
-
-
-
-
-def sd_edit():
-    api_token = 'sk-0DMBi176Doh5313obroljSIMdFgKkv0sTbmT2mAd2QVcVB6j'
-
-    image_url = r'C:\temp\pics\New folder\PXL_20240403_125303646.jpg'
-
-    def resize_image(image_obj):
-        full_image = Image.open(image_obj)
-        cropped_image = ImageOps.contain(full_image, (1024,1024))
-        return cropped_image
-
-    def convert_image_to_bytes(image_obj):
-        img_byte_arr = BytesIO()
-        image_obj.save(img_byte_arr, format='PNG')
-        img_byte_arr = img_byte_arr.getvalue()
-        return img_byte_arr
-
-    resized_image = resize_image(image_url)
-    bytes_image = convert_image_to_bytes(resized_image)
-    response = requests.post(
-        f"https://api.stability.ai/v2beta/stable-image/edit/search-and-replace",
-        headers={
-            "authorization": f"Bearer {api_token}",
-            "accept": "image/*"
-        },
-        files={
-            # "image": open("./husky-in-a-field.png", "rb")
-            "image": bytes_image
-        },
-        data={
-            "prompt": "All pillows are of (Navy:0.9) (Blue:0.9) color; Duvet cover set is of (Black:0.9) color",
-            "search_prompt": "pillows, duvet cover set",
-            "output_format": "jpeg",
-        },
-    )
-
-    if response.status_code == 200:
-        with open(r"c:\temp\pics\test.jpeg", 'wb') as file:
-            file.write(response.content)
-    else:
-        raise Exception(str(response.json()))
