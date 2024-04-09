@@ -21,7 +21,7 @@ API_KEY = os.getenv('GPT_VISION_KEY')
 KEEPA_KEY = os.getenv('KEEPA_KEY')
 SD_TOKEN = os.getenv('SD_KEY')
 HEIGHT = 250
-NUM_OPTIONS = 'two to three'
+NUM_OPTIONS = 'one'#'two to three' 'one'
 STYLE = 'vivid'#,'vivid', 'natural'
 IMG_SIZE: str =  "1024x1024"
 st.session_state.DONE = False
@@ -376,53 +376,50 @@ if 'encoded_image' in st.session_state:
     with st.spinner('Please wait, working on designs (will take 20-40 seconds)'):
         if st.button('Gimme options!'):
             st.session_state.result = describe_image(st.session_state.encoded_image)
-            # st.session_state.result = options
             st.session_state.DONE = True
-            # st.write(st.session_state.result)
 
-if 'result' in st.session_state and st.session_state.DONE == True:
-    if 'error' in st.session_state.result:
-        st.warning(f"Error: {st.session_state.result.get('error')}")
-        st.stop()
-    try:
-        IMG_OPTIONS = st.session_state.result.keys()
-        IMG_PROMPTS = [st.session_state.result[x] for x in IMG_OPTIONS]
-        threads = []
-        progress_start = 0
-        my_bar = st.progress(progress_start, 'One last step, rendering suggestions')
-        for prompt in IMG_PROMPTS:
-            if mode == 'Full revision':
-                threads.append(threading.Thread(target = generate_image, args = (prompt,)))
-            else:
-                threads.append(threading.Thread(target = sd_edit, args = (byte_image, prompt)))
-        
-        for thread in threads:
-            scriptrunner.add_script_run_ctx(thread)
-            thread.start()
-            
-        for thread in threads:
-            thread.join()
-            progress_start += 1/len(IMG_PROMPTS)
-            my_bar.progress(progress_start)
+            if 'result' in st.session_state and st.session_state.DONE == True:
+                if 'error' in st.session_state.result:
+                    st.warning(f"Error: {st.session_state.result.get('error')}")
+                    st.stop()
+                try:
+                    IMG_OPTIONS = st.session_state.result.keys()
+                    IMG_PROMPTS = [st.session_state.result[x] for x in IMG_OPTIONS]
+                    threads = []
+                    progress_start = 0
+                    my_bar = st.progress(progress_start, 'One last step, rendering suggestions')
+                    for prompt in IMG_PROMPTS:
+                        if mode == 'Full revision':
+                            threads.append(threading.Thread(target = generate_image, args = (prompt,)))
+                        else:
+                            threads.append(threading.Thread(target = sd_edit, args = (byte_image, prompt)))
+                    
+                    for thread in threads:
+                        scriptrunner.add_script_run_ctx(thread)
+                        thread.start()
+                        
+                    for thread in threads:
+                        thread.join()
+                        progress_start += 1/len(IMG_PROMPTS)
+                        my_bar.progress(progress_start)
 
 
-        while all([len(values) < len(IMG_PROMPTS) for values in st.session_state.IMAGES.values()]):
-            time.sleep(1)
-
-        # st.write(IMG_PROMPTS)
-        img_versions = st.session_state.IMAGES['full'] if mode == 'Full revision' else st.session_state.IMAGES['edit']
-        st.session_state.render_images = list(zip([img_col1, img_col2, img_col3, img_col4, img_col5],img_versions))
-    except Exception as e:
-        st.error(e)
-    if 'render_images' in st.session_state and len(st.session_state.render_images) > 0:
-        for col in st.session_state.render_images:
-            img = col[1].get('url')
-            col[0].image(img)
-            col[0].write(f"Pillowcases: [{col[1].get('pillowcase')}](https://www.amazon.com/dp/{match_color('pillowcases',col[1].get('pillowcase'), st.session_state.stock)})")
-            col[0].write(f"Flat sheet: [{col[1].get('flat sheet')}](https://www.amazon.com/dp/{match_color('flat sheet',col[1].get('flat sheet'), st.session_state.stock)})")
-            col[0].write(f"Fitted sheet: [{col[1].get('fitted sheet')}](https://www.amazon.com/dp/{match_color('fitted sheet',col[1].get('fitted sheet'), st.session_state.stock)})")
-            col[0].write(f"Bed skirt: [{col[1].get('bed skirt')}](https://www.amazon.com/dp/{match_color('bed skirt',col[1].get('bed skirt','No color'), st.session_state.stock)})")
-            col[0].write(f"Coverlet: [{col[1].get('coverlet')}](https://www.amazon.com/dp/{match_color('coverlet',col[1].get('coverlet'), st.session_state.stock)})")
-            # col[0].write(col[1].get('bed'))
-            # col[0].write(col[1].get('prompt'))
-        st.write(f'Total tokens used: {input_tokens + output_tokens}. Estimated cost: ${(input_tokens * 10 / 1000000) + (output_tokens * 30 / 1000000):.3f}')
+                    while all([len(values) < len(IMG_PROMPTS) for values in st.session_state.IMAGES.values()]):
+                        time.sleep(1)
+                    
+                except Exception as e:
+                    st.error(e)
+st.session_state.img_versions = st.session_state.IMAGES['full'] if mode == 'Full revision' else st.session_state.IMAGES['edit']                    
+if 'img_versions' in st.session_state and len(st.session_state.img_versions) > 0:
+    st.session_state.render_images = list(zip([img_col1, img_col2, img_col3, img_col4, img_col5],st.session_state.img_versions))    
+    for col in st.session_state.render_images:
+        img = col[1].get('url')
+        col[0].image(img)
+        col[0].write(f"Pillowcases: [{col[1].get('pillowcase')}](https://www.amazon.com/dp/{match_color('pillowcases',col[1].get('pillowcase'), st.session_state.stock)})")
+        col[0].write(f"Flat sheet: [{col[1].get('flat sheet')}](https://www.amazon.com/dp/{match_color('flat sheet',col[1].get('flat sheet'), st.session_state.stock)})")
+        col[0].write(f"Fitted sheet: [{col[1].get('fitted sheet')}](https://www.amazon.com/dp/{match_color('fitted sheet',col[1].get('fitted sheet'), st.session_state.stock)})")
+        col[0].write(f"Bed skirt: [{col[1].get('bed skirt')}](https://www.amazon.com/dp/{match_color('bed skirt',col[1].get('bed skirt','No color'), st.session_state.stock)})")
+        col[0].write(f"Coverlet: [{col[1].get('coverlet')}](https://www.amazon.com/dp/{match_color('coverlet',col[1].get('coverlet'), st.session_state.stock)})")
+        # col[0].write(col[1].get('bed'))
+        # col[0].write(col[1].get('prompt'))
+    st.write(f'Total tokens used: {input_tokens + output_tokens}. Estimated cost: ${(input_tokens * 10 / 1000000) + (output_tokens * 30 / 1000000):.3f}')
