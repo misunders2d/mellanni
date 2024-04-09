@@ -36,6 +36,25 @@ collections_mapping = {
 
 JSON_EXAMPLE = {
     "option 1": {
+        "pillowcase":"pillowcase color",
+        "flat sheet":"flat sheet color",
+        "fitted sheet":"fitted sheet color",
+        "bed skirt":"bed skirt color (only if it exists in the original image)",
+        "coverlet":"coverlet color (if any)",
+        "prompt":"description WITH UPDATED BEDDING ITEMS' COLORS AND ADDITIONAL ITEMS, IF APPLICABLE"
+        },
+    "option 2": {
+        "pillowcase":"pillowcase color",
+        "flat sheet":"flat sheet color",
+        "fitted sheet":"fitted sheet color",
+        "bed skirt":"bed skirt color (only if it exists in the original image)",
+        "coverlet":"coverlet color (if any)",
+        "prompt":"description WITH UPDATED BEDDING ITEMS' COLORS AND ADDITIONAL ITEMS, IF APPLICABLE"
+        },
+}
+
+JSON_EXAMPLE_SD = {
+    "option 1": {
         'bed':'style and material of the bed',
         "pillowcase":"pillowcase color",
         "flat sheet":"flat sheet color",
@@ -54,6 +73,8 @@ JSON_EXAMPLE = {
         # "prompt":"description WITH UPDATED BEDDING ITEMS' COLORS AND ADDITIONAL ITEMS, IF APPLICABLE"
         },
 }
+
+
 ERROR_JSON = {"error":"this is not an image of a bedroom"}
 
 input_tokens = 0
@@ -143,7 +164,7 @@ PROMPT_SD = f"""You are a bedding styling and design expert.
 You are supplied with an an image of a bedroom.
 Please note all the bedding items on the bed and suggest {NUM_OPTIONS} best color combinations of bedding items for this type and style of interior.
 Return your response STRICTLY in json format, like this:
-{JSON_EXAMPLE}
+{JSON_EXAMPLE_SD}
 and so on, where values for "pillowcase", "flat sheet", "fitted sheet", "bed skirt" and "coverlet" are their respective colors that you suggest,
 value for "bed" is the type, material and style of the bed itself.
 Besides the json response do not add anything from yourself.
@@ -201,12 +222,13 @@ def encode_image(image_path):
         return base64.b64encode(image_path).decode('utf-8')
 
 def describe_image(image_bytes):
+    prompt_to_use = PROMPT if mode == 'Full revision' else PROMPT_SD
     global input_tokens, output_tokens
     time.sleep(randint(30,70)/10)
 
     message: list = [
         {"role": "user","content":
-          [{"type": "text","text": PROMPT_SD},
+          [{"type": "text","text": prompt_to_use},
            {"type":"text","text":COLOR_PROMPT},
           {"type": "image_url",
            "image_url":{
@@ -330,37 +352,12 @@ DO NOT RENDER ANY PANTONE swatches, icons or references.
     return None
 
 
-options = {
-    "option 1":{
-        "bed":"Modern, wood, platform style",
-        "pillowcase":"White",
-        "flat sheet":"Light Blue",
-        "fitted sheet":"Sand",
-        "bed skirt":"Not applicable",
-        "coverlet":"Spa Blue"
-        },
-    "option 2":{
-        "bed":"Modern, wood, platform style",
-        "pillowcase":"Blush Pink",
-        "flat sheet":"Golden Ivory",
-        "fitted sheet":"Light Gray",
-        "bed skirt":"Not applicable",
-        "coverlet":"Beige"
-        },
-    "option 3":{
-        "bed":"Modern, wood, platform style",
-        "pillowcase":"Sage",
-        "flat sheet":"White",
-        "fitted sheet":"Gray",
-        "bed skirt":"Not applicable",
-        "coverlet":"Olive Green"
-        }
-    }
-
 #############PAGE LAYOUT##########################################
 st.title('Design your bedroom like a pro')
 st.subheader("Upload a photo of your bedroom and we'll suggest a few options :smile:")
+selector_area = st.empty()
 input_area = st.empty()
+mode = selector_area.radio('Select editing mode', ['Full revision','Image edit'], horizontal=True)
 input_col, img_col0 = input_area.columns([2,1])
 st.session_state.image_input= input_col.file_uploader('Upload your bedroom photo. Make sure to provide enough light and color details on your image.', accept_multiple_files=False)
 image_area = st.empty()
@@ -392,9 +389,10 @@ if 'result' in st.session_state and st.session_state.DONE == True:
         progress_start = 0
         my_bar = st.progress(progress_start, 'One last step, rendering suggestions')
         for prompt in IMG_PROMPTS:
-        # for prompt in options:
-            # threads.append(threading.Thread(target = generate_image, args = (prompt,)))
-            threads.append(threading.Thread(target = sd_edit, args = (byte_image, prompt)))
+            if mode == 'Full revision':
+                threads.append(threading.Thread(target = generate_image, args = (prompt,)))
+            else:
+                threads.append(threading.Thread(target = sd_edit, args = (byte_image, prompt)))
         
         for thread in threads:
             scriptrunner.add_script_run_ctx(thread)
@@ -409,7 +407,7 @@ if 'result' in st.session_state and st.session_state.DONE == True:
         while len(st.session_state.IMAGES) < len(IMG_PROMPTS):
             time.sleep(1)
 
-        # st.write(st.session_state.IMAGES)
+        # st.write(IMG_PROMPTS)
 
         render_images = list(zip([img_col1, img_col2, img_col3, img_col4, img_col5],st.session_state.IMAGES))
         for col in render_images:
@@ -420,8 +418,8 @@ if 'result' in st.session_state and st.session_state.DONE == True:
             col[0].write(f"Fitted sheet: [{col[1].get('fitted sheet')}](https://www.amazon.com/dp/{match_color('fitted sheet',col[1].get('fitted sheet'), st.session_state.stock)})")
             col[0].write(f"Bed skirt: [{col[1].get('bed skirt')}](https://www.amazon.com/dp/{match_color('bed skirt',col[1].get('bed skirt','No color'), st.session_state.stock)})")
             col[0].write(f"Coverlet: [{col[1].get('coverlet')}](https://www.amazon.com/dp/{match_color('coverlet',col[1].get('coverlet'), st.session_state.stock)})")
-            col[0].write(col[1].get('bed'))
-            col[0].write(col[1].get('prompt'))
+            # col[0].write(col[1].get('bed'))
+            # col[0].write(col[1].get('prompt'))
         st.write(f'Total tokens used: {input_tokens + output_tokens}. Estimated cost: ${(input_tokens * 10 / 1000000) + (output_tokens * 30 / 1000000):.3f}')
     except Exception as e:
         st.error(e)
