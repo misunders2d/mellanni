@@ -21,11 +21,12 @@ API_KEY = os.getenv('GPT_VISION_KEY')
 KEEPA_KEY = os.getenv('KEEPA_KEY')
 SD_TOKEN = os.getenv('SD_KEY')
 HEIGHT = 250
-NUM_OPTIONS = 'two to three'
+NUM_OPTIONS = 'one'
 STYLE = 'vivid'#,'vivid', 'natural'
 IMG_SIZE: str =  "1024x1024"
 st.session_state.DONE = False
-st.session_state.IMAGES = []
+if 'IMAGES' not in st.session_state:
+    st.session_state.IMAGES = {'full':[],'edit':[]}
 collections_mapping = {
     'pillowcases':['1800 Pillowcase Set 2 pc','1800 Pillowcase Set 4 pc'],
     'flat sheet':['1800 Flat Sheet'],
@@ -162,7 +163,7 @@ If the image supplied does not appear to be an image of a bedroom, please return
 
 PROMPT_SD = f"""You are a bedding styling and design expert.
 You are supplied with an an image of a bedroom.
-Please note all the bedding items on the bed and suggest {NUM_OPTIONS} best color combinations of bedding items for this type and style of interior.
+Please note all the bedding items on the bed and suggest EXACTLY {NUM_OPTIONS} best color combinations of bedding items for this type and style of interior.
 Return your response STRICTLY in json format, like this:
 {JSON_EXAMPLE_SD}
 and so on, where values for "pillowcase", "flat sheet", "fitted sheet", "bed skirt" and "coverlet" are their respective colors that you suggest,
@@ -176,7 +177,7 @@ Note the bedroom interior in detail and relative positions of items on the image
 color and material of walls, ceiling, floor and anything visible in the picture.
 Also note full details of the bed - the material and color of which it is made.
 DISREGARD THE COLOR OF everything that's on the bed - sheets, pillowcases, bed skirt, coverlets etc, specifically record the number of pillows.
-Then, based on the current details, please come up with {NUM_OPTIONS} best suggestions of color designs for all bedding items that you see,
+Then, based on the current details, please come up with EXACTLY {NUM_OPTIONS} best suggestions of color designs for all bedding items that you see,
 make sure to explicitly include pillowcases, flat sheet, fitted sheet.
 DO NOT suggest a bedskirt if it's not on the on the original photo.
 If there is a coverlet on the original photo, add coverlet suggestions.
@@ -292,7 +293,7 @@ def sd_edit(bytes_image, version):
     if response.status_code == 200:
         option['url'] = Image.open(BytesIO(response.content))
         option['revised_prompt'] = prompt
-        st.session_state.IMAGES.append(option)
+        st.session_state.IMAGES['edit'].append(option)
     else:
         raise Exception(str(response.json()))
 
@@ -348,7 +349,7 @@ DO NOT RENDER ANY PANTONE swatches, icons or references.
 
     image_url = response.data[0].url
     full_prompt['url'] = image_url
-    st.session_state.IMAGES.append(full_prompt)
+    st.session_state.IMAGES['full'].append(full_prompt)
     return None
 
 
@@ -363,13 +364,14 @@ st.session_state.image_input= input_col.file_uploader('Upload your bedroom photo
 image_area = st.empty()
 img_col1,img_col2, img_col3, img_col4, img_col5 = image_area.columns([1,1,1,1,1])
 if st.session_state.image_input:
-    if len(st.session_state.IMAGES) > 0:
-        st.session_state.IMAGES = []
     resized_image = resize_image(st.session_state.image_input)
     byte_image = convert_image_to_bytes(resized_image)
     st.session_state.encoded_image = encode_image(byte_image)
     img_col0.image(resized_image)
     img_col0.write('Original bedroom')
+    if img_col0.button("Reset"):
+        st.session_state.IMAGES = {'full':[],'edit':[]}
+
 if 'encoded_image' in st.session_state:
     with st.spinner('Please wait, working on designs (will take 20-40 seconds)'):
         if st.button('Gimme options!'):
@@ -404,13 +406,16 @@ if 'result' in st.session_state and st.session_state.DONE == True:
             my_bar.progress(progress_start)
 
 
-        while len(st.session_state.IMAGES) < len(IMG_PROMPTS):
+        while all([len(values) < len(IMG_PROMPTS) for values in st.session_state.IMAGES.values()]):
             time.sleep(1)
 
         # st.write(IMG_PROMPTS)
-
-        render_images = list(zip([img_col1, img_col2, img_col3, img_col4, img_col5],st.session_state.IMAGES))
-        for col in render_images:
+        img_versions = st.session_state.IMAGES['full'] if mode == 'Full revision' else st.session_state.IMAGES['edit']
+        st.session_state.render_images = list(zip([img_col1, img_col2, img_col3, img_col4, img_col5],img_versions))
+    except Exception as e:
+        st.error(e)
+    if 'render_images' in st.session_state and len(st.session_state.render_images) > 0:
+        for col in st.session_state.render_images:
             img = col[1].get('url')
             col[0].image(img)
             col[0].write(f"Pillowcases: [{col[1].get('pillowcase')}](https://www.amazon.com/dp/{match_color('pillowcases',col[1].get('pillowcase'), st.session_state.stock)})")
@@ -421,5 +426,3 @@ if 'result' in st.session_state and st.session_state.DONE == True:
             # col[0].write(col[1].get('bed'))
             # col[0].write(col[1].get('prompt'))
         st.write(f'Total tokens used: {input_tokens + output_tokens}. Estimated cost: ${(input_tokens * 10 / 1000000) + (output_tokens * 30 / 1000000):.3f}')
-    except Exception as e:
-        st.error(e)
