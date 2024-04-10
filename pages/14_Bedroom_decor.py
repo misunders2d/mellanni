@@ -24,6 +24,7 @@ HEIGHT = 250
 NUM_OPTIONS = 'two to three'#'two to three' 'one'
 STYLE = 'vivid'#,'vivid', 'natural'
 IMG_SIZE: str =  "1024x1024"
+VISION_MODEL = "gpt-4-turbo-2024-04-09" # "gpt-4-vision-preview" "gpt-4-turbo-2024-04-09" - new version
 st.session_state.DONE = False
 if 'IMAGES' not in st.session_state:
     st.session_state.IMAGES = {'full':[],'edit':[]}
@@ -241,7 +242,7 @@ def describe_image(image_bytes):
     client = OpenAI(api_key = API_KEY)
 
     response = client.chat.completions.create(
-      model="gpt-4-vision-preview",
+      model=VISION_MODEL,
       messages = message,
       max_tokens=1500,
       temperature = 0.0,
