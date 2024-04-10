@@ -35,7 +35,7 @@ if st.session_state['login'][0] and user_email in markets_access:
 
     GC_CREDENTIALS = service_account.Credentials.from_service_account_info(st.secrets['gcp_service_account'])
     client = bigquery.Client(credentials=GC_CREDENTIALS)
-    NUM_DAYS = 30
+    NUM_DAYS = 60
 
     change_types = [
         'Price increase', 'Price decrease', 'Main image update', 'Secondary images update',
