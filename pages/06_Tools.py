@@ -465,7 +465,7 @@ if st.session_state['login']:
             def get_meeting_summary(prompt,text, temp):
                 client = OpenAI(api_key = key)
                 blocks = re.split('\n| \.',text)
-                word_limit = 10000               
+                word_limit = 9000               
                 chunks = []
                 limit = 0
                 chunk = []
