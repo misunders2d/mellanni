@@ -273,6 +273,7 @@ def sd_edit(bytes_image, version):
 
     # bedding = ', '.join(["("+str(value) + ":0.9)" + " " + str(key) for key, value in pantone_match.items()])
     bedding = ', '.join([str(value) + " " + str(key) for key, value in pantone_match.items()])
+    negative_bedding = ', '.join([key + " of any other color than " + value for key, value in option.items()])
 
     prompt = f'''A {option.get('bed')} bed, with the following bedding items with respective Pantone color numbers: {bedding}'''.replace('pillowcase', 'pillowcases')
     response = requests.post(
@@ -288,6 +289,7 @@ def sd_edit(bytes_image, version):
             "prompt": prompt,
             "search_prompt": 'bed with bed sheets and bedding items',
             "output_format": "jpeg",
+            "negative_prompt": negative_bedding + ", prints or patterns on the bedding"
         },
     )
 
