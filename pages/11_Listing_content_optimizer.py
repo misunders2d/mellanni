@@ -85,7 +85,7 @@ def process(full_prompt):
     client.beta.threads.delete(thread_id = thread.id)
     st.rerun()
 
-if button_col1.button('Optimize') and 'result' not in st.session_state:
+if button_col1.button('Optimize'):# and 'result' not in st.session_state:
     st.session_state.prompt = f'Product:\n{product}\n\nTitle:\n{title_current},\n\nBulletpoints:\n{bullets_real}\n\nKeywords:\n{keywords}'
     if 'asins' in st.session_state and len(st.session_state.asins) > 0:
         items = get_product_details(st.session_state.asins)
