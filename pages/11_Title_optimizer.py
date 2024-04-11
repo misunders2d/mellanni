@@ -1,15 +1,26 @@
 from openai import OpenAI
 import streamlit as st
-import time
+import time, os, re
+import keepa
+from modules.keepa_modules import get_product_details
+
 
 st.set_page_config(page_title = 'Mellanni Tools App', page_icon = 'media/logo.ico',layout="wide")
 
+KEEPA_KEY = os.getenv('KEEPA_KEY')
 ASSISTANT_KEY = st.secrets['ASSISTANT_KEY']
 assistant_id = 'asst_mvg3s2IB6NBVDUMVQAyhLAmb'
 # thread_id = 'thread_RBShV8Ay9B9n1nmJnAXdbBfy'
 
-st.title('AI powered Title and Bulletpoints optimizer')
-st.subheader('Input short product description, current title and bulletpoints along with the most important keywords.')
+header_area = st.empty()
+title_area, competitor_area = header_area.columns([4,1])
+title_area.title('AI powered Title and Bulletpoints optimizer')
+title_area.subheader('Input short product description, current title and bulletpoints along with the most important keywords.')
+
+if competitor_area.checkbox('Add competitor data'):
+    competitors = competitor_area.text_area('Competitors', placeholder='Enter ASINs or Amazon.com links (up to 5 perferably)')
+    asins_str = re.split(' |,|\n|\t', competitors)
+    st.session_state.asins =  [re.search('([A-Z0-9]{10})', x).group().strip() for x in asins_str if re.search('([A-Z0-9]{10})', x)]
 
 product_description_area = st.empty()
 title_area1 = st.empty()
@@ -41,15 +52,13 @@ if 'assistant' not in st.session_state:
     st.session_state['assistant'] = client.beta.assistants.retrieve(assistant_id)
     # thread = client.beta.threads.retrieve(thread_id = thread_id)
 
-prompt = f'Product:\n{product}\n\nTitle:\n{title_current},\n\nBulletpoints:\n{bullets_real}\n\nKeywords:\n{keywords}'
-
-def process():
+def process(full_prompt):
     client = st.session_state['client']
     thread = client.beta.threads.create()
     message = client.beta.threads.messages.create(
         thread_id = thread.id,
         role = 'user',
-        content = prompt)
+        content = full_prompt)
     
     run = client.beta.threads.runs.create(
         thread_id = thread.id,
@@ -77,13 +86,14 @@ def process():
     st.rerun()
 
 if button_col1.button('Optimize') and 'result' not in st.session_state:
-    process()
+    st.session_state.prompt = f'Product:\n{product}\n\nTitle:\n{title_current},\n\nBulletpoints:\n{bullets_real}\n\nKeywords:\n{keywords}'
+    if 'asins' in st.session_state and len(st.session_state.asins) > 0:
+        items = get_product_details(st.session_state.asins)
+        st.session_state.competitors_prompt = '\n\nCompetitors information for reference: ' + ', '.join(['Title: ' + items[x]['title'] + '\nBulletpoints: ' + items[x]['bulletpoints'] for x in items])
+        st.session_state.prompt += st.session_state.competitors_prompt
+    process(st.session_state.prompt)
 if button_col2.button('Try again'):
     if 'result' in st.session_state:
         del st.session_state.result
-    process()
+    process(st.session_state.prompt)
     st.rerun()
-# if button_col3.button('Reset'):
-#     for item in st.session_state:
-#         del item
-#     st.rerun()
