@@ -15,7 +15,7 @@ from nltk.stem import WordNetLemmatizer
 # from sklearn.feature_extraction.text import TfidfVectorizer
 # from sklearn.cluster import KMeans
 # from sklearn.metrics.pairwise import cosine_similarity
-# from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler
 # import nltk
 # if not nltk.download('all'):
 #     nltk.download('all')
