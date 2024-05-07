@@ -10,6 +10,8 @@ from modules import formatting as ff
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 from nltk.corpus import stopwords
+import nltk
+nltk.download('stopwords')
 from nltk.stem import WordNetLemmatizer
 
 # from sklearn.feature_extraction.text import TfidfVectorizer
