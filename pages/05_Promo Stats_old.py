@@ -1,12 +1,14 @@
 import streamlit as st
 import pandas as pd
 import re
+import sys
+sys.path.append('../modules')
 # import login
 # from io import BytesIO
 from google.cloud import bigquery #pip install google-cloud-bigquery
 from google.oauth2 import service_account
-from modules import gcloud_modules as gc
-from modules import formatting as ff
+import gcloud_modules as gc
+import formatting as ff
 import pytz
 pacific = pytz.timezone('US/Pacific')
 
