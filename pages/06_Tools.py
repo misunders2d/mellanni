@@ -540,7 +540,7 @@ Action items:
             prompt_query = prompt_area.text_area('Prompt',prompt_text,help = 'Modify the query if you are not getting the results you need', height = 150)
             input_text = text_area.text_area('Input meeting transcription',height = 500)
             if st.button('Summarize'):
-                st.write(f'using {model} for summarization')
+                st.write(f'using {used_model} for summarization')
                 st.session_state.summarized = True
                 try:
                     st.session_state.result, st.session_state.messages = get_meeting_summary(prompt_query,input_text, temp = 0.2)
