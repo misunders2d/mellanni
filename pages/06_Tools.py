@@ -9,7 +9,7 @@ from openai import OpenAI
 import time
 key = st.secrets['AI_KEY']
 # openai.api_key = key
-GPT_MODEL = ['gpt-4','gpt-3.5-turbo','gpt-3.5-turbo-0125']
+GPT_MODEL = ['gpt-4','gpb-4o','gpt-3.5-turbo','gpt-3.5-turbo-0125']
 model = GPT_MODEL[2]
 MAX_TOKENS = 4000
 
@@ -462,10 +462,11 @@ if st.session_state['login']:
 
 
         with st.expander('Meeting summarizer',expanded = True):
+            used_model = st.radio('Choose model to use:', ['gpt-4o','gpt-3.5-turbo-0125'], index = 1)
             def get_meeting_summary(prompt,text, temp):
                 client = OpenAI(api_key = key)
-                blocks = re.split('\n| \.',text)
-                word_limit = 9000               
+                blocks = re.split(r'\n| \.',text)
+                word_limit = 9000 if used_model == 'gpt-3.5-turbo-0125' else 18000
                 chunks = []
                 limit = 0
                 chunk = []
@@ -492,7 +493,7 @@ if st.session_state['login']:
                              save information about assignees.
                             Please stay within 1800 words limit:\n{c}'''}]
                         response = client.chat.completions.create(
-                        model = model,
+                        model = used_model,
                         messages =  messages,
                         temperature=temp,
                         max_tokens=MAX_TOKENS
@@ -507,7 +508,7 @@ if st.session_state['login']:
                 messages = [
                     {'role':'user', 'content':f'''{prompt}\n'''+'\n\n'.join(summaries)}]
                 response = client.chat.completions.create(
-                    model = model,
+                    model = used_model,
                     messages =  messages,
                     temperature=temp,
                     max_tokens=MAX_TOKENS
