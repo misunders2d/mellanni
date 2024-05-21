@@ -462,7 +462,7 @@ if st.session_state['login']:
 
 
         with st.expander('Meeting summarizer',expanded = True):
-            used_model = st.radio('Choose model to use:', ['gpt-4o','gpt-3.5-turbo-0125'], index = 1)
+            used_model = st.radio('Choose model to use:', ['gpt-4o','gpt-3.5-turbo-0125'], index = 1, horizontal=True)
             def get_meeting_summary(prompt,text, temp):
                 client = OpenAI(api_key = key)
                 blocks = re.split(r'\n| \.',text)
