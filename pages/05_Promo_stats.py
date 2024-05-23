@@ -6,7 +6,7 @@ import threading
 import pandas as pd
 import time
 
-START_DATE = "2024-05-15"
+START_DATE = "2023-05-15"
 END_DATE = "2024-05-22"
 CURRENCY = "USD"
 SALES_CHANNEL = "Amazon.com"
@@ -66,15 +66,36 @@ def process_data():
     afo: pd.DataFrame = RESULTS['afo']
     dictionary: pd.DataFrame = RESULTS['dictionary']
 
+    promos['promocode'] = promos['description'].str.extract(r'(\b[A-Z0-9-]{8,12}\b)')
     promos['false_promo'] = promos['description'].apply(lambda x: apply_false_promos(x,FALSE_PROMOS))
     shipment_id_mapping = afo[['shipment_item_id','sku','shipped_quantity','item_price','item_promo_discount']].copy()
-    promos = pd.merge(promos, shipment_id_mapping, how = 'left', on = 'shipment_item_id')
-    promos = promos.dropna(subset = 'sku')
+
+    promo_mapping = pd.Series(promos['description'].values, index = promos['item_promotion_id']).to_dict()
+    false_promos = pd.Series(promos['false_promo'].values, index = promos['item_promotion_id']).to_dict()
+    false_promo_cols = [key for key, value in false_promos.items() if value]
+    true_promo_cols = [key for key, value in false_promos.items() if not value]
+
+
+    promos_pivot = promos.pivot(index = ['shipment_item_id','amazon_order_id'], columns = 'item_promotion_id', values = 'item_promotion_discount').reset_index()
+    promos_pivot['real_promos_discount'] = promos_pivot[true_promo_cols].sum(axis = 1)
+    promos_pivot['fake_promos_discount'] = promos_pivot[false_promo_cols].sum(axis = 1)
+
+    promos_pivot = promos_pivot[['shipment_item_id','amazon_order_id','real_promos_discount','fake_promos_discount'] + true_promo_cols + false_promo_cols]
+
+    promos_pivot = promos_pivot.rename(columns = promo_mapping)
+
+    promos_total = pd.merge(shipment_id_mapping, promos_pivot, how = 'right', on = 'shipment_item_id')
+    promos_total = promos_total.dropna(subset = 'sku')
 
     with pd.ExcelWriter(r'c:\temp\pics\test.xlsx', engine='xlsxwriter') as writer:
-        promos.to_excel(writer, sheet_name='promos', index=False)
-        afo.to_excel(writer, sheet_name='afo', index=False)
+        print('Exporting promos total')
+        promos_total.to_excel(writer, sheet_name='promos', index=False)
+        print('Exporting afo')
+        # afo.to_excel(writer, sheet_name='afo', index=False)
+        print('dictionary')
         dictionary.to_excel(writer, sheet_name='dictionary', index=False)
+        print('Exporting promos')
+        promos.to_excel(writer, sheet_name = 'promos_raw', index = False)
 
 # pull_bigquery(test_query,'test')
 # test = RESULTS['test']
