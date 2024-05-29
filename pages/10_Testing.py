@@ -458,10 +458,11 @@ def combine_files(multifile_path):
         for col in subset:
             del combined[col]
 
-    combined = combined.drop_duplicates('Search Query')
 
     full = pd.merge(combined, pivot, how = 'left', on = 'Search Query')
     full = pd.merge(full, median_prices, how = 'left', on = 'Search Query')
+
+    full = full.drop_duplicates('Search Query')
 
     full = full[column_list]
     full['Impressions: ASIN Share %'] = full['Impressions: ASIN Count'] / full['Impressions: Total Count']
