@@ -439,12 +439,31 @@ def combine_files(multifile_path):
         aggfunc = 'sum'
         ).reset_index()
 
-    for stat_col in stat_cols:
-        del combined[stat_col]
+    median_cols = ['Clicks: ASIN Price (Median)', 'Cart Adds: ASIN Price (Median)','Purchases: ASIN Price (Median)']
+    combined['Clicks price'] = combined['Clicks: ASIN Count'] * combined['Clicks: ASIN Price (Median)']
+    combined['ATC price'] = combined['Cart Adds: ASIN Count'] * combined['Cart Adds: ASIN Price (Median)']
+    combined['Purchase price'] = combined['Purchases: ASIN Count'] * combined['Purchases: ASIN Price (Median)']
+
+    median_prices = combined.groupby('Search Query')[
+        ['Clicks: ASIN Count','Cart Adds: ASIN Count','Purchases: ASIN Count','Clicks price','ATC price','Purchase price']
+        ].agg('sum').reset_index()
+
+    median_prices['Clicks: ASIN Price (Median)'] = median_prices['Clicks price']/median_prices['Clicks: ASIN Count']
+    median_prices['Cart Adds: ASIN Price (Median)'] = median_prices['ATC price']/median_prices['Cart Adds: ASIN Count']
+    median_prices['Purchases: ASIN Price (Median)'] = median_prices['Purchase price']/median_prices['Purchases: ASIN Count']
+    median_prices = median_prices[['Search Query']+median_cols]
+
+
+    for subset in [stat_cols, median_cols]:
+        for col in subset:
+            del combined[col]
+
+    combined = combined.drop_duplicates('Search Query')
 
     full = pd.merge(combined, pivot, how = 'left', on = 'Search Query')
+    full = pd.merge(full, median_prices, how = 'left', on = 'Search Query')
+
     full = full[column_list]
-    full = full.drop_duplicates('Search Query')
     full['Impressions: ASIN Share %'] = full['Impressions: ASIN Count'] / full['Impressions: Total Count']
     full['Clicks: ASIN Share %'] = full['Clicks: ASIN Count'] / full['Clicks: Total Count']
     full['Cart Adds: ASIN Share %'] = full['Cart Adds: ASIN Count'] / full['Cart Adds: Total Count']
