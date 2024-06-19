@@ -11,7 +11,7 @@ key = st.secrets['AI_KEY']
 # openai.api_key = key
 GPT_MODEL = ['gpt-4','gpb-4o','gpt-3.5-turbo','gpt-3.5-turbo-0125']
 model = GPT_MODEL[2]
-MAX_TOKENS = 4000
+MAX_TOKENS = 2000
 
 
 st.set_page_config(page_title = 'Mellanni Tools', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state='collapsed')
@@ -151,7 +151,7 @@ if st.session_state['login']:
                     data = data[1:]    
                     
                 
-                pattern = re.compile('\$|[0-9]+')
+                pattern = re.compile(r'\$|[0-9]+')
 
                 for i, d in enumerate(data):
                     data[i] = [x for x in d if all([re.search(pattern,x),all(['inventory' not in x, 'Mellanni' not in x])])]
@@ -463,10 +463,26 @@ if st.session_state['login']:
 
         with st.expander('Meeting summarizer',expanded = True):
             used_model = st.radio('Choose model to use:', ['gpt-4o','gpt-3.5-turbo-0125'], index = 1, horizontal=True)
-            def get_meeting_summary(prompt,text, temp):
-                client = OpenAI(api_key = key)
+            prompt_text = '''
+            Please summarize the following meeting minutes, stay detailed, but concise. Try not to miss any important points.
+            Make sure to explicitly and separately list key talking points and action items, if any,  in the following format:
+
+            Summary
+
+            Key talking points:
+            - key talking point 1
+            - key talking point 2
+            - etc
+
+            Action items:
+            - <Assignee> : action item 1
+            - <Assignee> : action item 2
+            - etc
+            '''                
+
+            def split_text_to_messages(text):
                 blocks = re.split(r'\n| \.',text)
-                word_limit = 9000 if used_model == 'gpt-3.5-turbo-0125' else 18000
+                word_limit = 8000 if used_model == 'gpt-3.5-turbo-0125' else 12000
                 chunks = []
                 limit = 0
                 chunk = []
@@ -479,91 +495,35 @@ if st.session_state['login']:
                         chunks.append(chunk)
                         chunk = []
                 chunks.append(chunk)
+                return chunks
 
-                if len(chunks) == 1:
-                    summaries = chunks[0]
-                else:
-                    summaries = []
-                    progress_bar = st.progress(len(chunks)/100,'Please wait...')
-
-                    for i,c in enumerate(chunks):
-                        messages = [
-                            {'role':'user', 'content':f'''I am sending you the meeting summary that consists of {len(chunks)} parts. Below is part {i+1}.
-                            Please compress it, removing all inconsequential details, but keep key talking points and action items, if any. Please make sure to 
-                             save information about assignees.
-                            Please stay within 1800 words limit:\n{c}'''}]
-                        response = client.chat.completions.create(
-                        model = used_model,
-                        messages =  messages,
-                        temperature=temp,
-                        max_tokens=MAX_TOKENS
-                        )
-                        # Get the generated text and append it to the chat history
-                        message = response.choices[0].message.content.strip()
-                        summaries.append(message)
-                        time.sleep(5)
-                    progress_bar.progress((i+1)/len(chunks),'Please wait...')
+            def get_meeting_summary(chunks, temp):
+                client = OpenAI(api_key = key)
                 
-                #summarize
-                messages = [
-                    {'role':'user', 'content':f'''{prompt}\n'''+'\n\n'.join(summaries)}]
+                messages = [{'role':'system','content':prompt_text}]
+                messages.extend([{'role':'user', 'content': ' '.join(x)} for x in chunks])
                 response = client.chat.completions.create(
-                    model = used_model,
-                    messages =  messages,
-                    temperature=temp,
-                    max_tokens=MAX_TOKENS
-                    )
-                # Get the generated text and append it to the chat history
-                final = response.choices[0].message.content.strip()
-                messages.append({'role':'assistant','content':final})
-                # usage_stats = ', '.join([str(x[0])+':'+str(x[1]) for x in response.get('usage').items() if response.get('usage').items()])
-                return final, messages#, usage_stats
+                model = used_model,
+                messages =  messages,
+                temperature=temp,
+                max_tokens=MAX_TOKENS
+                )
+                #summarize
+                message = response.choices[0].message.content.strip()
+                return message
+            
             prompt_area = st.empty()
             text_area = st.empty()
             clarify_area = st.empty()
-            prompt_text = '''
-Please summarize the following meeting minutes, stay detailed, but concise. Try not to miss any important points.
-Make sure to explicitly and separately list key talking points and action items, if any,  in the following format:
 
-Summary
-
-Key talking points:
-- key talking point 1
-- key talking point 2
-- etc
-
-Action items:
-- <Assignee> : action item 1
-- <Assignee> : action item 2
-- etc
-            '''
             prompt_query = prompt_area.text_area('Prompt',prompt_text,help = 'Modify the query if you are not getting the results you need', height = 150)
             input_text = text_area.text_area('Input meeting transcription',height = 500)
             if st.button('Summarize'):
                 st.write(f'using {used_model} for summarization')
                 st.session_state.summarized = True
                 try:
-                    st.session_state.result, st.session_state.messages = get_meeting_summary(prompt_query,input_text, temp = 0.2)
-                    # st.session_state.result, st.session_state.messages, st.session_state.usage = get_meeting_summary(prompt_query,input_text, temp = 0.2)
+                    chunks = split_text_to_messages(input_text)
+                    st.session_state.result = get_meeting_summary(chunks, temp = 0.2)
                 except Exception as e:
                     st.session_state.result = f'Sorry, an error occurred, please contact the administrator\n\n{e}'
                 text_area.text_area('Summary:',st.session_state.result, height = 500)
-                # st.write(st.session_state.usage)
-                # if st.session_state.summarized:
-                #     if st.button('Regenerate'):
-                #         st.session_state.result, st.session_state.messages = get_meeting_summary(prompt_query,input_text, temp = 0.5)
-
-                # if st.checkbox('Adjust') or st.session_state.summarized:
-                #     clarification = clarify_area.text_area("Fine-tune the bot's response",'')
-                #     if st.button('Adjust'):
-                #         st.session_state.messages.append({'role':'user','content':clarification})
-                #         response = openai.ChatCompletion.create(
-                #             # model="text-davinci-003",
-                #             model = 'gpt-3.5-turbo',
-                #             messages =  st.session_state.messages,
-                #             temperature=temp,
-                #             max_tokens=1000
-                #             )
-                #         st.session_state.clarified = response['choices'][0]['message']['content'].strip()
-                #         clarify_area.text_area('Adjusted:',st.session_state.clarified, height = 500)
-                        
