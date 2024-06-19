@@ -69,7 +69,7 @@ def get_prices(queue):
         # start_date = (pd.to_datetime('today') - pd.Timedelta(days = 30)).date()
         query = f'''SELECT datetime, asin, brand, final_price, image, coupon, full_price
                     FROM `auxillary_development.price_comparison`
-                    WHERE DATE(datetime) >= DATE({START_DATE})'''
+                    WHERE datetime >= DATE({START_DATE})'''
         client = gc.gcloud_connect()
         query_job = client.query(query)  # Make an API request.
         data = query_job.result().to_dataframe()
