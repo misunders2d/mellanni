@@ -17,7 +17,7 @@ import altair as alt
 # from matplotlib import pyplot as plt
 
 DAYS_TO_PULL = 90
-START_DATE = (pd.to_datetime('today') - pd.Timedelta(days = DAYS_TO_PULL)).date()
+START_DATE = (pd.to_datetime('today') - pd.Timedelta(days = DAYS_TO_PULL)).date().strftime('%Y-%m-%d')
 
 st.set_page_config(page_title = 'Price tracker', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state='collapsed')
 
@@ -65,11 +65,11 @@ def get_asins(queue,mode = 'mapping'):
         queue.put(mapping)
         return None
 
-def get_prices(queue):
+def get_prices(queue, START_DATE = START_DATE):
         # start_date = (pd.to_datetime('today') - pd.Timedelta(days = 30)).date()
         query = f'''SELECT datetime, asin, brand, final_price, image, coupon, full_price
                     FROM `auxillary_development.price_comparison`
-                    WHERE datetime >= DATE({START_DATE})'''
+                    WHERE DATE(datetime) >= DATE("{START_DATE}")'''
         client = gc.gcloud_connect()
         query_job = client.query(query)  # Make an API request.
         data = query_job.result().to_dataframe()
@@ -85,12 +85,16 @@ if 'data' not in st.session_state:
 
     q1, q2 = Queue(), Queue()
     p1 = threading.Thread(target = get_asins,args = (q1,))
-    p2 = threading.Thread(target = get_prices,args = (q2,))
+    p2 = threading.Thread(target = get_prices,args = (q2,START_DATE))
+    # p3 = threading.Thread(target = get_prices,args = (q3,'2020-01-01'))
+
     processes = [p1,p2]
     for process in processes:
         process.start()
     st.session_state.mapping = q1.get()
     st.session_state.prices = q2.get()
+    # st.session_state.full_prices = q3.get()
+
     for process in processes:
         process.join()
 
