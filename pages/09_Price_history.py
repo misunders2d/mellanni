@@ -16,6 +16,9 @@ from io import BytesIO
 import altair as alt
 # from matplotlib import pyplot as plt
 
+DAYS_TO_PULL = 90
+START_DATE = (pd.to_datetime('today') - pd.Timedelta(days = DAYS_TO_PULL)).date()
+
 st.set_page_config(page_title = 'Price tracker', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state='collapsed')
 
 chart_area = st.container()
@@ -64,8 +67,9 @@ def get_asins(queue,mode = 'mapping'):
 
 def get_prices(queue):
         # start_date = (pd.to_datetime('today') - pd.Timedelta(days = 30)).date()
-        query = '''SELECT datetime, asin, brand, final_price, image, coupon, full_price
-                    FROM `auxillary_development.price_comparison`'''
+        query = f'''SELECT datetime, asin, brand, final_price, image, coupon, full_price
+                    FROM `auxillary_development.price_comparison`
+                    WHERE DATE(datetime) >= DATE({START_DATE})'''
         client = gc.gcloud_connect()
         query_job = client.query(query)  # Make an API request.
         data = query_job.result().to_dataframe()
