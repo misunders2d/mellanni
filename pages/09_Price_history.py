@@ -16,7 +16,7 @@ from io import BytesIO
 import altair as alt
 # from matplotlib import pyplot as plt
 
-DAYS_TO_PULL = 90
+DAYS_TO_PULL = 180
 START_DATE = (pd.to_datetime('today') - pd.Timedelta(days = DAYS_TO_PULL)).date().strftime('%Y-%m-%d')
 
 st.set_page_config(page_title = 'Price tracker', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state='collapsed')
@@ -65,11 +65,8 @@ def get_asins(queue,mode = 'mapping'):
         queue.put(mapping)
         return None
 
-def get_prices(queue, START_DATE = START_DATE):
+def get_prices(queue, query):
         # start_date = (pd.to_datetime('today') - pd.Timedelta(days = 30)).date()
-        query = f'''SELECT datetime, asin, brand, final_price, image, coupon, full_price
-                    FROM `auxillary_development.price_comparison`
-                    WHERE DATE(datetime) >= DATE("{START_DATE}")'''
         client = gc.gcloud_connect()
         query_job = client.query(query)  # Make an API request.
         data = query_job.result().to_dataframe()
@@ -83,14 +80,21 @@ def get_prices(queue, START_DATE = START_DATE):
 if 'data' not in st.session_state:
 # if st.button('Pull data'):
 
-    q1, q2 = Queue(), Queue()
+    query_short = '''SELECT datetime, asin, brand, final_price, image, coupon, full_price
+                FROM `auxillary_development.price_comparison`
+                WHERE DATE(datetime) BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY) AND CURRENT_DATE()'''
+    query_long = f'''SELECT datetime, asin, brand, final_price, image, coupon, full_price
+                FROM `auxillary_development.price_comparison`
+                WHERE DATE(datetime) BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL {DAYS_TO_PULL} DAY) AND CURRENT_DATE()'''
+    q1, q2, q3 = Queue(), Queue(), Queue()
     p1 = threading.Thread(target = get_asins,args = (q1,))
-    p2 = threading.Thread(target = get_prices,args = (q2,START_DATE))
-    # p3 = threading.Thread(target = get_prices,args = (q3,'2020-01-01'))
+    p2 = threading.Thread(target = get_prices,args = (q2, query_short))
+    # p3 = threading.Thread(target = get_prices,args = (q3, query_long))
 
     processes = [p1,p2]
     for process in processes:
         process.start()
+    # p3.start()
     st.session_state.mapping = q1.get()
     st.session_state.prices = q2.get()
     # st.session_state.full_prices = q3.get()
@@ -108,33 +112,36 @@ if 'data' not in st.session_state:
 
 if 'data' in st.session_state:
     if button_area.button('Prepare export'):
+        
+        # p3.join()
         output = BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
             st.session_state.df.to_excel(writer, sheet_name = 'Prices', index = False)
             ff.format_header(st.session_state.df, writer, 'Prices')
         button_area.download_button('Export full data',output.getvalue(), file_name = 'Price history.xlsx')
 
-    products = st.session_state.df['product'].unique().tolist()
-    product = button_area.selectbox('Select a product',products)
-    f = st.session_state.df[st.session_state.df['product'] == product]
-    f['brandasin'] = f['brand'] + ' : ' + f['asin']
-    f['link'] = 'https://www.amazon.com/dp/'+f['asin']
-    plot_file = f[['datetime','brandasin','final_price']]
-    link_file = f[['datetime','brand','asin','product','link','full_price','coupon','image','final_price']].copy()
-    last_date = pd.to_datetime(f['datetime'].values.tolist()[-1])
-    link_file = link_file[link_file['datetime'] == last_date].reset_index()
+    else:
+        products = st.session_state.df['product'].unique().tolist()
+        product = button_area.selectbox('Select a product',products)
+        f = st.session_state.df[st.session_state.df['product'] == product]
+        f['brandasin'] = f['brand'] + ' : ' + f['asin']
+        f['link'] = 'https://www.amazon.com/dp/'+f['asin']
+        plot_file = f[['datetime','brandasin','final_price']]
+        link_file = f[['datetime','brand','asin','product','link','full_price','coupon','image','final_price']].copy()
+        last_date = pd.to_datetime(f['datetime'].values.tolist()[-1])
+        link_file = link_file[link_file['datetime'] == last_date].reset_index()
 
-    c = alt.Chart(plot_file, title = product).mark_line().encode(
-        x = alt.X('datetime:T'),
-        y = alt.Y('final_price:Q'), color = alt.Color('brandasin')
-        )
+        c = alt.Chart(plot_file, title = product).mark_line().encode(
+            x = alt.X('datetime:T'),
+            y = alt.Y('final_price:Q'), color = alt.Color('brandasin')
+            )
 
-    chart_area.altair_chart(c.interactive(),use_container_width=True)
-    columns = [col1,col2,col3,col4,col5,col6]
-    for index, row in link_file.iterrows():
-        columns[index].markdown(f"[{' : '.join([str(row['brand']),row['asin']])}]({row['link']})")
-        columns[index].image(row['image'])
-        try:
-            columns[index].markdown(f"**:red[${row['final_price']:.2f}]**")
-        except:
-            columns[index].markdown(f"**:red[${row['final_price']}]**")
+        chart_area.altair_chart(c.interactive(),use_container_width=True)
+        columns = [col1,col2,col3,col4,col5,col6]
+        for index, row in link_file.iterrows():
+            columns[index].markdown(f"[{' : '.join([str(row['brand']),row['asin']])}]({row['link']})")
+            columns[index].image(row['image'])
+            try:
+                columns[index].markdown(f"**:red[${row['final_price']:.2f}]**")
+            except:
+                columns[index].markdown(f"**:red[${row['final_price']}]**")
