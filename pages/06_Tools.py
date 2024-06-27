@@ -482,7 +482,7 @@ if st.session_state['login']:
 
             def split_text_to_messages(text):
                 blocks = re.split(r'\n| \.',text)
-                word_limit = 8000 if used_model == 'gpt-3.5-turbo-0125' else 12000
+                word_limit = 8000 if used_model == 'gpt-3.5-turbo-0125' else 11000
                 chunks = []
                 limit = 0
                 chunk = []
