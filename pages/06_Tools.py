@@ -11,7 +11,7 @@ key = st.secrets['AI_KEY']
 # openai.api_key = key
 GPT_MODEL = ['gpt-4','gpb-4o','gpt-3.5-turbo','gpt-3.5-turbo-0125']
 model = GPT_MODEL[2]
-MAX_TOKENS = 2000
+MAX_TOKENS = 1000
 
 
 st.set_page_config(page_title = 'Mellanni Tools', page_icon = 'media/logo.ico',layout="wide",initial_sidebar_state='collapsed')
